@@ -1,2 +1,2 @@
-# projection_block_construction
- Projection/simulation in block construction.
+# Projection in block construction
+This is to organize and collect code around projection in block construction.
