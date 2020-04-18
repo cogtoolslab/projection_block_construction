@@ -6,90 +6,184 @@ class Agent:
     def __init__(self, world, horizon = 2):
         self.world = world
         self.horizon = horizon
-    
-    def generate_actions(self,horizon = None,state = None):
-        def _generate_actions_helper(self,horizon,state,cur_sequence):
-            possible_actions = self.world.possible_actions(state)
-            # anchor recursion
-            if horizon <= 0 or possible_actions == []:
-                return [cur_sequence]
-            results = []
-            for action in possible_actions:
-                results += _generate_actions_helper(self,horizon-1,self.world.transition(action,state.copy()),cur_sequence+[action]) # recursive step
-            return results
-        #special case for myopic agent
-        if self.horizon == 0:
-            return [self.Action_sequence(actions) for actions in self.world.possible_actions(state)]
+
+    class Ast_node():
+        """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
+        def __init__(self,state,score=None,stability=None,parent=None):
+            self.state = state.copy() #just to be sure
+            self.score = score
+            self.stability = stability
+            self.actions = []
+            self.parent_action = parent
+
+        def is_leaf(self):
+            if len(self.actions) == 0:
+                return True
+            else:
+                return False
+       
+        def add_action(self,action,target=None):
+            if action in [act.action for act in self.actions]:
+                Warning("Action ",action," is already in actionset for this node")
+                pass
+            else:
+                action = Agent.Ast_edge(action,self,target) #create new action
+                action.target.parent_action = action #set as parent for target state
+                self.actions.append(action) #add action to node   
+
+        def print_tree(self,level=0):
+            """Prints out the tree to the command line in depth first order."""
+            print(self.state," score: ",self.score," stability: ",self.stability,sep="")
+            for child,action in [(action.target,action.action) for action in self.actions]:
+                print("\n|","____"*(level+1)," ",action," → ",end="",sep="")
+                child.print_tree(level+1) #pass
+        
+    class Ast_edge():
+        """AST means action space tree. This class simply consists of an action connecting to ast_nodes. The target state will have to be added by the constructing function."""
+        def __init__(self,action,source,target=None):
+            self.action = action
+            self.source = source
+            self.target = target
+            if target is None:
+                Warning("Node has empty target")
+
+    def build_ast(self,state=None,horizon=None):
+        """Builds ast from given state to a certain horizon. Returns root of tree."""
+        def fill_node(node):
+            possible_actions = self.world.possible_actions(node.state)
+            for action in possible_actions:     
+                #add action to current node with target state already filled out
+                node.add_action(action,Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
+            
+        if horizon is None:
+            horizon = self.horizon
+        #implement logic for infinite horizon (see score)
+        if state is None:
+            state = self.world.world_state
+        root = Agent.Ast_node(state) #make root of tree
+        current_nodes = [root]
+        #breadth first compile the tree of possible actions exhaustively
+        for i in range(horizon): #this just idles when no children are to be found
+            children_nodes = []
+            for node in current_nodes:
+                fill_node(node)
+                children_nodes += [action.target for action in node.actions]
+            current_nodes = children_nodes
+        return root
+
+    def score_ast(self,root,horizon='All'):
+        """Iterate through the Ast and score all the nodes in it. Works in place."""
+        def score_node(self,node):
+            node.score = self.world.score(node.state)
+            node.stability = self.world.stability(node.state)
+
+        if horizon is 'All':
+            counter = -1
+        else:
+            counter = horizon
+        current_nodes = [root]
+        while current_nodes  != [] and counter != 0:
+            children_nodes = []
+            for node in current_nodes:
+                score_node(self,node)
+                children_nodes += [action.target for action in node.actions]
+            current_nodes = children_nodes
+            counter = counter -1 
+      
+    def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False):
+        """Generate all possible sequences of actions for the given horizon. """
+        def get_path(leaf):
+            """Gets the path from leaf to root in order root -> leaf""" 
+            if leaf.parent_action is None: # if we're already at the root, just return empty list (otherwise we'll return [[]])
+                return []
+            action_sequence = []
+            current_node = leaf
+            while current_node.parent_action is not None: #while we're not at the root node
+                action_sequence += [current_node.parent_action]
+                current_node = current_node.parent_action.source
+            action_sequence.reverse() #reverse the order
+            return [action_sequence]
 
         if horizon is None:
             horizon = self.horizon
-        if state is None:
-            state = self.world.world_state.copy()
-        action_sequences = _generate_actions_helper(self,horizon,state,[])
-        return [self.Action_sequence(actions) for actions in action_sequences] #convert to action sequence object
-    
+        if ast_root is None:
+            ast_root = self.build_ast(horizon)
+            self.score_ast(ast_root)
+
+        action_sequences = []
+        counter = horizon
+        current_nodes = [ast_root]
+        while current_nodes  != [] and counter != 0:
+            counter = counter -1 
+            children_nodes = []
+            for node in current_nodes:
+                if include_subsets or node.is_leaf() or counter == 0:
+                    action_sequences += get_path(node)
+                children_nodes += [action.target for action in node.actions]
+            current_nodes = children_nodes
+        return [Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
+
+    def score_action_sequences(self,action_sequences,method = 'Final state',verbose=False):
+        """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average. Operates in place."""
+        # if action_sequences[0].actions[0].source.score is None: #if the tree hasn't been scored yet
+        #     print("Tree must be scored.")
+        #     return None
+        for act_seq in action_sequences: #score every action sequence
+            if method == 'Final state':
+                score = act_seq.actions[-1].target.score + (not act_seq.actions[-1].target.stability) * self.world.fail_penalty 
+            elif method == 'Sum':
+                score = 0
+                for action in act_seq:
+                    score += action.target.score + (not action.target.stability) * self.world.fail_penalty
+                score = sum(score)
+            elif method == 'Average':
+                score = 0
+                counter = 0
+                for action in act_seq:
+                    score += action.target.score + (not action.target.stability) * self.world.fail_penalty
+                    counter += 1
+                score = sum(score)/counter
+            else:
+                Warning("Method not recognized")
+                pass
+            act_seq.score = score
+            if verbose:
+                print([a.action for a in act_seq.actions]," score: ",score)
+        
     class Action_sequence():
         def __init__(self,actions,score = None):
             self.actions = actions
             self.score = score
        
-    def score_actions(self,action_sequences,beginning_state = None):
-        #special case for myopic agent
-        if self.horizon == 0:
-            for action_seq in action_sequences:
-                action_seq.score = 0
-            return action_sequences
-
-        if beginning_state is None:
-            beginning_state = self.world.world_state.copy()
-        # if type(action_sequences[0] ) is not list: # if we get passed a single list, wrap it in another list 
-        #     action_sequences = [action_sequences]
-        for action_seq in action_sequences:
-            #calculate final state
-            state = beginning_state.copy()
-            for action in action_seq.actions: #go to final state
-                state = self.world.transition(action,state)
-                if self.world.is_fail(state):
-                    break
-            score = self.score_state(state)
-            action_seq.score = score
-        return action_sequences
-    
-    def score_state(self,state):
-        score = 0
-        if self.world.is_win(state):
-            score = 1
-        elif self.world.is_fail(state):
-            score = -1
-            #could implement partial scoring here
-        return score
-
     def select_action_seq(self,scored_actions): #could implement softmax here
         max_score = max([action_seq.score for action_seq in scored_actions if action_seq.score is not None])
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
-    def act(self,steps = 1,verbose=False): 
-        possible_actions = self.generate_actions()
-        scored_actions = self.score_actions(possible_actions)
-        #get the first action with maximum score
-        if scored_actions == []:
-            Warning("No actions to take")
-            return
-        max_action_seq = self.select_action_seq(scored_actions)
-        print(max_action_seq)
-        #let's act
-        if steps is 'All': #we act the entire planning sequence
-            for action in max_action_seq.actions:
-                self.world.apply_action(action)
-                print(action) 
-                print(self.world.world_state ) 
-        else: # if we have a limit of how many steps to take
-            for i in range(steps):
-                try:
-                    self.world.apply_action(max_action_seq.actions[i])
-                    print(max_action_seq.actions[i])
-                    print(self.world.world_state )
-                except IndexError:
-                    Warning("Not enough steps in plan for step "+str(i))
-        print(self.world.status())
+    def act(self,steps = 1,planning_horizon =None,verbose=False): 
+        """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. Setting the planning_horizon higher than the steps gives the agent foresight."""
+        if planning_horizon is None:
+            planning_horizon = steps
+        if planning_horizon < steps:
+            print("Planning horizon must be higher or equal to the steps!")
+            pass
+        #make ast
+        ast = self.build_ast(horizon=planning_horizon)  
+        #score it
+        self.score_ast(ast)
+        #generate action sequences
+        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False)
+        #score action sequences
+        self.score_action_sequences(act_seqs,'Final state',verbose)
+        #choose an action sequence
+        chosen_seq = self.select_action_seq(act_seqs)
+        if verbose:
+            self.Ast_node.print_tree(ast)
+            print("Chosen action sequence: ",[a.action for a in chosen_seq.actions], " score: ",chosen_seq.score)
+        #take the steps
+        for step in range(min([steps,len(chosen_seq.actions)])): #If the chosen sequence is shorter than the steps, only go so far
+            self.world.apply_action(chosen_seq.actions[step].action)
+            if verbose:
+                print("Took step ",step+1," with action ",chosen_seq.actions[step].action," and got world state",self.world.world_state)
+        if verbose:
+            print("Done, reached world status: ",self.world.status())

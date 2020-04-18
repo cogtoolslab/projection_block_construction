@@ -5,12 +5,15 @@ class World:
     win_states = [{}] #list of winning states
     fail_states = [{}] #list of failing states
     # action_space = [] #list of actions
+    fail_penalty = -10
+    win_reward = 10
 
     def __init__(self):
         self.world_state = self.initial_state.copy()
         self.action_space = self.initial_state.keys #setting up the action space as  the parts of the world state
 
-    def transition(self,action,state = None): #takes an action and a state and returns the following state
+    def transition(self,action,state = None): 
+        """takes an action and a state and returns the following state"""
         if state is None:
             state = self.world_state.copy()
         if action not in self.possible_actions(state):
@@ -61,6 +64,22 @@ class World:
         if self.is_fail(state) or self.is_win(state): #if we're in a final state there's no actions to take
             return []
         return [key for key,value in state.items() if value == 0]
+
+    def score(self,state=None):
+        if state is None:
+            state = self.world_state
+        if self.is_fail(state):
+            return self.fail_penalty
+        if self.is_win(state):
+            return self.win_reward
+        return 0
+    
+    def stability(self,state=None):
+        if state is None:
+            state = self.world_state
+        if self.is_fail(state):
+            return False
+        return True
         
 
 
@@ -72,3 +91,8 @@ class Stonehenge(World):
                                 {'A':1,'B':0,'C':1},
                                 {'A':0,'B':1,'C':1}]
     actions = ['A','B','C']
+
+
+
+    # class Block_World(World):
+    
