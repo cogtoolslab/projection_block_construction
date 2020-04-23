@@ -111,7 +111,7 @@ class Agent:
             self.score_ast(ast_root)
 
         action_sequences = []
-        counter = horizon
+        counter = horizon+1 #off by one?
         current_nodes = [ast_root]
         while current_nodes  != [] and counter != 0:
             counter = counter -1 
@@ -124,7 +124,7 @@ class Agent:
         return [Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
 
     def score_action_sequences(self,action_sequences,method = 'Final state',verbose=False):
-        """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average. Operates in place."""
+        """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average, Fixed. Operates in place."""
         # if action_sequences[0].actions[0].source.score is None: #if the tree hasn't been scored yet
         #     print("Tree must be scored.")
         #     return None
@@ -133,16 +133,18 @@ class Agent:
                 score = act_seq.actions[-1].target.score + (not act_seq.actions[-1].target.stability) * self.world.fail_penalty 
             elif method == 'Sum':
                 score = 0
-                for action in act_seq:
+                for action in act_seq.actions:
                     score += action.target.score + (not action.target.stability) * self.world.fail_penalty
                 score = sum(score)
             elif method == 'Average':
                 score = 0
                 counter = 0
-                for action in act_seq:
+                for action in act_seq.actions:
                     score += action.target.score + (not action.target.stability) * self.world.fail_penalty
                     counter += 1
                 score = sum(score)/counter
+            elif method == 'Fixed':
+                score = 0
             else:
                 Warning("Method not recognized")
                 pass
@@ -154,19 +156,26 @@ class Agent:
         def __init__(self,actions,score = None):
             self.actions = actions
             self.score = score
+
+        def print_actseq(self):
+            print("Action sequence:",[act.action for act in self.actions],"Score:",self.score)
        
     def select_action_seq(self,scored_actions): #could implement softmax here
         max_score = max([action_seq.score for action_seq in scored_actions if action_seq.score is not None])
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
-    def act(self,steps = 1,planning_horizon =None,verbose=False): 
-        """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. Setting the planning_horizon higher than the steps gives the agent foresight."""
+    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring='Final State'): 
+        """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. To get the agent to deliberate more than once, call action repeatedly. Setting the planning_horizon higher than the steps gives the agent foresight. To get dumb agent behavior, set scoring to Fixed."""
         if planning_horizon is None:
+            planning_horizon = self.horizon
+        if planning_horizon == 0: #special case for dumb agent that can't plan at all
             planning_horizon = steps
-        if planning_horizon < steps:
-            print("Planning horizon must be higher or equal to the steps!")
-            pass
+            scoring = 'Fixed'
+        elif planning_horizon < steps:
+            print("Planning horizon must be higher or equal to the steps or 0! Setting the horizon from",planning_horizon,"to",steps)
+            planning_horizon = steps
+        steps += 1 #this is so we take the sensible number of steps
         #make ast
         ast = self.build_ast(horizon=planning_horizon)  
         #score it
@@ -174,12 +183,14 @@ class Agent:
         #generate action sequences
         act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False)
         #score action sequences
-        self.score_action_sequences(act_seqs,'Final state',verbose)
+        self.score_action_sequences(act_seqs,scoring)
         #choose an action sequence
         chosen_seq = self.select_action_seq(act_seqs)
         if verbose:
             self.Ast_node.print_tree(ast)
-            print("Chosen action sequence: ",[a.action for a in chosen_seq.actions], " score: ",chosen_seq.score)
+            for act_seq in act_seqs:
+                act_seq.print_actseq()
+            print("Chosen action sequence:",[a.action for a in chosen_seq.actions], "with score: ",chosen_seq.score)
         #take the steps
         for step in range(min([steps,len(chosen_seq.actions)])): #If the chosen sequence is shorter than the steps, only go so far
             self.world.apply_action(chosen_seq.actions[step].action)
