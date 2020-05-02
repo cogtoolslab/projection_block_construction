@@ -10,7 +10,7 @@ class Agent:
     class Ast_node():
         """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
         def __init__(self,state,score=None,stability=None,parent=None):
-            self.state = state.copy() #just to be sure
+            # self.state = state.copy() #just to be sure
             self.score = score
             self.stability = stability
             self.actions = []
@@ -59,7 +59,7 @@ class Agent:
             horizon = self.horizon
         #implement logic for infinite horizon (see score)
         if state is None:
-            state = self.world.world_state
+            state = self.world.current_state
         root = Agent.Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively

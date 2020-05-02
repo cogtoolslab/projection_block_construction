@@ -2,7 +2,7 @@ from agent import Agent
 
 class Toy_Agent(Agent):
     """This class keeps the code for the original toy agent around that operates on sequences of action, not a tree structure. Mostly for documentation purposes."""
-        def __init__(self, world, horizon = 2):
+    def __init__(self, world, horizon = 2):
         self.world = world
         self.horizon = horizon
     

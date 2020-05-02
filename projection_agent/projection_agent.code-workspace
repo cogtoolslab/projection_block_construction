@@ -3,5 +3,8 @@
 		{
 			"path": "/Users/felixbinder/Cloud/Grad School/Fan Lab/Projection/projection_block_construction"
 		}
-	]
+	],
+	"settings": {
+		"python.pythonPath": "/Users/felixbinder/anaconda3/envs/projection_blocks/bin/python"
+	}
 }
