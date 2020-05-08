@@ -11,6 +11,7 @@ class Agent:
         """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
         def __init__(self,state,score=None,stability=None,parent=None):
             # self.state = state.copy() #just to be sure
+            self.state = state
             self.score = score
             self.stability = stability
             self.actions = []
@@ -33,9 +34,9 @@ class Agent:
 
         def print_tree(self,level=0):
             """Prints out the tree to the command line in depth first order."""
-            print(self.state," score: ",self.score," stability: ",self.stability,sep="")
+            print(self.state," score: ",self.score," stability: ",self.stability,sep="") 
             for child,action in [(action.target,action.action) for action in self.actions]:
-                print("\n|","____"*(level+1)," ",action," → ",end="",sep="")
+                print("\n|","____"*(level+1)," ",action.__str__()," → ",end="",sep="")#remove __str__ for non-blockworld?
                 child.print_tree(level+1) #pass
         
     class Ast_edge():
@@ -69,6 +70,7 @@ class Agent:
                 fill_node(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
+            print("Depth of AST:",i,",found",len(current_nodes),"nodes")
         return root
 
     def score_ast(self,root,horizon='All'):

@@ -3,7 +3,7 @@ import blockworld
 import random
 
 w = blockworld.Blockworld()
-a = Agent(w,1)
+a = Agent(w,2)
 s = w.current_state
 print(s.possible_actions())
 print(s.F1score())
