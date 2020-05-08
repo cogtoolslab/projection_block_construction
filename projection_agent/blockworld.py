@@ -16,6 +16,8 @@ from random import randint
 import string
 import os
 
+import sys
+
 # import displayworld
 
 class Blockworld(World):
@@ -138,11 +140,12 @@ class Blockworld(World):
 
         def F1score(self):
             """Returns the F1 score relative to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
+            s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
             target = self.world.silhouette > 0
             built = self.block_map > 0
-            precision = np.sum(built & target)/np.sum(built) 
-            recall = np.sum(built & target)/np.sum(target) 
-            F1score = 2 * (precision * recall)/(precision + recall)
+            precision = np.sum(built & target)/(np.sum(built) + s) 
+            recall = np.sum(built & target)/(np.sum(target) + s) 
+            F1score = 2 * (precision * recall)/(precision + recall + s)
             return F1score
 
         def stability(self):
