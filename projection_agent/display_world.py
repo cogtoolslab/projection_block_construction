@@ -10,7 +10,7 @@ import numpy as np
 
 """Helper functions for interacting between stimulus generation and pybox2D.             
 
-Adapted from block_construction/stimuli/blockworld_helpers.py
+Adapted from block_construction/stimuli/blockworld_helpers.py Thanks Will!
 """
 
 def b2_x(block):
@@ -148,8 +148,8 @@ def test_world_stability(world,
                    TIME_STEP = 0.01,
                    VEL_ITERS = 10,
                    POS_ITERS = 10,
-                   SCREEN_WIDTH = 400,
-                   SCREEN_HEIGHT = 400, 
+                   SCREEN_WIDTH = 800,
+                   SCREEN_HEIGHT = 600, 
                    PPM = 20,
                    DISPLAY_OFFSET_X = 100,
                    DISPLAY_OFFSET_Y = -100,

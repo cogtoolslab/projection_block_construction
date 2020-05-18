@@ -16,6 +16,9 @@ from random import randint
 import string
 import os
 
+import blockworld_helpers
+import display_world
+
 import sys
 
 # import displayworld
@@ -87,7 +90,7 @@ class Blockworld(World):
 
     def is_fail(self,state = None):
         if state is None:
-            state = self.world_state
+            state = self.current_state
         if state.stability() is False: #we loose if its unstable
             return True
         if state.F1score() != 1 and state.possible_actions == []: #we loose if we aren't finished and have no options
@@ -96,14 +99,14 @@ class Blockworld(World):
 
     def is_win(self,state = None):
         if state is None:
-            state = self.world_state
+            state = self.current_state
         if state.F1score == 1 and state.stability():
             return True
         return False
 
     def score(self,state=None):
         if state is None:
-            state = self.world_state
+            state = self.current_state
         if self.is_fail(state):
             return self.fail_penalty
         if self.is_win(state):
@@ -148,9 +151,10 @@ class Blockworld(World):
             F1score = 2 * (precision * recall)/(precision + recall + s)
             return F1score
 
-        def stability(self):
+        def stability(self,visual_display=False):
             """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations."""
-            return True
+            bwworld = self.state_to_bwworld()
+            return display_world.test_world_stability(bwworld,RENDER=visual_display)  == 'stable'
 
         def possible_actions(self):
             """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
@@ -166,10 +170,20 @@ class Blockworld(World):
                             possible_actions.append((base_block,x))
             return possible_actions
 
-        def visual_display(self):
+        def visual_display(self,blocking=True):
             """Shows the state in a pretty way."""
+            pyplot.close('all')
             pyplot.imshow(self.block_map, cmap='hot_r')
-            pyplot.show()
+            pyplot.show(block=blocking)
+
+        def state_to_bwworld(self):
+            """converts state to Blockworld.world.
+                Helper function for block_construction/stimuli/blockworld_helpers.py testing code"""
+            wh = self.world.dimension[0] #world height
+            bwworld = blockworld_helpers.World(world_height=self.world.dimension[0],world_width=self.world.dimension[1])
+            for b in self.blocks:
+                bwworld.add_block(b.width,b.height,b.x,wh-b.y-1)
+            return bwworld
 
 class Block:
     '''
@@ -341,20 +355,3 @@ class BaseBlock:
         else:
             print('Shape type not recognized. Please use recognized shape type.')
         return area   
-
-
-###Silhuouettes###
-stonehenge = np.array([
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 1., 1., 1., 1., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.],
-    [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.]])
