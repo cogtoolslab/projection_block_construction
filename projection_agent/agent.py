@@ -3,9 +3,10 @@ from random import randint
 class Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
-    def __init__(self, world, horizon = 2):
+    def __init__(self, world, horizon = 2, sparse=False):
         self.world = world
         self.horizon = horizon
+        self.sparse = sparse
 
     class Ast_node():
         """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
@@ -73,11 +74,28 @@ class Agent:
             print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
         return root
 
-    def score_ast(self,root,horizon='All'):
-        """Iterate through the Ast and score all the nodes in it. Works in place."""
-        def score_node(self,node):
-            node.score = self.world.score(node.state)
-            node.stability = self.world.stability(node.state)
+    def score_ast(self,root,horizon='All',sparse=None,dense_stability=None):
+        """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states."""
+        if sparse is None:
+            sparse = self.sparse
+        if dense_stability is None:
+            dense_stability = not sparse
+
+        def score_node(self,node,sparse,dense_stability):
+            if dense_stability:
+                node.stability = self.world.stability(node.state) 
+            if sparse:
+                #only return stability and score for final states
+                if self.world.is_win(node.state):
+                    node.score = self.world.win_reward
+                elif self.world.is_fail(node.state):
+                    node.score = self.world.fail_penalty
+                else:
+                    node.score = 0
+            else:
+                #dense rewards
+                node.score = self.world.score(node.state)
+                
 
         if horizon == 'All':
             counter = -1
@@ -87,7 +105,7 @@ class Agent:
         while current_nodes  != [] and counter != 0:
             children_nodes = []
             for node in current_nodes:
-                score_node(self,node)
+                score_node(self,node,sparse,dense_stability)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 

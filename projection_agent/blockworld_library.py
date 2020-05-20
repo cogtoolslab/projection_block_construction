@@ -33,6 +33,12 @@ stonehenge_3_3 = np.array([
     [1., 0., 1.,]
 ])
 
+t_3_3 =  np.array([
+    [1.,1., 1.,],
+    [0., 1., 0.,],
+    [0., 1., 0.,]
+])
+
 
 """Base block libraries."""
 #The defaults are taken from the silhouette2 study.
