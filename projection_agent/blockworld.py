@@ -93,7 +93,7 @@ class Blockworld(World):
     def is_win(self,state = None):
         if state is None:
             state = self.current_state
-        if state.F1score == 1 and state.stability():
+        if state.F1score() == 1 and state.stability():
             return True
         return False
 
@@ -152,12 +152,11 @@ class Blockworld(World):
         def possible_actions(self):
             """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
             Format of action is (BaseBlock from block_library, x location of lower left)."""
-            block_library = self.world.block_library
             possible_actions = []
-            for base_block in block_library:
+            for base_block in self.world.block_library:
                 for x in range(self.world_width): #starting coordinate is bottom left
                     #check whether it overlaps the left boundary
-                    if x + base_block.width < self.world_width:
+                    if x + base_block.width <= self.world_width:
                          #and whether it overlaps the top boundary by simply looking if the block at the top is free
                         if self.block_map[0 : base_block.height, x : x+base_block.width] .sum() == 0:
                             possible_actions.append((base_block,x))
@@ -166,10 +165,10 @@ class Blockworld(World):
         def visual_display(self,blocking=True,silhouette=None):
             """Shows the state in a pretty way."""
             pyplot.close('all')
-            pyplot.imshow(self.block_map, cmap='hot_r')
+            pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
             if silhouette is not None:
                 #we print the target silhuouette as transparent overlay
-                pyplot.imshow(silhouette, cmap='Greens',alpha=0.15)
+                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.15,facecolors='none',edgecolors='black')
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
