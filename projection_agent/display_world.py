@@ -212,7 +212,7 @@ def test_world_stability(world,
         b2world.Step(TIME_STEP, VEL_ITERS, POS_ITERS)
 
         # Set start positions for movement check
-        if step == 80: #Steps might not be best way of doing this
+        if step == 5: #Steps might not be best way of doing this
             start_positions = np.array([body.position for body in b2world.bodies])
 
         # Set end positions for movement check

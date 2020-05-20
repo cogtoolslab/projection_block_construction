@@ -67,7 +67,7 @@ class Agent:
         root = Agent.Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively
-        for i in range(horizon): #this just idles when no children are to be found
+        for i in range(horizon-1): #this just idles when no children are to be found
             children_nodes = []
             for node in current_nodes:
                 fill_node(node)
@@ -110,16 +110,16 @@ class Agent:
         while current_nodes  != [] and counter != 0:
             children_nodes = []
             for node in current_nodes:
-                # score_node(self,node,sparse,dense_stability)
-                nodes.append(node)
+                self.score_node(node)#,sparse,dense_stability)
+                # nodes.append(node) #for parallelization
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 
-        # if self.verbose:
-        print("Scoring",len(nodes),"nodes...")
-        #multithreading the scoring of the nodes
-        pool = Pool(8)
-        pool.map(self.score_node,nodes)#,repeat(sparse),repeat(dense_stability))
+        # # if self.verbose:
+        # print("Scoring",len(nodes),"nodes...")
+        # #multithreading the scoring of the nodes
+        # pool = Pool(8)
+        # pool.map(self.score_node,nodes)#,repeat(sparse),repeat(dense_stability))
 
     def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False):
         """Generate all possible sequences of actions for the given horizon. """
