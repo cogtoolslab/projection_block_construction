@@ -18,7 +18,8 @@ stonehenge_18_13 = np.array([
     [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.],
     [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.]])
 
-stonehenge_5_4 = np.array([
+stonehenge_6_4 = np.array([
+    [1., 1., 1., 1.,],
     [1., 1., 1., 1.,],
     [1., 0., 0., 1.,],
     [1., 0., 0., 1.,],
@@ -53,4 +54,9 @@ silhouette2_default_blocklibrary= [
 stonehenge_3_3_blocklibrary = [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(3,1),
+] 
+
+stonehenge_6_4_blocklibrary = [
+    blockworld.BaseBlock(1,2),
+    blockworld.BaseBlock(4,1),
 ] 
