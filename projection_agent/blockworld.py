@@ -42,15 +42,6 @@ class Blockworld(World):
         self.silhouette = self.load_silhouette(silhouette) 
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
 
-    def _silhouette2_default_blocklibrary(self):
-    #The defaults are taken from the silhouette2 study.
-        return [BaseBlock(1,2),
-                    BaseBlock(2,1),
-                    BaseBlock(2,2),
-                    BaseBlock(2,4),
-                    BaseBlock(4,2),
-                    ] 
-
     def  transition(self,action,state=None):
         """Takes an action and a state and returns the resulting state."""
         if state is None:
@@ -76,7 +67,9 @@ class Blockworld(World):
             if silhouette.shape == self.dimension:
                 return silhouette
             else:
-                raise Warning("Silhouette dimensions don't match world dimensions")
+                print("Silhouette dimensions", silhouette.shape, "don't match world dimensions. Setting world dimensions to match.")
+                self.dimension = silhouette.shape
+                return silhouette
         elif silhouette is None: #No silhouette returns an empty field.
             return np.zeros(self.dimension)
         else:
@@ -170,10 +163,13 @@ class Blockworld(World):
                             possible_actions.append((base_block,x))
             return possible_actions
 
-        def visual_display(self,blocking=True):
+        def visual_display(self,blocking=True,silhouette=None):
             """Shows the state in a pretty way."""
             pyplot.close('all')
             pyplot.imshow(self.block_map, cmap='hot_r')
+            if silhouette is not None:
+                #we print the target silhuouette as transparent overlay
+                pyplot.imshow(silhouette, cmap='Greens',alpha=0.15)
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
@@ -293,7 +289,6 @@ class BaseBlock:
     '''
     Base Block class for defining a block object with attributes.             
     Adapted from block_construction/stimuli/blockworld_helpers.py
-
     '''
     
     def __init__(self, width=1, height=1, shape='rectangle', color='gray'):
@@ -308,7 +303,7 @@ class BaseBlock:
         self.color = color
     
     def __str__(self):
-        return(str(self.width) + 'x' + str(self.height))
+        return('('+str(self.width) + 'x' + str(self.height)+')')
 
     def init(self):
         self.corners = self.get_corners(self.base_verts)
