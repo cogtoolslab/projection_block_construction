@@ -1,4 +1,6 @@
 from random import randint
+from multiprocessing.dummy import Pool
+from itertools import repeat
 
 class Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
@@ -74,42 +76,51 @@ class Agent:
             print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
         return root
 
+    def score_node(self,node):#,sparse=False,dense_stability=True):
+        if _dense_stability:
+            node.stability = self.world.stability(node.state) 
+        if _sparse:
+            #only return stability and score for final states
+            if self.world.is_win(node.state):
+                node.score = self.world.win_reward
+            elif self.world.is_fail(node.state):
+                node.score = self.world.fail_penalty
+            else:
+                node.score = 0
+        else:
+            #dense rewards
+            node.score = self.world.score(node.state)
+
     def score_ast(self,root,horizon='All',sparse=None,dense_stability=None):
         """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states."""
+        global _sparse,_dense_stability
         if sparse is None:
             sparse = self.sparse
         if dense_stability is None:
             dense_stability = not sparse
-
-        def score_node(self,node,sparse,dense_stability):
-            if dense_stability:
-                node.stability = self.world.stability(node.state) 
-            if sparse:
-                #only return stability and score for final states
-                if self.world.is_win(node.state):
-                    node.score = self.world.win_reward
-                elif self.world.is_fail(node.state):
-                    node.score = self.world.fail_penalty
-                else:
-                    node.score = 0
-            else:
-                #dense rewards
-                node.score = self.world.score(node.state)
-                
+        _sparse = sparse
+        _dense_stability = dense_stability
 
         if horizon == 'All':
             counter = -1
         else:
             counter = horizon
         current_nodes = [root]
+        nodes = [root]
         while current_nodes  != [] and counter != 0:
             children_nodes = []
             for node in current_nodes:
-                score_node(self,node,sparse,dense_stability)
+                # score_node(self,node,sparse,dense_stability)
+                nodes.append(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 
-      
+        # if self.verbose:
+        print("Scoring",len(nodes),"nodes...")
+        #multithreading the scoring of the nodes
+        pool = Pool(8)
+        pool.map(self.score_node,nodes)#,repeat(sparse),repeat(dense_stability))
+
     def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False):
         """Generate all possible sequences of actions for the given horizon. """
         def get_path(leaf):
@@ -195,13 +206,19 @@ class Agent:
         elif planning_horizon < steps:
             print("Planning horizon must be higher or equal to the steps or 0! Setting the horizon from",planning_horizon,"to",steps)
             planning_horizon = steps
-        steps += 1 #this is so we take the sensible number of steps
+        # steps += 1 #this is so we take the sensible number of steps
+        #check if we even can act
+        if self.world.status() != 'Ongoing':
+            print("Can't act with world in status",self.world.status())
+            return
         #make ast
         ast = self.build_ast(horizon=planning_horizon)  
         #score it
         self.score_ast(ast)
         #generate action sequences
         act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False)
+        if act_seqs == []: #if we can't act. Should be covered by world fail state above.
+            return
         #score action sequences
         self.score_action_sequences(act_seqs,scoring)
         #choose an action sequence
@@ -219,4 +236,4 @@ class Agent:
                 self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
         if verbose:
             print("Done, reached world status: ",self.world.status())
-            self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
+            # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
