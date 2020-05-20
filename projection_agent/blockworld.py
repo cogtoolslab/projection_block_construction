@@ -32,7 +32,7 @@ class Blockworld(World):
     
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays."""
 
-    def __init__(self,dimension = (13,18),silhouette=None,block_library = None):
+    def __init__(self,dimension = None,silhouette=None,block_library = None):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
@@ -86,14 +86,14 @@ class Blockworld(World):
             state = self.current_state
         if state.stability() is False: #we loose if its unstable
             return True
-        if state.F1score() != 1 and state.possible_actions == []: #we loose if we aren't finished and have no options
+        if state.silhouette_score() != 1 and state.possible_actions() == []: #we loose if we aren't finished and have no options
             return True
         return False
 
     def is_win(self,state = None):
         if state is None:
             state = self.current_state
-        if state.F1score() == 1 and state.stability():
+        if state.silhouette_score() == 1 and state.stability():
             return True
         return False
 
@@ -104,7 +104,7 @@ class Blockworld(World):
             return self.fail_penalty
         if self.is_win(state):
             return self.win_reward
-        return state.F1score()
+        return state.silhouette_score()
 
     def possible_actions(self,state=None):
         if state is None:
@@ -143,6 +143,15 @@ class Blockworld(World):
             recall = np.sum(built & target)/(np.sum(target) + s) 
             F1score = 2 * (precision * recall)/(precision + recall + s)
             return F1score
+        
+        def silhouette_score(self):
+            """Returns a score that encourages the filling out of the silhuette gives penalty for placing blocks outside of it. 1 if silhuouette perfectly filled, penalty for building outside weighted by size of silhuette."""
+            target = self.world.silhouette > 0
+            built = self.block_map > 0
+            ssize = np.sum(target)
+            reward = np.sum(built & target)/ssize
+            penalty = np.sum(built & (1-target))/ssize
+            return reward - penalty * 10
 
         def stability(self,visual_display=False):
             """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations."""
@@ -168,7 +177,7 @@ class Blockworld(World):
             pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
             if silhouette is not None:
                 #we print the target silhuouette as transparent overlay
-                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.15,facecolors='none',edgecolors='black')
+                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.10,facecolors='grey',edgecolors='black')
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
