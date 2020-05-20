@@ -1,7 +1,7 @@
 from random import randint
 
 class Agent:
-    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions."""
+    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
     def __init__(self, world, horizon = 2):
         self.world = world
@@ -36,7 +36,7 @@ class Agent:
             """Prints out the tree to the command line in depth first order."""
             print(self.state," score: ",self.score," stability: ",self.stability,sep="") 
             for child,action in [(action.target,action.action) for action in self.actions]:
-                print("\n|","____"*(level+1)," ",action.__str__()," → ",end="",sep="")#remove __str__ for non-blockworld?
+                print("\n|","____"*(level+1)," ",[str(b) for b in action]," → ",end="",sep="")#remove __str__ for non-blockworld?
                 child.print_tree(level+1) #pass
         
     class Ast_edge():
@@ -70,7 +70,7 @@ class Agent:
                 fill_node(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
-            print("Depth of AST:",i,",found",len(current_nodes),"nodes")
+            print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
         return root
 
     def score_ast(self,root,horizon='All'):
@@ -79,7 +79,7 @@ class Agent:
             node.score = self.world.score(node.state)
             node.stability = self.world.stability(node.state)
 
-        if horizon is 'All':
+        if horizon == 'All':
             counter = -1
         else:
             counter = horizon
@@ -152,7 +152,7 @@ class Agent:
                 pass
             act_seq.score = score
             if verbose:
-                print([a.action for a in act_seq.actions]," score: ",score)
+                print([a.action.__str__() for a in act_seq.actions]," score: ",score)
         
     class Action_sequence():
         def __init__(self,actions,score = None):
@@ -160,14 +160,14 @@ class Agent:
             self.score = score
 
         def print_actseq(self):
-            print("Action sequence:",[act.action for act in self.actions],"Score:",self.score)
+            print("Action sequence:",[[str(b) for b in act.action] for act in self.actions],"Score:",self.score)
        
     def select_action_seq(self,scored_actions): #could implement softmax here
         max_score = max([action_seq.score for action_seq in scored_actions if action_seq.score is not None])
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
-    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring='Final State'): 
+    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring='Final state'): 
         """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. To get the agent to deliberate more than once, call action repeatedly. Setting the planning_horizon higher than the steps gives the agent foresight. To get dumb agent behavior, set scoring to Fixed."""
         if planning_horizon is None:
             planning_horizon = self.horizon
@@ -192,11 +192,13 @@ class Agent:
             self.Ast_node.print_tree(ast)
             for act_seq in act_seqs:
                 act_seq.print_actseq()
-            print("Chosen action sequence:",[a.action for a in chosen_seq.actions], "with score: ",chosen_seq.score)
+            print("Chosen action sequence:",[[str(b) for b in a.action] for a in chosen_seq.actions], "with score: ",chosen_seq.score)
         #take the steps
         for step in range(min([steps,len(chosen_seq.actions)])): #If the chosen sequence is shorter than the steps, only go so far
             self.world.apply_action(chosen_seq.actions[step].action)
             if verbose:
-                print("Took step ",step+1," with action ",chosen_seq.actions[step].action," and got world state",self.world.world_state)
+                print("Took step ",step+1," with action ",[str(a) for a in chosen_seq.actions[step].action]," and got world state",self.world.current_state)
+                self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
         if verbose:
             print("Done, reached world status: ",self.world.status())
+            self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
