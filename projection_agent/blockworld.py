@@ -132,6 +132,7 @@ class Blockworld(World):
             self.world_height = self.world.dimension[0]
             self.block_map = np.zeros((self.world_height, self.world_width),dtype=int) ## bitmap for placement of blocks
             self._update_map_with_blocks(blocks) #read the blocks into the blockmap
+            self._stable = None
         
         def _update_map_with_blocks(self, blocks, delete=False):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
@@ -159,9 +160,13 @@ class Blockworld(World):
             return reward - penalty * 10
 
         def stability(self,visual_display=False):
-            """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations."""
+            """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations. Caches it's value."""
+            if self._stable is not None:
+                #return cached value
+                return self._stable
             bwworld = self.state_to_bwworld()
-            return display_world.test_world_stability(bwworld,RENDER=visual_display)  == 'stable'
+            self._stable =  display_world.test_world_stability(bwworld,RENDER=visual_display)  == 'stable'
+            return self._stable
 
         def possible_actions(self):
             """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
