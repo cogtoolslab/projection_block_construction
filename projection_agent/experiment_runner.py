@@ -1,5 +1,5 @@
 import pandas as pd
-from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map or tqdm.
+from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
 import copy
 import datetime
 
@@ -10,36 +10,32 @@ pd.set_option('display.max_colwidth', -1)
 
 def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readibility of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished."""
-    #TODO add dictionary for datakeeping
+    #we want human readable labels for the dataframe
+    if type(worlds) is dict:
+        world_labels = [w.label() for w in worlds]
+        worlds = [w.value() for w in worlds]
+    else:
+        world_labels = [i for i in range(len(worlds))]
+    if type(agents) is dict:
+        agent_labels = [a.label() for a in agents]
+        agents = [a.value() for a in agents]
+    else:
+        agent_labels = [i for i in range(len(agents))]
+
     #we need to copy the world and agent to reset them
     # create a list of experiments to run
-    experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds] 
-    #TODO: automatically create labels if a dictionary isn't passed
-    
+    experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
+    labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    #parallelized:
     results_mapped = p_map(_run_single_experiment,experiments)
-    results = pd.DataFrame(columns=['agent','world','outcome','run'],
-    index=range(len(experiments)))
+    results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
         run,final_status = rm
-
-        results.iloc[i]['world'] = experiments[i][0]
-        results.iloc[i]['agent'] =experiments[i][1]
+        results.iloc[i]['world'] = labels[i][0]
+        results.iloc[i]['agent'] =labels[i][1]
         results.iloc[i]['outcome'] = final_status
-        results.iloc[i]['run'] = run
-
-    #non-parallelized—for history:
-    # results = pd.DataFrame(columns=['agent','world','outcome','run'],
-    # index=range(len(experiments)))
-    # for i,exp in enumerate(experiments):
-    #     print("Running experiment",i+1,"of",len(experiments))
-    #     run,final_status = _run_single_experiment(exp)
-    #     results.iloc[i]['world'] = exp[0]
-    #     results.iloc[i]['agent'] =exp[1]
-    #     results.iloc[i]['outcome'] = final_status
-    #     results.iloc[i]['run'] = run
+        results.iloc[i]['run'] = run #we save the entire dataframe into a cell
 
     if save:
         #save the results to a file.
