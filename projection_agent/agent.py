@@ -5,10 +5,14 @@ from itertools import repeat
 class Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
-    def __init__(self, world, horizon = 2, sparse=False):
+    def __init__(self, world=None, horizon = 3, scoring = 'Final state', sparse=False):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
+        self.scoring = scoring
+
+    def set_world(self,world):
+        self.world = world
 
     class Ast_node():
         """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
@@ -51,10 +55,10 @@ class Agent:
             if target is None:
                 Warning("Node has empty target")
 
-    def build_ast(self,state=None,horizon=None):
+    def build_ast(self,state=None,horizon=None,verbose=False):
         """Builds ast from given state to a certain horizon. Returns root of tree."""
         def fill_node(node):
-            possible_actions = self.world.possible_actions(node.state)
+            possible_actions = node.state.possible_actions()
             for action in possible_actions:     
                 #add action to current node with target state already filled out
                 node.add_action(action,Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
@@ -67,13 +71,14 @@ class Agent:
         root = Agent.Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively
-        for i in range(horizon-1): #this just idles when no children are to be found
+        for i in range(horizon): #this just idles when no children are to be found #DEBUG was horizon -1 
             children_nodes = []
             for node in current_nodes:
                 fill_node(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
-            print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
+            if verbose:
+                print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
         return root
 
     def score_node(self,node):#,sparse=False,dense_stability=True):
@@ -121,7 +126,7 @@ class Agent:
         # pool = Pool(8)
         # pool.map(self.score_node,nodes)#,repeat(sparse),repeat(dense_stability))
 
-    def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False):
+    def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False,verbose=False):
         """Generate all possible sequences of actions for the given horizon. """
         def get_path(leaf):
             """Gets the path from leaf to root in order root -> leaf""" 
@@ -138,7 +143,7 @@ class Agent:
         if horizon is None:
             horizon = self.horizon
         if ast_root is None:
-            ast_root = self.build_ast(horizon)
+            ast_root = self.build_ast(horizon,verbose=verbose)
             self.score_ast(ast_root)
 
         action_sequences = []
@@ -196,8 +201,10 @@ class Agent:
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
-    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring='Final state'): 
+    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring=None): 
         """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. To get the agent to deliberate more than once, call action repeatedly. Setting the planning_horizon higher than the steps gives the agent foresight. To get dumb agent behavior, set scoring to Fixed."""
+        if scoring is None:
+            scoring = self.scoring
         if planning_horizon is None:
             planning_horizon = self.horizon
         if planning_horizon == 0: #special case for dumb agent that can't plan at all
@@ -212,12 +219,13 @@ class Agent:
             print("Can't act with world in status",self.world.status())
             return
         #make ast
-        ast = self.build_ast(horizon=planning_horizon)  
+        ast = self.build_ast(horizon=planning_horizon,verbose=verbose)  
         #score it
         self.score_ast(ast)
         #generate action sequences
-        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False)
+        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False,verbose=verbose)
         if act_seqs == []: #if we can't act. Should be covered by world fail state above.
+            print("No possible actions")
             return
         #score action sequences
         self.score_action_sequences(act_seqs,scoring)
@@ -237,3 +245,4 @@ class Agent:
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
+        return [[str(b) for b in a.action] for a in chosen_seq.actions]
