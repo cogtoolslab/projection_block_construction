@@ -1,4 +1,4 @@
-
+*.pkl
 *.pyc
 *.code-workspace
 block_construction_wrapper/silhouette_2/assets/buildDemo.gif
@@ -37,3 +37,4 @@ block_construction_wrapper/silhouette_2/js/p5.js
 block_construction_wrapper/silhouette_2/js/setup.js
 block_construction_wrapper/silhouette_2/js/socket.io.js
 block_construction_wrapper/silhouette_2/README.md
+Experiment 2020-05-23 17:27:12.279144.pkl
