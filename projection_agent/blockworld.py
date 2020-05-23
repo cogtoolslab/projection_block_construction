@@ -106,6 +106,11 @@ class Blockworld(World):
             return self.win_reward
         return state.silhouette_score()
 
+    def F1score(self,state=None):
+        if state is None:
+            state = self.current_state
+        return state.F1score()
+
     def possible_actions(self,state=None):
         if state is None:
             state = self.current_state
@@ -113,7 +118,7 @@ class Blockworld(World):
 
     def stability(self,state=None):
         if state is None:
-            state = self.world_state
+            state = self.current_state
         return state.stability()
 
 
@@ -171,7 +176,7 @@ class Blockworld(World):
                             possible_actions.append((base_block,x))
             return possible_actions
 
-        def visual_display(self,blocking=True,silhouette=None):
+        def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way."""
             pyplot.close('all')
             pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
