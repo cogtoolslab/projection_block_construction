@@ -1,15 +1,17 @@
 from random import randint
 from multiprocessing.dummy import Pool
 from itertools import repeat
+import blockworld
 
 class Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
-    def __init__(self, world=None, horizon = 3, scoring = 'Final state', sparse=False):
+    def __init__(self, world=None, horizon = 3, scoring = 'Final state', sparse=False,scoring_function=blockworld.silhouette_score):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
         self.scoring = scoring
+        self.scoring_function = scoring_function
 
     def set_world(self,world):
         self.world = world
@@ -94,7 +96,7 @@ class Agent:
                 node.score = 0
         else:
             #dense rewards
-            node.score = self.world.score(node.state)
+            node.score = self.world.score(node.state,self.scoring_function)
 
     def score_ast(self,root,horizon='All',sparse=None,dense_stability=None):
         """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states."""

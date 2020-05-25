@@ -21,8 +21,6 @@ import display_world
 
 import sys
 
-# import displayworld
-
 class Blockworld(World):
     """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter. 
     
@@ -36,7 +34,13 @@ class Blockworld(World):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
-            block_library = self._silhouette2_default_blocklibrary()
+            block_library =  [
+            BaseBlock(1,2),
+            BaseBlock(2,1),
+            BaseBlock(2,2),
+            BaseBlock(2,4),
+            BaseBlock(4,2),
+            ]       
         self.block_library = block_library 
         #load the target silhouette as numpy array
         self.silhouette = self.load_silhouette(silhouette) 
@@ -50,6 +54,8 @@ class Blockworld(World):
             print("Action is not in possible actions")
         #determine where the new block would land
         baseblock, x = action #unpacking the action
+        if baseblock is None:
+            return state
         #determine y coordinates of block
         y = 0
         while y < self.dimension[0] and state.block_map[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
@@ -86,30 +92,30 @@ class Blockworld(World):
             state = self.current_state
         if state.stability() is False: #we loose if its unstable
             return True
-        if state.silhouette_score() != 1 and state.possible_actions() == []: #we loose if we aren't finished and have no options
+        if state.score(F1score) != 1 and state.possible_actions() == []: #we loose if we aren't finished and have no options
             return True
         return False
 
     def is_win(self,state = None):
         if state is None:
             state = self.current_state
-        if state.silhouette_score() == 1 and state.stability():
+        if state.score(F1score) == 1 and state.stability():
             return True
         return False
 
-    def score(self,state=None):
+    def score(self,state=None,scoring_function=None):
         if state is None:
             state = self.current_state
         if self.is_fail(state):
             return self.fail_penalty
         if self.is_win(state):
             return self.win_reward
-        return state.silhouette_score()
+        return state.score(scoring_function)
 
     def F1score(self,state=None):
         if state is None:
             state = self.current_state
-        return state.F1score()
+        return state.score(F1score)
 
     def possible_actions(self,state=None):
         if state is None:
@@ -140,24 +146,9 @@ class Blockworld(World):
                 new_number = 0 if delete else (np.max(self.block_map)+1) #numbers increase 
                 self.block_map[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = new_number 
 
-        def F1score(self):
-            """Returns the F1 score relative to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
-            s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
-            target = self.world.silhouette > 0
-            built = self.block_map > 0
-            precision = np.sum(built & target)/(np.sum(built) + s) 
-            recall = np.sum(built & target)/(np.sum(target) + s) 
-            F1score = 2 * (precision * recall)/(precision + recall + s)
-            return F1score
-        
-        def silhouette_score(self):
-            """Returns a score that encourages the filling out of the silhuette gives penalty for placing blocks outside of it. 1 if silhuouette perfectly filled, penalty for building outside weighted by size of silhuette."""
-            target = self.world.silhouette > 0
-            built = self.block_map > 0
-            ssize = np.sum(target)
-            reward = np.sum(built & target)/ssize
-            penalty = np.sum(built & (1-target))/ssize
-            return reward - penalty * 10
+        def score(self,scoring_function):
+            """Returns the score according to the the scoring function that is passed. """
+            return scoring_function(self)
 
         def stability(self,visual_display=False):
             """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations. Caches it's value."""
@@ -187,7 +178,7 @@ class Blockworld(World):
             pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
             if silhouette is not None:
                 #we print the target silhuouette as transparent overlay
-                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.10,facecolors='grey',edgecolors='black')
+                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.20,facecolors='grey',edgecolors='black')
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
@@ -368,3 +359,50 @@ class BaseBlock:
         else:
             print('Shape type not recognized. Please use recognized shape type.')
         return area   
+
+
+"""Scoring functions. These should be passed to the scoring function of the state."""
+def F1score(state):
+    """Returns the F1 score relastatetive to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
+    s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    precision = np.sum(built & target)/(np.sum(built) + s) 
+    recall = np.sum(built & target)/(np.sum(target) + s) 
+    F1score = 2 * (precision * recall)/(precision + recall + s)
+    return F1score
+
+def silhouette_score(state):
+    """Returns a score that encourages the filling out of the silhuette gives penalty for placing blocks outside of it. 1 if silhuouette perfectly filled, penalty for building outside weighted by size of silhuette."""
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    ssize = np.sum(target)
+    reward = np.sum(built & target)/ssize
+    penalty = np.sum(built & (1-target))/ssize
+    return reward - penalty * 100
+
+def random_scoring(state):
+    """Implements the random agent. Returns 1 for every block placement that is in the silhuette and -1 otherwise."""
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    if np.sum((1-target) & built) > 1:
+        return -1
+    else:
+        return 1
+
+def holes(state):
+    """Returns the number of holes in the structure that are covered with a block to prevent the model from creating holes it cannot fill."""
+    target = state.world.silhouette > 0
+    built = (state.block_map > 0) * 2
+    mapped = target + built
+    holes = 0
+    for x in range(built.shape[1]): # we don't need to check the bottom
+        for y in range(built.shape[0]-1):
+            if mapped[y,x] == 3: #if we have a cell with blck and in silhuouette
+                 #if blocks below is not built and in silhuouette
+                holes = holes + np.sum(mapped[y+1:,x] == 1)
+                break #since we're going through from the top, we don't need to iterate further
+    return holes
+
+def silhouette_hole_score(state):
+    return silhouette_score(state) - 10 * holes(state)
