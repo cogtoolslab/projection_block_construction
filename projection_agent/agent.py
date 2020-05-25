@@ -83,10 +83,10 @@ class Agent:
                 print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
         return root
 
-    def score_node(self,node):#,sparse=False,dense_stability=True):
-        if _dense_stability:
+    def score_node(self,node,sparse=False,dense_stability=True):
+        if dense_stability:
             node.stability = self.world.stability(node.state) 
-        if _sparse:
+        if sparse:
             #only return stability and score for final states
             if self.world.is_win(node.state):
                 node.score = self.world.win_reward
@@ -100,13 +100,10 @@ class Agent:
 
     def score_ast(self,root,horizon='All',sparse=None,dense_stability=None):
         """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states."""
-        global _sparse,_dense_stability
         if sparse is None:
             sparse = self.sparse
         if dense_stability is None:
             dense_stability = not sparse
-        _sparse = sparse
-        _dense_stability = dense_stability
 
         if horizon == 'All':
             counter = -1
@@ -117,16 +114,11 @@ class Agent:
         while current_nodes  != [] and counter != 0:
             children_nodes = []
             for node in current_nodes:
-                self.score_node(node)#,sparse,dense_stability)
+                self.score_node(node,sparse,dense_stability)
                 # nodes.append(node) #for parallelization
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 
-        # # if self.verbose:
-        # print("Scoring",len(nodes),"nodes...")
-        # #multithreading the scoring of the nodes
-        # pool = Pool(8)
-        # pool.map(self.score_node,nodes)#,repeat(sparse),repeat(dense_stability))
 
     def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False,verbose=False):
         """Generate all possible sequences of actions for the given horizon. """
