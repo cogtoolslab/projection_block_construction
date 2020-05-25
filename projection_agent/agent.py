@@ -118,7 +118,6 @@ class Agent:
             children_nodes = []
             for node in current_nodes:
                 self.score_node(node,sparse,dense_stability)
-                # nodes.append(node) #for parallelization
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 

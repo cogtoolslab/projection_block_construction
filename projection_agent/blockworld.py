@@ -80,7 +80,7 @@ class Blockworld(World):
             return np.zeros(self.dimension)
         else:
             #TODO implement importing from file
-            raise Warning("Importing from file not implemented yet")
+            raise Warning("Use other function in file to import from file")
 
 
     """Simple functions inherited from the class World"""
@@ -364,7 +364,7 @@ class BaseBlock:
 """Scoring functions. These should be passed to the scoring function of the state."""
 def F1score(state):
     """Returns the F1 score relastatetive to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
-    if hasattr(state._F1score,'_F1score'):
+    if hasattr(state,'_F1score'):
         return state._F1score
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
