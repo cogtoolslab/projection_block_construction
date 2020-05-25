@@ -33,6 +33,8 @@ def add_block_to_world(block, b2world, SIZE_FACTOR = 1, Y_SHIFT = 1):
         Used to give block towers a 'nudge' when placed to make unstable towers fall.
 
     '''
+    if block.width == 0 or block.height == 0: #skip empty blocks
+        return
     body = b2world.CreateDynamicBody(position=(b2_x(block)*SIZE_FACTOR,b2_y(block)*SIZE_FACTOR*Y_SHIFT))
     world_block = body.CreatePolygonFixture(box=((block.width/2)*SIZE_FACTOR,(block.height/2)*SIZE_FACTOR), density=1, friction=0.3)
         
