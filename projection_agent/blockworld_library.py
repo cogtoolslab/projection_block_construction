@@ -25,6 +25,17 @@ def load_interesting_structure(number,dimensions=(8,8)):
     files = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return load_silhuouette_from_Json(files[number],dimensions)
 
+def plot_interesting_figures():
+    import matplotlib.pyplot as plt
+    fig,axes = plt.subplots(4,4)
+    i = 0
+    for _,axis in np.ndenumerate(axes):
+        axis.imshow(load_interesting_structure(i))
+        axis.set_title(str(i))
+        i += 1
+    plt.tight_layout()
+    plt.show()
+
 stonehenge_18_13 = np.array([
     [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
     [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
@@ -49,6 +60,15 @@ stonehenge_6_4 = np.array([
     [1., 0., 0., 1.,]
 ])
 
+block = np.array([
+    [1., 1., 1., 0.,],
+    [1., 1., 1., 0.,],
+    [1., 1., 1., 0.,],
+    [1., 1., 1., 0.,],
+
+])
+
+
 
 stonehenge_3_3 = np.array([
     [1.,1., 1.,],
@@ -67,7 +87,7 @@ t_3_3 =  np.array([
 
 """Base block libraries."""
 #The defaults are taken from the silhouette2 study.
-silhouette2_default_blocklibrary= [
+bl_silhouette2_default= [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(2,1),
     blockworld.BaseBlock(2,2),
@@ -75,12 +95,22 @@ silhouette2_default_blocklibrary= [
     blockworld.BaseBlock(4,2),
 ]
 
-stonehenge_3_3_blocklibrary = [
+#beware, this might never finish, so don't run the agent in an infinte loop
+bl_silhouette2_wait= [
+    blockworld.BaseBlock(1,2),
+    blockworld.BaseBlock(2,1),
+    blockworld.BaseBlock(2,2),
+    blockworld.BaseBlock(2,4),
+    blockworld.BaseBlock(4,2),
+    blockworld.BaseBlock(0,0)
+]
+
+bl_stonehenge_3_3 = [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(3,1),
 ] 
 
-stonehenge_6_4_blocklibrary = [
+bl_stonehenge_6_4 = [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(4,1),
 ] 
