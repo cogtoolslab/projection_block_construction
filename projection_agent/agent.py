@@ -18,13 +18,13 @@ class Agent:
 
     class Ast_node():
         """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
-        def __init__(self,state,score=None,stability=None,parent=None):
+        def __init__(self,state,score=None,stability=None,parent_action=None):
             # self.state = state.copy() #just to be sure
             self.state = state
             self.score = score
             self.stability = stability
             self.actions = []
-            self.parent_action = parent
+            self.parent_action = parent_action
 
         def is_leaf(self):
             if len(self.actions) == 0:
@@ -37,9 +37,12 @@ class Agent:
                 Warning("Action ",action," is already in actionset for this node")
                 pass
             else:
+                if target is None: #figure out the target state
+                    target = Agent.Ast_node(self.state.world.transition(action,self.state))
                 action = Agent.Ast_edge(action,self,target) #create new action
                 action.target.parent_action = action #set as parent for target state
                 self.actions.append(action) #add action to node   
+            return action #this is just for convenience, as the action is also added to the state
 
         def print_tree(self,level=0):
             """Prints out the tree to the command line in depth first order."""
