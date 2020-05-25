@@ -364,12 +364,15 @@ class BaseBlock:
 """Scoring functions. These should be passed to the scoring function of the state."""
 def F1score(state):
     """Returns the F1 score relastatetive to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
+    if hasattr(state._F1score,'_F1score'):
+        return state._F1score
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
     built = state.block_map > 0
     precision = np.sum(built & target)/(np.sum(built) + s) 
     recall = np.sum(built & target)/(np.sum(target) + s) 
     F1score = 2 * (precision * recall)/(precision + recall + s)
+    state._F1score = F1score
     return F1score
 
 def silhouette_score(state):
