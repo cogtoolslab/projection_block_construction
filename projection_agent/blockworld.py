@@ -393,6 +393,15 @@ def random_scoring(state):
     else:
         return 1
 
+def legal(state):
+    """Implements the random agent. Returns 1 for every block placement that is in the silhuette and -1 otherwise."""
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    if np.sum((1-target) & built) > 1:
+        return False
+    else:
+        return True
+
 def holes(state):
     """Returns the number of holes in the structure that are covered with a block to prevent the model from creating holes it cannot fill."""
     target = state.world.silhouette > 0
