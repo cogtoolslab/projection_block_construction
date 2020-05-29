@@ -375,6 +375,34 @@ def F1score(state):
     state._F1score = F1score
     return F1score
 
+def precision(state):
+    s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    return np.sum(built & target)/(np.sum(built) + s) 
+
+def recall(state):
+    s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    return np.sum(built & target)/(np.sum(target) + s) 
+
+def weighted_precision_recall(state,precision_weight=1):
+    """Simply the weighted average of precision and recall. GIve a higher weigth to precision discourage building outside the structure."""
+    return (precision * precision_weight + recall)/(precision_weight+1)
+
+def filled_inside(state):
+    """Returns the number of cells built in inside the silhuoette"""
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    return np.sum(built & target)
+
+def filled_outside(state):
+    """Returns the number of cells built outside the silhuouette"""
+    target = state.world.silhouette > 0
+    built = state.block_map > 0
+    return np.sum(built & (1-target))
+
 def silhouette_score(state):
     """Returns a score that encourages the filling out of the silhuette gives penalty for placing blocks outside of it. 1 if silhuouette perfectly filled, penalty for building outside weighted by size of silhuette."""
     target = state.world.silhouette > 0
@@ -382,7 +410,7 @@ def silhouette_score(state):
     ssize = np.sum(target)
     reward = np.sum(built & target)/ssize
     penalty = np.sum(built & (1-target))/ssize
-    return reward - penalty * 100
+    return reward - penalty * 1000
 
 def random_scoring(state):
     """Implements the random agent. Returns 1 for every block placement that is in the silhuette and -1 otherwise."""
