@@ -445,4 +445,5 @@ def holes(state):
     return holes
 
 def silhouette_hole_score(state):
+    """Implements the heuristic that the agent should not cover empty space in the silhuouette because it later can't build there"""
     return silhouette_score(state) - 10 * holes(state)

@@ -102,7 +102,7 @@ class Agent:
             node.score = self.world.score(node.state,self.scoring_function)
 
     def score_ast(self,root,horizon='All',sparse=None,dense_stability=None):
-        """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states."""
+        """Iterate through the Ast and score all the nodes in it. Works in place. Can use sparse rewards or dense. We can also choose to not score stability—in that case stability is scored implictly by the world.score function that returns the preset world reward for win states. Dense stability scores the node at the end of planning. Dense reward only gives reward if the world is in a terminal state."""
         if sparse is None:
             sparse = self.sparse
         if dense_stability is None:
