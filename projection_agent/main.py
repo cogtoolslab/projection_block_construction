@@ -17,7 +17,7 @@ start_time = time.time()
 agents = [Agent(horizon=1,scoring_function=bw.F1score),Agent(horizon=1,scoring_function=bw.silhouette_hole_score),MCTS_Agent(horizon=10000)]
 silhuouettes = [bl.load_interesting_structure(i) for i in range(16)]
 worlds = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhuouettes]
-results = experiment_runner.run_experiment(worlds,[a],1,60,verbose=False)
+results = experiment_runner.run_experiment(worlds,agents,1,60,verbose=False)
 print(results[['world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
