@@ -9,8 +9,9 @@ class MCTS_Agent(Agent):
     """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search."""
     #super()
     pass
-    def __init__(self,world=None, horizon = 1000, scoring = 'Final state', sparse=True,scoring_function=blockworld.silhouette_score):
-        super().__init__(world,horizon,scoring,sparse,scoring_function)
+    def __init__(self,world=None, horizon = 10000):
+        self.world = world
+        self.horizon = horizon
 
     def MCTS(self,iterations,state=None,verbose=False):
         """Performs MCTS on the given state iterations times."""
