@@ -21,7 +21,7 @@ def load_silhuouette_from_Json(path,dimensions=(13,18)):
 
 def load_interesting_structure(number,dimensions=(8,8)):
     """Loads a JSON structure from the folder block_construction/stimuli/interesting_structures by number. There are 16."""
-    path = "/Users/felixbinder/Cloud/Grad School/Fan Lab/Projection/block_construction/stimuli/interesting_structures"
+    path = "interesting_structures"
     files = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return load_silhuouette_from_Json(files[number],dimensions)
 
