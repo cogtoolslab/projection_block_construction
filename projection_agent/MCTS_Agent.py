@@ -111,9 +111,17 @@ class MCTS_Agent(Agent):
             """Performs expansion step of MCTS. Checks if node is not final game state, and if so, creates a child node to perform expansion on."""
             if self.world.is_win(self.state) == True or self.world.is_fail(self.state) == True:
                 # We can't expand on states that have ended the game, but we still need to backpropagate them
+                print("Expanding final state")
                 return self
             #pick an edge to expand—just random sampling for now
-            pos_actions = self.state.possible_actions()
+            # pos_actions = self.state.possible_actions()
+            #pick an edge to expand—only considering legal action
+            pos_actions = [a for a in self.state.possible_actions() if blockworld.legal(self.state.world.transition(a,self.state))]
+
+            if pos_actions == []:
+                # print("No legal actions to expand to")
+                return self
+
             # we expand all children
             for action in pos_actions:
                 self.add_action(action)
@@ -135,16 +143,20 @@ class MCTS_Agent(Agent):
                 legal_actions = [a for a in w.possible_actions() if blockworld.legal(w.transition(a))]
                 if legal_actions == []:
                     #if we have nowhere to go
+                    print("End of the  line",w.status())
+                    # w.current_state.visual_display(blocking=True,silhouette=w.silhouette)
                     break
                 action = random.sample(legal_actions,1)[0]
+                # w.current_state.visual_display(blocking=True,silhouette=w.silhouette)
                 w.apply_action(action)
+                print(action.__str__())
+                print(max,w.status())
                 max = max - 1
             return True if w.status() == 'Win' else False
 
         def backpropagation(self,outcome):
             """Implements the backpropagtion step of MCTS"""
             self.MC_ratio = (self.MC_ratio[0]+outcome,self.MC_ratio[1]+1)
-            # self.calc_UCT()
             # stop if self is root
             if self.parent_action is None:
                 return
