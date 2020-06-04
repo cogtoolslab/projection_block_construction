@@ -13,6 +13,10 @@ class Agent:
         self.scoring = scoring
         self.scoring_function = scoring_function
 
+    def __str__(self):
+        """Yields a string representation of the agent"""
+        return 'type: '+self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)
+
     def set_world(self,world):
         self.world = world
 

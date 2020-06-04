@@ -12,6 +12,10 @@ class MCTS_Agent(Agent):
     def __init__(self,world=None, horizon = 10000):
         self.world = world
         self.horizon = horizon
+    
+    def __str__(self):
+        """Yields a string representation of the agent"""
+        return 'type: '+self.__class__.__name__+' horizon: '+str(self.horizon)
 
     def MCTS(self,iterations,state=None,verbose=False):
         """Performs MCTS on the given state iterations times."""

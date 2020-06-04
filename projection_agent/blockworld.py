@@ -46,6 +46,10 @@ class Blockworld(World):
         self.silhouette = self.load_silhouette(silhouette) 
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
 
+    def __str__(self):
+        """String representation of the world"""
+        return 'Type: '+self.__class__.__name__+' dimension: '+str(self.dimension)+' silhouette: '+str(hash(self.silhouette.tostring()))
+
     def  transition(self,action,state=None):
         """Takes an action and a state and returns the resulting state."""
         if state is None:
