@@ -201,16 +201,19 @@ class Agent:
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
-    def act(self,steps = 1,planning_horizon =None,verbose=False,scoring=None): 
+    def act(self,steps = None,planning_horizon =None,verbose=False,scoring=None): 
         """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. To get the agent to deliberate more than once, call action repeatedly. Setting the planning_horizon higher than the steps gives the agent foresight. To get dumb agent behavior, set scoring to Fixed."""
         if scoring is None:
             scoring = self.scoring
         if planning_horizon is None:
             planning_horizon = self.horizon
+        if steps is None:
+            #if None is provided, we act as far as we plan
+            steps = planning_horizon
         if planning_horizon == 0: #special case for dumb agent that can't plan at all
             planning_horizon = steps
             scoring = 'Fixed'
-        elif planning_horizon < steps:
+        if planning_horizon < steps:
             print("Planning horizon must be higher or equal to the steps or 0! Setting the horizon from",planning_horizon,"to",steps)
             planning_horizon = steps
         # steps += 1 #this is so we take the sensible number of steps
