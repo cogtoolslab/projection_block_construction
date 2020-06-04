@@ -13,7 +13,7 @@ w = bw.Blockworld(silhouette=bl.stonehenge_6_4,
 	block_library=bl.bl_stonehenge_6_4)
 a.set_world(w)
 while w.status() == 'Ongoing':
-    a.act(-1,verbose=True)
+    a.act(1,verbose=True)
 print('Finished with world in state:",w.status())
 ```
 
