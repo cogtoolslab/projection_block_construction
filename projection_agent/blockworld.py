@@ -181,7 +181,7 @@ class Blockworld(World):
             pyplot.close('all')
             pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
             if silhouette is not None:
-                #we print the target silhuouette as transparent overlay
+                #we print the target silhouette as transparent overlay
                 pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.20,facecolors='grey',edgecolors='black')
             pyplot.show(block=blocking)
 
@@ -396,19 +396,19 @@ def weighted_precision_recall(state,precision_weight=1):
     return (precision * precision_weight + recall)/(precision_weight+1)
 
 def filled_inside(state):
-    """Returns the number of cells built in inside the silhuoette"""
+    """Returns the number of cells built in inside the silhouette"""
     target = state.world.silhouette > 0
     built = state.block_map > 0
     return np.sum(built & target)
 
 def filled_outside(state):
-    """Returns the number of cells built outside the silhuouette"""
+    """Returns the number of cells built outside the silhouette"""
     target = state.world.silhouette > 0
     built = state.block_map > 0
     return np.sum(built & (1-target))
 
 def silhouette_score(state):
-    """Returns a score that encourages the filling out of the silhuette gives penalty for placing blocks outside of it. 1 if silhuouette perfectly filled, penalty for building outside weighted by size of silhuette."""
+    """Returns a score that encourages the filling out of the silhouette gives penalty for placing blocks outside of it. 1 if silhouette perfectly filled, penalty for building outside weighted by size of silhouette."""
     target = state.world.silhouette > 0
     built = state.block_map > 0
     ssize = np.sum(target)
@@ -417,7 +417,7 @@ def silhouette_score(state):
     return reward - penalty * 1000
 
 def random_scoring(state):
-    """Implements the random agent. Returns 1 for every block placement that is in the silhuette and -1 otherwise."""
+    """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
     target = state.world.silhouette > 0
     built = state.block_map > 0
     if np.sum((1-target) & built) > 1:
@@ -426,7 +426,7 @@ def random_scoring(state):
         return 1
 
 def legal(state):
-    """Implements the random agent. Returns 1 for every block placement that is in the silhuette and -1 otherwise."""
+    """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
     target = state.world.silhouette > 0
     built = state.block_map > 0
     if np.sum((1-target) & built) > 1:
@@ -442,12 +442,12 @@ def holes(state):
     holes = 0
     for x in range(built.shape[1]): # we don't need to check the bottom
         for y in range(built.shape[0]-1):
-            if mapped[y,x] == 3: #if we have a cell with blck and in silhuouette
-                 #if blocks below is not built and in silhuouette
+            if mapped[y,x] == 3: #if we have a cell with blck and in silhouette
+                 #if blocks below is not built and in silhouette
                 holes = holes + np.sum(mapped[y+1:,x] == 1)
                 break #since we're going through from the top, we don't need to iterate further
     return holes
 
 def silhouette_hole_score(state):
-    """Implements the heuristic that the agent should not cover empty space in the silhuouette because it later can't build there"""
+    """Implements the heuristic that the agent should not cover empty space in the silhouette because it later can't build there"""
     return silhouette_score(state) - 10 * holes(state)

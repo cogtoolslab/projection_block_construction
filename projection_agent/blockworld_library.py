@@ -1,4 +1,4 @@
-"""This file contains a number of silhuoettes and sets of baseblocks."""
+"""This file contains a number of silhouettes and sets of baseblocks."""
 
 import numpy as np
 import blockworld
@@ -7,23 +7,23 @@ from io import open
 from os import listdir
 from os.path import isfile, join
 
-"""A couple of premade silhuouettes."""
+"""A couple of premade silhouettes."""
 
-def load_silhuouette_from_Json(path,dimensions=(13,18)):
+def load_silhouette_from_Json(path,dimensions=(13,18)):
     """This is to load the premade structures  by Will in block_construction/stimuli/interesting_structures"""
     with open(path,'r') as file:
         data = json.loads(file.read())
         blocks = data['blocks']
-    silhuouette = np.zeros(dimensions)
+    silhouette = np.zeros(dimensions)
     for b in blocks:
-        silhuouette[dimensions[0]-(b['y']+b['height']):dimensions[0]-b['y'],b['x']:b['x']+b['width']] = 1
-    return silhuouette
+        silhouette[dimensions[0]-(b['y']+b['height']):dimensions[0]-b['y'],b['x']:b['x']+b['width']] = 1
+    return silhouette
 
 def load_interesting_structure(number,dimensions=(8,8)):
     """Loads a JSON structure from the folder block_construction/stimuli/interesting_structures by number. There are 16."""
     path = "interesting_structures"
     files = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
-    return load_silhuouette_from_Json(files[number],dimensions)
+    return load_silhouette_from_Json(files[number],dimensions)
 
 def plot_interesting_figures():
     import matplotlib.pyplot as plt

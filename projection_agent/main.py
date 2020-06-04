@@ -31,8 +31,8 @@ agents = [
     MCTS_Agent(horizon=5000),
     # MCTS_Agent(horizon=10000),
     ]
-silhuouettes = [bl.load_interesting_structure(i) for i in range(16)]
-worlds_silhuoettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhuouettes]
+silhouettes = [bl.load_interesting_structure(i) for i in range(16)]
+worlds_silhouettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhouettes]
 worlds_small = [
     bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
     bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
@@ -40,7 +40,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
-worlds = worlds_silhuoettes+worlds_small
+worlds = worlds_silhouettes+worlds_small
 results = experiment_runner.run_experiment(worlds,agents,20,60,verbose=False)
 print(results[['agent','world','outcome']])
 
