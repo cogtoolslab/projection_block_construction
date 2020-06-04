@@ -28,7 +28,7 @@ agents = [
     Agent(horizon=4,scoring_function=bw.silhouette_hole_score),
     Agent(horizon=5,scoring_function=bw.silhouette_hole_score),
     MCTS_Agent(horizon=1000),
-    MCTS_Agent(horizon=5000),
+    MCTS_Agent(horizon=2500),
     # MCTS_Agent(horizon=10000),
     ]
 silhouettes = [bl.load_interesting_structure(i) for i in range(16)]
