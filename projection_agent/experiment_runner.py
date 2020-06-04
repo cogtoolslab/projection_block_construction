@@ -1,5 +1,6 @@
 import pandas as pd
-from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
+# from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
+from tqdm import tqdm
 import copy
 import datetime
 
@@ -27,7 +28,8 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    results_mapped = p_map(_run_single_experiment,experiments)
+    # results_mapped = p_map(_run_single_experiment,experiments)
+    results_mapped = map(_run_single_experiment,tqdm(experiments))
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
