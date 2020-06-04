@@ -39,9 +39,13 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
         results.iloc[i]['outcome'] = final_status
         results.iloc[i]['run'] = run #we save the entire dataframe into a cell
 
-    if save:
+    if save is not False:
         #save the results to a file.
-        results.to_pickle("Experiment "+str(datetime.datetime.today())+".pkl")
+        if type(save) is str:
+            results.to_pickle(save+".pkl")
+        else:
+            results.to_pickle("Experiment "+str(datetime.datetime.today())+".pkl")
+            
     return results
 
 def _run_single_experiment(experiment):
