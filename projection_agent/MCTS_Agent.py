@@ -153,8 +153,6 @@ class MCTS_Agent(Agent):
                 action = random.sample(legal_actions,1)[0]
                 # w.current_state.visual_display(blocking=True,silhouette=w.silhouette)
                 w.apply_action(action)
-                print(action.__str__())
-                print(max,w.status())
                 max = max - 1
             return True if w.status() == 'Win' else False
 
