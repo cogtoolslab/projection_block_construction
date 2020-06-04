@@ -65,10 +65,21 @@ block = np.array([
     [1., 1., 1., 0.,],
     [1., 1., 1., 0.,],
     [1., 1., 1., 0.,],
-
 ])
 
+T = np.array([
+    [1., 1., 1., 1.,],
+    [0., 1., 1., 0.,],
+    [0., 1., 1., 0.,],
+    [0., 1., 1., 0.,],
+])
 
+side_by_side = np.array([
+    [1., 1., 1., 1.,0.,1.,1.,1.,1.],
+    [0., 1., 1., 0.,0.,1.,1.,1.,1.],
+    [0., 1., 1., 0.,0.,1.,1.,1.,1.],
+    [0., 1., 1., 0.,0.,1.,1.,1.,1.],
+])
 
 stonehenge_3_3 = np.array([
     [1.,1., 1.,],
@@ -86,7 +97,7 @@ t_3_3 =  np.array([
 
 
 """Base block libraries."""
-#The defaults are taken from the silhouette2 study.
+#The defaults are taken from the silhouette2 study. Width x height.
 bl_silhouette2_default= [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(2,1),
