@@ -15,12 +15,12 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
         world_labels = [w.label()+'|'+w.value().__str__() for w in worlds]
         worlds = [w.value() for w in worlds]
     else:
-        world_labels = [w.value().__str__() for w in worlds]
+        world_labels = [w.__str__() for w in worlds]
     if type(agents) is dict:
         agent_labels = [a.label()+'|'+a.value().__str__() for a in agents]
         agents = [a.value() for a in agents]
     else:
-        agent_labels = [a.value().__str__() for a in agents]
+        agent_labels = [a.__str__() for a in agents]
 
     #we need to copy the world and agent to reset them
     # create a list of experiments to run
