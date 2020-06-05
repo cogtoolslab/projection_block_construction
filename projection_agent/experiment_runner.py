@@ -1,5 +1,5 @@
 import pandas as pd
-# from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
+from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
 from tqdm import tqdm
 import copy
 import datetime
@@ -28,8 +28,8 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    # results_mapped = p_map(_run_single_experiment,experiments)
-    results_mapped = map(_run_single_experiment,tqdm(experiments))
+    results_mapped = p_map(_run_single_experiment,experiments) #parallelized
+    # results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
@@ -45,11 +45,12 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
             results.to_pickle(save+".pkl")
         else:
             results.to_pickle("Experiment "+str(datetime.datetime.today())+".pkl")
-            
+
     return results
 
 def _run_single_experiment(experiment):
     world,agent,steps,verbose = experiment
+    print('Runnning',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
     r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result'], index=range(steps+1))
     i = 0

@@ -21,17 +21,17 @@ agents = [
     Agent(horizon=1,scoring_function=bw.random_scoring),
     Agent(horizon=1,scoring_function=bw.F1score),
     Agent(horizon=3,scoring_function=bw.F1score),
-    Agent(horizon=5,scoring_function=bw.F1score),
+    # Agent(horizon=5,scoring_functioffsozn=bw.F1score),
     Agent(horizon=1,scoring_function=bw.silhouette_hole_score),
-    Agent(horizon=2,scoring_function=bw.silhouette_hole_score),
+    # Agent(horizon=2,scoring_function=bw.silhouette_hole_score),
     Agent(horizon=3,scoring_function=bw.silhouette_hole_score),
-    Agent(horizon=4,scoring_function=bw.silhouette_hole_score),
+    # Agent(horizon=4,scoring_function=bw.sizesizessilhouette_hole_score),
     Agent(horizon=5,scoring_function=bw.silhouette_hole_score),
     MCTS_Agent(horizon=1000),
-    MCTS_Agent(horizon=2500),
+    # MCTS_Agent(horizon=2500),
     # MCTS_Agent(horizon=10000),
     ]
-silhouettes = [bl.load_interesting_structure(i) for i in range(16)]
+silhouettes = [bl.load_interesting_structure(i) for i in range(8)]
 worlds_silhouettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhouettes]
 worlds_small = [
     bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
@@ -41,7 +41,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
 worlds = worlds_silhouettes+worlds_small
-results = experiment_runner.run_experiment(worlds,agents,20,60,verbose=False)
+results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False)
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
