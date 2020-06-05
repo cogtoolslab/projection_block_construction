@@ -94,6 +94,9 @@ class Blockworld(World):
     def is_fail(self,state = None):
         if state is None:
             state = self.current_state
+        if holes(state) > 0:
+            #Per David: if we made a hole, we've already lost
+            return True
         if state.stability() is False: #we loose if its unstable
             return True
         if state.score(F1score) != 1 and state.possible_actions() == []: #we loose if we aren't finished and have no options
