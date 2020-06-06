@@ -1,6 +1,7 @@
 *.pkl
 *.pyc
 *.code-workspace
+.vscode/*
 block_construction_wrapper/silhouette_2/assets/buildDemo.gif
 block_construction_wrapper/silhouette_2/assets/failDemo.gif
 block_construction_wrapper/silhouette_2/assets/practice_structure.js
@@ -57,4 +58,5 @@ interesting_structures/hand_selected_001.json
 .vscode/settings.json
 settings.json
 *checkpoint.ipynb
+.vscode/launch.json
 
