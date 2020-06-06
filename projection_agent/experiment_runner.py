@@ -10,7 +10,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,parallelized=True):
-    """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readibility of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished."""
+    """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readibility of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallized to set the fraction of CPUs tp use."""
     #we want human readable labels for the dataframe
     if type(worlds) is dict:
         world_labels = [w.label()+'|'+w.value().__str__() for w in worlds]
@@ -29,7 +29,7 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
     if parallelized:
-        results_mapped = p_map(_run_single_experiment,experiments) #parallelized
+        results_mapped = p_map(_run_single_experiment,experiments,num_cpus=float(parallelized)) #by default we use all CPUs
     else:
         results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
