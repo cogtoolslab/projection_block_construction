@@ -28,9 +28,9 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    results_mapped = p_map(_run_single_experiment,experiments) #parallelized
-    # results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
-    results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
+    # results_mapped = p_map(_run_single_experiment,experiments) #parallelized
+    results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
+    # results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
         run,final_status = rm
