@@ -1,10 +1,19 @@
-from .agent import Agent
-from .MCTS_Agent import MCTS_Agent
-import .blockworld as bw
-import .blockworld_library as bl
-import .experiment_runner
+#add the parent path to import the modules
+from inspect import getsourcefile
+import os.path
+import sys
+current_path = os.path.abspath(getsourcefile(lambda:0))
+current_dir = os.path.dirname(current_path)
+parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
+sys.path.insert(0, parent_dir)
 
+from agent import Agent
+from MCTS_Agent import MCTS_Agent
+import blockworld as bw
 import random
+import blockworld_library as bl
+import experiment_runner
+
 import time
 start_time = time.time()
 
@@ -37,7 +46,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
 worlds = worlds_silhouettes+worlds_small
-results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=fraction_of_cpus,save='breadth_search_to_4')
+results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=fraction_of_cpus,save='bread')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
