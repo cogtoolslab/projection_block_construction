@@ -43,15 +43,15 @@ agents = [
     # MCTS_Agent(horizon=10000),
     ]
 
-silhouettes = [bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]]
-worlds_silhouettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhouettes]
-worlds_small = [
-    bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
-    bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-    bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-    bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-    bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
-]
+silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
+worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes}
+worlds_small = {
+    '.stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
+    '.stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
+    '.block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+    '.T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+    '.side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+}
 worlds = worlds_silhouettes+worlds_small
 results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_3')
 print(results[['agent','world','outcome']])
