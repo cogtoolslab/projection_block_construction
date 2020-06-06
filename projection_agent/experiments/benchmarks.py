@@ -8,7 +8,8 @@ import experiment_runner
 import time
 start_time = time.time()
 
-a = MCTS_Agent(horizon=2500)
+# a = MCTS_Agent(horizon=25000)
+a = Agent(horizon=5)
 w = bw.Blockworld(silhouette=bl.load_interesting_structure(15),block_library=bl.bl_silhouette2_default)
 
 a.set_world(w)
