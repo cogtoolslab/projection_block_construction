@@ -9,7 +9,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
-def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
+def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,parallelized=True):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readibility of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished."""
     #we want human readable labels for the dataframe
     if type(worlds) is dict:
@@ -28,8 +28,10 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True):
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    # results_mapped = p_map(_run_single_experiment,experiments) #parallelized
-    results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
+    if parallelized:
+        results_mapped = p_map(_run_single_experiment,experiments) #parallelized
+    else:
+        results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
