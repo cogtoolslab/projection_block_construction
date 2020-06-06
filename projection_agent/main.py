@@ -27,7 +27,7 @@ agents = [
     Agent(horizon=3,scoring_function=bw.silhouette_hole_score),
     # Agent(horizon=4,scoring_function=bw.sizesizessilhouette_hole_score),
     Agent(horizon=5,scoring_function=bw.silhouette_hole_score),
-    MCTS_Agent(horizon=1000),
+    # MCTS_Agent(horizon=1000),
     # MCTS_Agent(horizon=2500),
     # MCTS_Agent(horizon=10000),
     ]
