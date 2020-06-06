@@ -19,7 +19,7 @@ import time
 start_time = time.time()
 
 
-agents = [MCTS_Agent(horizon=10**i) for i [2,3,4,5,6,7]]
+agents = [MCTS_Agent(horizon=10**i) for i in [2,3,4,5,6,7]]
 
 #16 for nightingale
 fraction_of_cpus = len(agents)/16
