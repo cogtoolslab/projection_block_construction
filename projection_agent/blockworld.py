@@ -182,7 +182,7 @@ class Blockworld(World):
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way."""
             pyplot.close('all')
-            pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=10)
+            pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=20)
             if silhouette is not None:
                 #we print the target silhouette as transparent overlay
                 pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.20,facecolors='grey',edgecolors='black')
