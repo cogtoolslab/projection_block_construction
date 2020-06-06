@@ -9,13 +9,13 @@ import time
 start_time = time.time()
 
 # a = MCTS_Agent(horizon=25000)
-a = Agent(horizon=5)
+a = Agent(horizon=4)
 w = bw.Blockworld(silhouette=bl.load_interesting_structure(15),block_library=bl.bl_silhouette2_default)
 
 a.set_world(w)
-# while w.status() == 'Ongoing':
-    # a.act(-1,verbose=True)
-a.act(-1,verbose=True)
+while w.status() == 'Ongoing':
+    a.act(-1,verbose=True)
+# a.act(-1,verbose=True)
 print(w.status())
 print("Done in %s seconds" % (time.time() - start_time))
 
