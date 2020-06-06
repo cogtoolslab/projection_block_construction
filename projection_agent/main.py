@@ -31,7 +31,8 @@ agents = [
     # MCTS_Agent(horizon=2500),
     # MCTS_Agent(horizon=10000),
     ]
-silhouettes = [bl.load_interesting_structure(i) for i in range(8)]
+silhouettes = [bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]]
+
 worlds_silhouettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhouettes]
 worlds_small = [
     bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
