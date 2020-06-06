@@ -36,7 +36,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
 worlds = worlds_silhouettes+worlds_small
-results = experiment_runner.run_experiment(worlds,agents,10,10,verbose=False,parallelized=False)
+results = experiment_runner.run_experiment(worlds,agents,10,10,verbose=False,parallelized=False,save='breadth_search_to_5')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
