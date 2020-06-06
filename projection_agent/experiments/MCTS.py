@@ -1,10 +1,10 @@
-from agent import Agent
-from MCTS_Agent import MCTS_Agent
-import blockworld as bw
-import random
-import blockworld_library as bl
-import experiment_runner
+from .agent import Agent
+from .MCTS_Agent import MCTS_Agent
+import .blockworld as bw
+import .blockworld_library as bl
+import .experiment_runner
 
+import random
 import time
 start_time = time.time()
 
