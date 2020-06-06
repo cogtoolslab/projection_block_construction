@@ -14,15 +14,27 @@ import random
 import blockworld_library as bl
 import experiment_runner
 
-import random
 import time
 start_time = time.time()
 
-
-agents = [MCTS_Agent(horizon=10**i) for i in [2,3,4,5,6,7]]
-
 #16 for nightingale
-fraction_of_cpus = len(agents)/16
+fraction_of_cpus = 6/16
+
+agents = [
+    # Agent(horizon=1,scoring_function=bw.random_scoring),
+    # Agent(horizon=1,scoring_function=bw.F1score),
+    # Agent(horizon=2,scoring_function=bw.F1score),
+    # Agent(horizon=3,scoring_function=bw.F1score),
+    Agent(horizon=4,scoring_function=bw.F1score),
+    # Agent(horizon=1,scoring_function=bw.silhouette_hole_score),
+    # Agent(horizon=2,scoring_function=bw.silhouette_hole_score),
+    # Agent(horizon=3,scoring_function=bw.silhouette_hole_score),
+    Agent(horizon=4,scoring_function=bw.silhouette_hole_score),
+    # Agent(horizon=5,scoring_function=bw.silhouette_hole_score),
+    # MCTS_Agent(horizon=1000),
+    # MCTS_Agent(horizon=2500),
+    # MCTS_Agent(horizon=10000),
+    ]
 
 silhouettes = [bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]]
 worlds_silhouettes = [bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for s in silhouettes]
@@ -34,7 +46,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
 worlds = worlds_silhouettes+worlds_small
-results = experiment_runner.run_experiment(worlds,agents,1,60,verbose=False,parallelized=fraction_of_cpus,save='MCTS')
+results = experiment_runner.run_experiment(worlds,agents,2,60,verbose=False,parallelized=fraction_of_cpus,save='breadth_4')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))

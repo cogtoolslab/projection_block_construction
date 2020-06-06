@@ -18,7 +18,7 @@ import time
 start_time = time.time()
 
 #16 for nightingale
-fraction_of_cpus = 6/16
+fraction_of_cpus = 12/16
 
 agents = [
     Agent(horizon=1,scoring_function=bw.random_scoring),
@@ -46,7 +46,7 @@ worlds_small = [
     bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
 ]
 worlds = worlds_silhouettes+worlds_small
-results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=fraction_of_cpus,save='bread')
+results = experiment_runner.run_experiment(worlds,agents,5,60,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
