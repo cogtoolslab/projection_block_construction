@@ -168,15 +168,15 @@ class Agent:
             if method == 'Final state':
                 score = act_seq.actions[-1].target.score + (not act_seq.actions[-1].target.stability) * self.world.fail_penalty 
             elif method == 'Sum':
-                score = 0
+                score = []
                 for action in act_seq.actions:
-                    score += action.target.score + (not action.target.stability) * self.world.fail_penalty
+                    score.append(action.target.score + (not action.target.stability) * self.world.fail_penalty)
                 score = sum(score)
             elif method == 'Average':
-                score = 0
+                score = []
                 counter = 0
                 for action in act_seq.actions:
-                    score += action.target.score + (not action.target.stability) * self.world.fail_penalty
+                    score.append(action.target.score + (not action.target.stability) * self.world.fail_penalty)
                     counter += 1
                 score = sum(score)/counter
             elif method == 'Fixed':
