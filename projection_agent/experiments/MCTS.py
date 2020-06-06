@@ -18,11 +18,12 @@ import random
 import time
 start_time = time.time()
 
+"""⚠️ Takes about 15GB per thread"""
 
 agents = [MCTS_Agent(horizon=10**i) for i in [2,3,4,5,6,7]]
 
 #16 for nightingale
-fraction_of_cpus = len(agents)/16
+fraction_of_cpus = 5/16
 
 silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
 worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
