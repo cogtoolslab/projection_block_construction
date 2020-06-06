@@ -13,13 +13,13 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readibility of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallized to set the fraction of CPUs tp use."""
     #we want human readable labels for the dataframe
     if type(worlds) is dict:
-        world_labels = [w.label()+'|'+w.value().__str__() for w in worlds]
-        worlds = [w.value() for w in worlds]
+        world_labels = [label+'|'+w.__str__() for label,w in worlds.items()]
+        worlds = [w for w in worlds.values()]
     else:
         world_labels = [w.__str__() for w in worlds]
     if type(agents) is dict:
-        agent_labels = [a.label()+'|'+a.value().__str__() for a in agents]
-        agents = [a.value() for a in agents]
+        agent_labels = [label+'|'+a.value().__str__() for label,a in items]
+        agents = [a for a in agents.values()]
     else:
         agent_labels = [a.__str__() for a in agents]
 
