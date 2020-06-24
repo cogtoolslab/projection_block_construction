@@ -54,14 +54,16 @@ def _run_single_experiment(experiment):
     world,agent,steps,verbose = experiment
     print('Runnning',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
-    r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result'], index=range(steps+1))
+    r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result','final result reason'], index=range(steps+1))
     i = 0
     while i != steps and world.status() == 'Ongoing':
         r.iloc[i]['blockmap'] = [world.current_state.block_map]
         r.iloc[i]['blocks'] = [world.current_state.blocks]
         r.iloc[i]['stability'] = world.stability()
         r.iloc[i]['F1 score'] = world.F1score()
-        r.iloc[i][ 'final result'] = world.status()
+        status,reason = world.status()
+        r.iloc[i][ 'final result'] = status
+        r.iloc[i][ 'final result reason'] = reason
         chosen_action = agent.act(verbose=verbose)
         r.iloc[i]['chosen action'] = chosen_action
         i = i + 1
@@ -70,6 +72,7 @@ def _run_single_experiment(experiment):
     r.iloc[i]['blocks'] = [world.current_state.blocks]
     r.iloc[i]['stability'] = world.stability()
     r.iloc[i]['F1 score'] = world.F1score()
-    final_status = world.status()
-    r.iloc[i][ 'final result'] = final_status
-    return r,final_status
+    status,reason = world.status()
+    r.iloc[i][ 'final result'] = status
+    r.iloc[i][ 'final result reason'] = reason
+    return r,status

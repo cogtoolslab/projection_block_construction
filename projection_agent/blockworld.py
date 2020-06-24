@@ -71,6 +71,16 @@ class Blockworld(World):
         new_state = Blockworld.State(self,state.blocks + [new_block])
         return new_state
 
+    def status(self):
+        """Expanded status function also returns a reason for failure"""
+        if self.is_win():
+            return "Win","None"
+        if self.is_fail():
+            if self.stability() == False:
+                return "Fail","Unstable"
+            if self.current_state.possible_actions() == []:
+                return "Fail","Full"
+        return "Ongoing","None"
 
     def load_silhouette(self,silhouette):
         if type(silhouette) is np.ndarray:
