@@ -43,7 +43,7 @@ worlds_small = {
 # worlds = {**worlds_silhouettes,**worlds_small}
 worlds = worlds_small
 
-results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=1,save='breadth_to_4_sum')
+results = experiment_runner.run_experiment(worlds,agents,10,60,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4_sum')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
