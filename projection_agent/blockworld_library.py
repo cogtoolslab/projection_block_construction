@@ -125,3 +125,8 @@ bl_stonehenge_6_4 = [
     blockworld.BaseBlock(1,2),
     blockworld.BaseBlock(4,1),
 ] 
+
+bl_side_by_side = [
+    blockworld.BaseBlock(2,1),
+    blockworld.BaseBlock(4,1),
+]
