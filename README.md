@@ -4,11 +4,11 @@ This is based on the environment from [Will McCarthy’s block construction expe
 Two main classes: worlds and agents. See the classes and derived classes for details. For minimal example run something like:
 
 ```
-from agent import Agent
+from BFS_Agent import BFS_Agent
 import blockworld as bw
 import blockworld_library as bl
 
-a = Agent()
+a = BFS_Agent()
 w = bw.Blockworld(silhouette=bl.stonehenge_6_4,
 	block_library=bl.bl_stonehenge_6_4)
 a.set_world(w)
