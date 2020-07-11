@@ -7,7 +7,7 @@ current_dir = os.path.dirname(current_path)
 parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
 sys.path.insert(0, parent_dir)
 
-from agent import Agent
+from BFS_Agent import BFS_Agent
 from MCTS_Agent import MCTS_Agent
 import blockworld as bw
 import random
@@ -18,7 +18,7 @@ import time
 start_time = time.time()
 
 # a = MCTS_Agent(horizon=25000)
-a = Agent(horizon=4)
+a = BFS_Agent(horizon=4)
 w = bw.Blockworld(silhouette=bl.load_interesting_structure(15),block_library=bl.bl_silhouette2_default)
 
 a.set_world(w)

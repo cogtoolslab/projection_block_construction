@@ -7,7 +7,7 @@ current_dir = os.path.dirname(current_path)
 parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
 sys.path.insert(0, parent_dir)
 
-from agent import Agent
+from BFS_Agent import BFS_Agent
 from MCTS_Agent import MCTS_Agent
 import blockworld as bw
 import random
@@ -21,14 +21,14 @@ start_time = time.time()
 fraction_of_cpus = 12/16
 
 agents = [
-    Agent(horizon=1,scoring_function=bw.random_scoring),
-    Agent(horizon=1,scoring_function=bw.F1score),
-    Agent(horizon=2,scoring_function=bw.F1score),
-    Agent(horizon=3,scoring_function=bw.F1score),
+    BFS_Agent(horizon=1,scoring_function=bw.random_scoring),
+    BFS_Agent(horizon=1,scoring_function=bw.F1score),
+    BFS_Agent(horizon=2,scoring_function=bw.F1score),
+    BFS_Agent(horizon=3,scoring_function=bw.F1score),
     # Agent(horizon=4,scoring_function=bw.F1score),
-    Agent(horizon=1,scoring_function=bw.silhouette_hole_score),
-    Agent(horizon=2,scoring_function=bw.silhouette_hole_score),
-    Agent(horizon=3,scoring_function=bw.silhouette_hole_score),
+    BFS_Agent(horizon=1,scoring_function=bw.silhouette_hole_score),
+    BFS_Agent(horizon=2,scoring_function=bw.silhouette_hole_score),
+    BFS_Agent(horizon=3,scoring_function=bw.silhouette_hole_score),
     # Agent(horizon=4,scoring_function=bw.silhouette_hole_score),
     # Agent(horizon=5,scoring_function=bw.silhouette_hole_score),
     # MCTS_Agent(horizon=1000),

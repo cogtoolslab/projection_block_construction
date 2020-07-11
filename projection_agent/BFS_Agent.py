@@ -3,7 +3,7 @@ from multiprocessing.dummy import Pool
 from itertools import repeat
 import blockworld
 
-class Agent:
+class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
     def __init__(self, world=None, horizon = 3, scoring = 'Final state', sparse=False,scoring_function=blockworld.silhouette_score):
@@ -42,8 +42,8 @@ class Agent:
                 pass
             else:
                 if target is None: #figure out the target state
-                    target = Agent.Ast_node(self.state.world.transition(action,self.state))
-                action = Agent.Ast_edge(action,self,target) #create new action
+                    target = BFS_Agent.Ast_node(self.state.world.transition(action,self.state))
+                action = BFS_Agent.Ast_edge(action,self,target) #create new action
                 action.target.parent_action = action #set as parent for target state
                 self.actions.append(action) #add action to node   
             return action #this is just for convenience, as the action is also added to the state
@@ -70,14 +70,14 @@ class Agent:
             possible_actions = node.state.possible_actions()
             for action in possible_actions:     
                 #add action to current node with target state already filled out
-                node.add_action(action,Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
+                node.add_action(action,BFS_Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
             
         if horizon is None:
             horizon = self.horizon
         #implement logic for infinite horizon (see score)
         if state is None:
             state = self.world.current_state
-        root = Agent.Ast_node(state) #make root of tree
+        root = BFS_Agent.Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively
         for i in range(horizon): #this just idles when no children are to be found #DEBUG was horizon -1 
@@ -157,7 +157,7 @@ class Agent:
                     action_sequences += get_path(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
-        return [Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
+        return [BFS_Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
 
     def score_action_sequences(self,action_sequences,method = 'Final state',verbose=False):
         """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average, Fixed. Operates in place."""

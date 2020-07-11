@@ -7,7 +7,7 @@ current_dir = os.path.dirname(current_path)
 parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
 sys.path.insert(0, parent_dir)
 
-from agent import Agent
+from BFS_Agent import BFS_Agent
 from MCTS_Agent import MCTS_Agent
 import blockworld as bw
 import random
