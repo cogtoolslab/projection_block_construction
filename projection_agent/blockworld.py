@@ -427,7 +427,7 @@ def silhouette_score(state):
     ssize = np.sum(target)
     reward = np.sum(built & target)/ssize
     penalty = np.sum(built & (1-target))/ssize
-    return reward - penalty * state.world.fail_penalty
+    return reward + penalty * state.world.fail_penalty
 
 def random_scoring(state):
     """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
