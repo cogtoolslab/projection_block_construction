@@ -23,6 +23,8 @@ import sys
 
 class Blockworld(World):
     """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter. 
+
+    Fast failure means ending returning failure for states in which the agent has built outside the silhouette or left holes that can't be filled. Enable this to spare the agent the misery of having to fill the map with blocks if it can't win anymore. 
     
     All the important functions are implemented by the State class, which represents a particular configuration of the world. The world merely manages the current state and wraps around the functions of the class State to keep compatibility with previous uses of the class.
     
@@ -45,7 +47,7 @@ class Blockworld(World):
         #load the target silhouette as numpy array
         self.silhouette = self.load_silhouette(silhouette) 
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
-        self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette
+        self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette or left a hole
 
     def __str__(self):
         """String representation of the world"""
