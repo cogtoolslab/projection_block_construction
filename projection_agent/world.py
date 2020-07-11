@@ -5,7 +5,7 @@ class World:
     win_states = [{}] #list of winning states
     fail_states = [{}] #list of failing states
     # action_space = [] #list of actions
-    fail_penalty = -10
+    fail_penalty = -1000
     win_reward = 10
 
     def __init__(self):
