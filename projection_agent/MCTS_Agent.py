@@ -39,14 +39,14 @@ class MCTS_Agent(BFS_Agent):
         """Makes the agent act, including changing the world state. The agent samples according Kocsis, Levente; Szepesvári, Csaba (2006). "Bandit based Monte-Carlo Planning". """
         if iterations is None:
             iterations = self.horizon
-        if self.world.status() != 'Ongoing':
+        if self.world.status()[0] != 'Ongoing':
             print("Can't act with world in status",self.world.status())
             return
         #perform MCTS
         cur = self.MCTS(iterations,verbose=verbose)
         step = 0
         sequence_of_actions = []
-        while self.world.status() == 'Ongoing' and steps != 0:# and not cur.is_leaf():
+        while self.world.status()[0] == 'Ongoing' and steps != 0:# and not cur.is_leaf():
             #choose highest scoring node
             scores = [action.target.MC_ratio[1] for action in cur.actions if action.target.actions is not []]
             if scores == []:
@@ -139,11 +139,11 @@ class MCTS_Agent(BFS_Agent):
             w.current_state = self.state
             #heavy rollout
             # a = Agent(world=w,horizon=1,scoring_function=blockworld.random_scoring)
-            # while w.status() == 'Ongoing' and max != 0:
+            # while w.status()[0] == 'Ongoing' and max != 0:
             #     a.act(1)
             #     max = max - 1
             # light rollout—random agent with legal moves
-            while w.status() == 'Ongoing' and max != 0:
+            while w.status()[0] == 'Ongoing' and max != 0:
                 legal_actions = [a for a in w.possible_actions() if blockworld.legal(w.transition(a))]
                 if legal_actions == []:
                     #if we have nowhere to go
@@ -154,7 +154,7 @@ class MCTS_Agent(BFS_Agent):
                 # w.current_state.visual_display(blocking=True,silhouette=w.silhouette)
                 w.apply_action(action)
                 max = max - 1
-            return True if w.status() == 'Win' else False
+            return True if w.status()[0] == 'Win' else False
 
         def backpropagation(self,outcome):
             """Implements the backpropagtion step of MCTS"""

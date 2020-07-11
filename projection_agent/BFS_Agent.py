@@ -218,7 +218,7 @@ class BFS_Agent:
             planning_horizon = steps
         # steps += 1 #this is so we take the sensible number of steps
         #check if we even can act
-        if self.world.status() != 'Ongoing':
+        if self.world.status()[0] != 'Ongoing':
             print("Can't act with world in status",self.world.status())
             return
         #make ast

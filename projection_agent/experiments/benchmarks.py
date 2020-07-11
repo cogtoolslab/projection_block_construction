@@ -22,7 +22,7 @@ a = BFS_Agent(horizon=4)
 w = bw.Blockworld(silhouette=bl.load_interesting_structure(15),block_library=bl.bl_silhouette2_default)
 
 a.set_world(w)
-while w.status() == 'Ongoing':
+while w.status()[0] == 'Ongoing':
     a.act(-1,verbose=True)
 # a.act(-1,verbose=True)
 print(w.status())

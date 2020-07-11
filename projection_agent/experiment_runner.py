@@ -56,7 +56,7 @@ def _run_single_experiment(experiment):
     agent.set_world(world)
     r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result','final result reason'], index=range(steps+1))
     i = 0
-    while i != steps and world.status() == 'Ongoing':
+    while i != steps and world.status()[0] == 'Ongoing':
         r.iloc[i]['blockmap'] = [world.current_state.block_map]
         r.iloc[i]['blocks'] = [world.current_state.blocks]
         r.iloc[i]['stability'] = world.stability()

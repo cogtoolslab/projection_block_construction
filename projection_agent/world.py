@@ -30,7 +30,7 @@ class World:
         return state
         
     def apply_action(self,action): #updates world state
-        if self.status() != "Ongoing":
+        if self.status()[0] != "Ongoing":
             Warning("World is already in final state " + self.status())
         self.world_state = self.transition(action,self.world_state)
         return self.status() #return current status as string
