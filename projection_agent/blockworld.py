@@ -30,7 +30,7 @@ class Blockworld(World):
     
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays."""
 
-    def __init__(self,dimension = None,silhouette=None,block_library = None):
+    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
@@ -45,6 +45,7 @@ class Blockworld(World):
         #load the target silhouette as numpy array
         self.silhouette = self.load_silhouette(silhouette) 
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
+        self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette
 
     def __str__(self):
         """String representation of the world"""
@@ -80,6 +81,11 @@ class Blockworld(World):
                 return "Fail","Unstable"
             if self.current_state.possible_actions() == []:
                 return "Fail","Full"
+            #the two conditions below are for fast failure only
+            if filled_outside(self.current_state) > 0:
+                return "Fail","Outside"
+            if holes(self.current_state) > 0:
+                return "Fail","Holes"
         return "Ongoing","None"
 
     def load_silhouette(self,silhouette):
@@ -104,13 +110,17 @@ class Blockworld(World):
     def is_fail(self,state = None):
         if state is None:
             state = self.current_state
-        # if holes(state) > 0:
-            ## Per David: if we made a hole, we've already lost
-            # return True
+        if self.fast_failure: #should we fail the trial if it can't be completed to save time? Suggested by David. 
+            if filled_outside(self.current_state) > 0:
+                return True
+            if holes(self.current_state) > 0:
+                return True
+        #always active fail states
         if state.stability() is False: #we loose if its unstable
             return True
         if state.score(F1score) != 1 and state.possible_actions() == []: #we loose if we aren't finished and have no options
             return True
+
         return False
 
     def is_win(self,state = None):
