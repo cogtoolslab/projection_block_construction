@@ -21,13 +21,13 @@ start_time = time.time()
 fraction_of_cpus = 6/8 #2/16
 
 agents = [
-    BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Sum'),
-    BFS_Agent(horizon=1,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
-    BFS_Agent(horizon=1,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
-    BFS_Agent(horizon=2,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
-    BFS_Agent(horizon=3,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
-    BFS_Agent(horizon=4,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
-    # BFS_Agent(horizon=5,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    # BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Sum'),
+    # BFS_Agent(horizon=1,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    # BFS_Agent(horizon=1,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    # BFS_Agent(horizon=2,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    # BFS_Agent(horizon=3,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    # BFS_Agent(horizon=4,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
+    BFS_Agent(horizon=5,scoring_function=bw.silhouette_hole_score,scoring='Sum'),
     ]
 
 silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
@@ -41,7 +41,7 @@ worlds_small = {
 }
 worlds = {**worlds_silhouettes,**worlds_small}
 
-results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4_sum')
+results = experiment_runner.run_experiment(worlds,agents,1,20,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4_sum')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
