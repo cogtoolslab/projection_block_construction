@@ -66,7 +66,7 @@ def _run_single_experiment(experiment):
         r.iloc[i][ 'final result'] = status
         r.iloc[i][ 'final result reason'] = reason
         try:
-            chosen_action = agent.act(steps=1,verbose=verbose)
+            chosen_action = agent.act(verbose=verbose)
         except SystemError as e:
             print("Error while acting:",e)
             print(traceback.format_exc())

@@ -208,7 +208,10 @@ class BFS_Agent:
         if planning_horizon is None:
             planning_horizon = self.horizon
         if steps is None:
-            #if None is provided, we act as far as we plan
+            #if None is provided, act one step
+            steps = 1
+        if steps == -1:
+            #special case for acting as far as we plan
             steps = planning_horizon
         if planning_horizon == 0: #special case for dumb agent that can't plan at all
             planning_horizon = steps

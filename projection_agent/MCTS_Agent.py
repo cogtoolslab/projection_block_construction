@@ -36,7 +36,8 @@ class MCTS_Agent(BFS_Agent):
         return root
 
     def act(self,steps=-1,iterations=None,verbose=False,exploration_parameter=math.sqrt(2)):
-        """Makes the agent act, including changing the world state. The agent samples according Kocsis, Levente; Szepesvári, Csaba (2006). "Bandit based Monte-Carlo Planning". """
+        """Makes the agent act, including changing the world state. By default: the agent plans once, then acts until the end of planning. Not guaranteed to finish
+         The agent samples according Kocsis, Levente; Szepesvári, Csaba (2006). "Bandit based Monte-Carlo Planning". """
         if iterations is None:
             iterations = self.horizon
         if self.world.status()[0] != 'Ongoing':
