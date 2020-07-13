@@ -3,6 +3,7 @@ from p_tqdm import p_map # using this for a progress bar with multiprocessing. C
 from tqdm import tqdm
 import copy
 import datetime
+import traceback
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -64,7 +65,12 @@ def _run_single_experiment(experiment):
         status,reason = world.status()
         r.iloc[i][ 'final result'] = status
         r.iloc[i][ 'final result reason'] = reason
-        chosen_action = agent.act(verbose=verbose)
+        try:
+            chosen_action = agent.act(verbose=verbose)
+        except SystemError as e:
+            print("Error while acting:",e)
+            print(traceback.format_exc())
+            
         r.iloc[i]['chosen action'] = chosen_action
         i = i + 1
     #after we stop acting
