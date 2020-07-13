@@ -4,6 +4,8 @@ from tqdm import tqdm
 import copy
 import datetime
 import traceback
+import psutil
+import time
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -52,6 +54,11 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     return results
 
 def _run_single_experiment(experiment):
+    # to prevent memory overflows only run if enough free memory exists.
+    while psutil.virtual_memory().percent > 75:
+        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
+        time.sleep(120)
+
     world,agent,steps,verbose = experiment
     print('Runnning',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
