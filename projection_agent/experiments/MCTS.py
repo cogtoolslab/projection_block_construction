@@ -23,7 +23,7 @@ start_time = time.time()
 agents = [MCTS_Agent(horizon=10**i) for i in [6,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,5,5]]
 
 #16 for nightingale
-fraction_of_cpus = 4/16
+fraction_of_cpus = 1
 
 silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
 worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}

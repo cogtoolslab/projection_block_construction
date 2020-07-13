@@ -18,7 +18,7 @@ import time
 start_time = time.time()
 
 #16 for nightingale
-fraction_of_cpus = 6/16
+fraction_of_cpus = 1
 
 agents = [
     # Agent(horizon=1,scoring_function=bw.random_scoring),

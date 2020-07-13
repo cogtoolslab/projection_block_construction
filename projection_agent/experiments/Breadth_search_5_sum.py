@@ -18,7 +18,7 @@ import time
 start_time = time.time()
 
 #16 for nightingale, 96 for google cloud
-fraction_of_cpus = 6/8 #2/16
+fraction_of_cpus = 1
 
 agents = [
     # BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Sum'),
