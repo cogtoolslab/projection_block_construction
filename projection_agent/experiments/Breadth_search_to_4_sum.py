@@ -18,7 +18,7 @@ import time
 start_time = time.time()
 
 #16 for nightingale, 96 for google cloud
-fraction_of_cpus = 6/8 #2/16
+fraction_of_cpus = 14/16
 
 agents = [
     BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Sum'),
@@ -41,7 +41,7 @@ worlds_small = {
 }
 worlds = {**worlds_silhouettes,**worlds_small}
 
-results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4_sum')
+results = experiment_runner.run_experiment(worlds,agents,20,20,verbose=False,parallelized=fraction_of_cpus,save='breadth_to_4_sum')
 print(results[['agent','world','outcome']])
 
 print("Done in %s seconds" % (time.time() - start_time))
