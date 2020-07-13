@@ -18,10 +18,11 @@ import psutil
 import time
 start_time = time.time()
 
-a = BFS_Agent(horizon=5,scoring='Sum',
-    sparse=False,
-    scoring_function=bw.silhouette_hole_score
-    )
+# a = BFS_Agent(horizon=5,scoring='Sum',
+#     sparse=False,
+#     scoring_function=bw.silhouette_hole_score
+#     )
+a = MCTS_Agent(horizon=10**6)
 w = bw.Blockworld(silhouette=bl.load_interesting_structure(15),
     block_library=bl.bl_silhouette2_default,
     fast_failure=False
