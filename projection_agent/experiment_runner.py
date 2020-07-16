@@ -1,5 +1,5 @@
 import pandas as pd
-from p_tqdm import p_map # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
+from p_tqdm import p_map, p_umap # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
 from tqdm import tqdm
 import copy
 import datetime
@@ -32,7 +32,7 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
     if parallelized:
-        results_mapped = p_map(_run_single_experiment,experiments,num_cpus=float(parallelized)) #by default we use all CPUs
+        results_mapped = p_umap(_run_single_experiment,experiments,num_cpus=float(parallelized)) #by default we use all CPUs
     else:
         results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
@@ -89,4 +89,4 @@ def _run_single_experiment(experiment):
     status,reason = world.status()
     r.iloc[i][ 'final result'] = status
     r.iloc[i][ 'final result reason'] = reason
-    return r,status
+    return copy.deepcopy(r),copy.copy(status)
