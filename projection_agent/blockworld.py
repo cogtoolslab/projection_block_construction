@@ -95,7 +95,7 @@ class Blockworld(World):
             if silhouette.shape == self.dimension:
                 return silhouette
             else:
-                print("Silhouette dimensions", silhouette.shape, "don't match world dimensions. Setting world dimensions to match.")
+                # print("Silhouette dimensions", silhouette.shape, "don't match world dimensions. Setting world dimensions to match.")
                 self.dimension = silhouette.shape
                 return silhouette
         elif silhouette is None: #No silhouette returns an empty field.
