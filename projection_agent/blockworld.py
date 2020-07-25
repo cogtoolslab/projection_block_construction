@@ -480,3 +480,7 @@ def silhouette_hole_score(state):
 def F1_stability_score(state):
     """Returns F1 with check for stability."""
     return F1score(state) + state.world.fail_penalty * (1 - state.stability())
+
+def silhouette_hole_stability_score(state):
+    """Silhouette & hole heuristics with stability"""
+    return silhouette_hole_score(state) + state.world.fail_penalty * (1 - state.stability())
