@@ -46,16 +46,6 @@ class Beam_Search_Agent(BFS_Agent):
     def beam_search(self,verbose=False):
         """Performs beam search. Each state is assigned a parent, which means that converging states are still treated as individual here. If we want converging states, we need a more sophisticated way of choosing the final trajectory and a constructor of states that prevents multiple instantions of the same world state.
         This function return a sequence of connecting Ast_edge objects, which contain the chosen trajectory through the space. If no winning action could be chosen, empty list is returned and no action is chosen.Could be extended to search the generated tree of most promising actions so far and take the best final state from this."""
-        
-        def backtrack(state):
-            """Helper function. Takes a state and returns the sequence of action that got us there in the correct order by stepping through parent states."""
-            action_sequence = []
-            while state.parent_action is not None: #only the root state will have no parent action
-                action_sequence.append(state.parent_action)
-                state = state.parent_action.source
-            action_sequence.reverse()
-            return action_sequence
-
         #make root of ast
         root = Beam_Search_Agent.Ast_node(self.world.current_state)
         i = 0
@@ -102,4 +92,11 @@ class Beam_Search_Agent(BFS_Agent):
         return backtrack(current_nodes[0]) #return the path to the best current state
                 
             
-            
+def backtrack(state):
+    """Helper function. Takes a state and returns the sequence of action that got us there in the correct order by stepping through parent states."""
+    action_sequence = []
+    while state.parent_action is not None: #only the root state will have no parent action
+        action_sequence.append(state.parent_action)
+        state = state.parent_action.source
+    action_sequence.reverse()
+    return action_sequence
