@@ -1,9 +1,5 @@
 from BFS_Agent import BFS_Agent
 import blockworld
-#TODO check if needed
-from random import randint
-from multiprocessing.dummy import Pool
-from itertools import repeat
  
 class Beam_Search_Agent(BFS_Agent):
     """An agent using beam search—the agent expands only a certain number of promising nodes at each step and performs breadth first search over the resulting smaller tree. 
