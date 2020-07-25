@@ -54,7 +54,7 @@ class Blockworld(World):
         return 'Type: '+self.__class__.__name__+' dimension: '+str(self.dimension)+' silhouette: '+str(hash(self.silhouette.tostring()))
 
     def  transition(self,action,state=None):
-        """Takes an action and a state and returns the resulting state."""
+        """Takes an action and a state and returns the resulting state without applying it to the current state of the world."""
         if state is None:
             state = self.current_state
         if action not in self.possible_actions(state): #this might be slow and could be taken out for performance sake
@@ -476,3 +476,7 @@ def holes(state):
 def silhouette_hole_score(state):
     """Implements the heuristic that the agent should not cover empty space in the silhouette because it later can't build there"""
     return silhouette_score(state) + state.world.fail_penalty * holes(state)
+
+def F1_stability_score(state):
+    """Returns F1 with check for stability."""
+    return F1score(state) + state.world.fail_penalty * (1 - state.stability())
