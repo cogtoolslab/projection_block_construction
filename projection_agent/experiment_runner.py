@@ -6,6 +6,7 @@ import datetime
 import traceback
 import psutil
 import time
+import random
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -29,6 +30,7 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     #we need to copy the world and agent to reset them
     # create a list of experiments to run
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
+    random.shuffle(experiments)
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
     if parallelized:
