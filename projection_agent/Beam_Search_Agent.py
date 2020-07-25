@@ -18,7 +18,7 @@ class Beam_Search_Agent(BFS_Agent):
     - [ ] stochastic beam search
     """
 
-    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1score_stability_score):
+    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1_stability_score):
         self.world = world
         self.beam_width = beam_width
         self.heuristic = heuristic
@@ -26,7 +26,7 @@ class Beam_Search_Agent(BFS_Agent):
     
     def __str__(self):
         """Yields a string representation of the agent"""
-        return 'type: '+self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' beam_width: '+str(self.beam_width)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)
+        return 'type: '+self.__class__.__name__+' beam_width: '+str(self.beam_width)+' heuristic: '+self.heuristic.__name__+' max_depth '+str(self.max_depth)
 
     def act(self,steps = None, verbose = False):
         """By default, we perform one beam search and then perform the entire sequence that has been found.
