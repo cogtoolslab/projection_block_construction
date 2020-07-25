@@ -39,6 +39,7 @@ class Beam_Search_Agent(BFS_Agent):
             if verbose:
                 print("Took step ",step," with action ",[str(a) for a in edge.action]," and got world state",self.world.current_state)
                 self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
+            if step == steps: break #if we have acted x steps, stop acting
         if verbose:
             print("Done, reached world status: ",self.world.status())
         return [e.action for e in edges]
