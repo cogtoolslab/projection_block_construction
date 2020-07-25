@@ -4,7 +4,7 @@ import blockworld
 from random import randint
 from multiprocessing.dummy import Pool
 from itertools import repeat
-
+ 
 class Beam_Search_Agent(BFS_Agent):
     """An agent using beam search—the agent expands only a certain number of promising nodes at each step and performs breadth first search over the resulting smaller tree. 
     https://en.wikipedia.org/wiki/Beam_search
@@ -18,7 +18,7 @@ class Beam_Search_Agent(BFS_Agent):
     - [ ] stochastic beam search
     """
 
-    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1score):
+    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1score_stability_score):
         self.world = world
         self.beam_width = beam_width
         self.heuristic = heuristic
