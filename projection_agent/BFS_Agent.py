@@ -71,7 +71,6 @@ class BFS_Agent:
             for action in possible_actions:     
                 #add action to current node with target state already filled out
                 node.add_action(action,BFS_Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
-            
         if horizon is None:
             horizon = self.horizon
         #implement logic for infinite horizon (see score)
@@ -80,7 +79,7 @@ class BFS_Agent:
         root = BFS_Agent.Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively
-        for i in range(horizon): #this just idles when no children are to be found #DEBUG was horizon -1 
+        for i in range(horizon): #this just idles when no children are to be found
             children_nodes = []
             for node in current_nodes:
                 fill_node(node)
@@ -219,7 +218,6 @@ class BFS_Agent:
         if planning_horizon < steps:
             print("Planning horizon must be higher or equal to the steps or 0! Setting the horizon from",planning_horizon,"to",steps)
             planning_horizon = steps
-        # steps += 1 #this is so we take the sensible number of steps
         #check if we even can act
         if self.world.status()[0] != 'Ongoing':
             print("Can't act with world in status",self.world.status())
