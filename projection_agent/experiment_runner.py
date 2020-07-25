@@ -1,12 +1,11 @@
 import pandas as pd
-from p_tqdm import p_map, p_umap # using this for a progress bar with multiprocessing. Can be replaced with map (plus evaluation) or tqdm.
-from tqdm import tqdm
 import copy
 import datetime
 import traceback
-import psutil
+# import psutil
 import time
 import random
+import multiprocessing
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -33,10 +32,9 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     random.shuffle(experiments)
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
-    if parallelized:
-        results_mapped = p_umap(_run_single_experiment,experiments,num_cpus=float(parallelized)) #by default we use all CPUs
-    else:
-        results_mapped = map(_run_single_experiment,tqdm(experiments)) #non-parallelized
+    P = multiprocessing.Pool()
+    results_mapped = P.imap_unordered(_run_single_experiment,experiments)
+
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
     for i,rm in enumerate(results_mapped):
@@ -57,13 +55,13 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
 
 def _run_single_experiment(experiment):
     # to prevent memory overflows only run if enough free memory exists.
+    start_time = time.time()
     world,agent,steps,verbose = experiment
-
-    while psutil.virtual_memory().percent > 70:
-        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
-        time.sleep(120)
-
-    print('Runnning',agent.__str__(),'******',world.__str__())
+    # while psutil.virtual_memory().percent > 70:
+    #     print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
+    #     time.sleep(120)
+    
+    print('Running',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
     r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result','final result reason'], index=range(steps+1))
     i = 0
@@ -84,6 +82,7 @@ def _run_single_experiment(experiment):
         r.iloc[i]['chosen action'] = chosen_action
         i = i + 1
     #after we stop acting
+    print("Done with",agent.__str__(),'******',world.__str__(),"in %s seconds" % round((time.time() - start_time)))
     r.iloc[i]['blockmap'] = [world.current_state.block_map]
     r.iloc[i]['blocks'] = [world.current_state.blocks]
     r.iloc[i]['stability'] = world.stability()
