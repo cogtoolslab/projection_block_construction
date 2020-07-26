@@ -169,6 +169,10 @@ class Blockworld(World):
             self._update_map_with_blocks(blocks) #read the blocks into the blockmap
             self._stable = None
         
+        def __eq__(self,other):
+            """The order of the blocks does not matter, as they have their location attached. So the sorted list should be equal between two states which consist of the same blocks no matter the order in which they were placed"""
+            return self.blocks.sorted() == other.blocks.sorted()
+        
         def _update_map_with_blocks(self, blocks, delete=False):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
             for b in blocks:
@@ -235,6 +239,9 @@ class Block:
         self.height = base_block.height
         self.width = base_block.width
         self.verts = base_block.translate(base_block.base_verts,x,y)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.height == other.height and self.width == other.width
     
     #Block Relational Properties
     def above(self, other):
