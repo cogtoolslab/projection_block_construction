@@ -19,7 +19,7 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 1
 
-    agents = [Beam_Search_Agent(beam_width=w) for w in [10**i for i in range(4)]]
+    agents = [Beam_Search_Agent(beam_width=w) for w in [10**i for i in range(6)]]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
