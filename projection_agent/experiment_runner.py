@@ -2,7 +2,7 @@ import pandas as pd
 import copy
 import datetime
 import traceback
-# import psutil
+import psutil
 import time
 import random
 import multiprocessing
@@ -59,9 +59,9 @@ def _run_single_experiment(experiment):
     # to prevent memory overflows only run if enough free memory exists.
     start_time = time.time()
     world,agent,steps,verbose = experiment
-    # while psutil.virtual_memory().percent > 70:
-    #     print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
-    #     time.sleep(120)
+    while psutil.virtual_memory().percent > 85:
+        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
+        time.sleep(120)
     
     print('Running',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
