@@ -59,7 +59,7 @@ def _run_single_experiment(experiment):
     # to prevent memory overflows only run if enough free memory exists.
     start_time = time.time()
     world,agent,steps,verbose = experiment
-    while psutil.virtual_memory().percent > 85:
+    while psutil.virtual_memory().percent > 75:
         print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 120 seconds.")
         time.sleep(120)
     
