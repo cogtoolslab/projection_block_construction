@@ -1,4 +1,4 @@
-from BFS_Agent import BFS_Agent
+from BFS_Agent import BFS_Agent, Ast_node, Ast_edge
 import blockworld
  
 class Beam_Search_Agent(BFS_Agent):
@@ -48,7 +48,7 @@ class Beam_Search_Agent(BFS_Agent):
         """Performs beam search. Each state is assigned a parent, which means that converging states are still treated as individual here. If we want converging states, we need a more sophisticated way of choosing the final trajectory and a constructor of states that prevents multiple instantions of the same world state.
         This function return a sequence of connecting Ast_edge objects, which contain the chosen trajectory through the space. If no winning action could be chosen, empty list is returned and no action is chosen.Could be extended to search the generated tree of most promising actions so far and take the best final state from this."""
         #make root of ast
-        root = Beam_Search_Agent.Ast_node(self.world.current_state)
+        root = Ast_node(self.world.current_state)
         i = 0
         current_nodes = [root] #contains the states at the current level of depth that we expand upon
         while i < self.max_depth:
@@ -58,8 +58,8 @@ class Beam_Search_Agent(BFS_Agent):
                 #add possible edges to the next set of candidate edges
                 possible_actions = node.state.possible_actions()
                 for action in possible_actions:
-                    target = Beam_Search_Agent.Ast_node(self.world.transition(action,node.state)) #get target state ast node object
-                    edge = Beam_Search_Agent.Ast_edge(action,node,target) #make edge
+                    target = Ast_node(self.world.transition(action,node.state)) #get target state ast node object
+                    edge = Ast_edge(action,node,target) #make edge
                     edge.target.parent_action = edge #add the parent action to allow for backtracking the found path
                     candidate_edges.append(edge)
             if verbose: print("Found",len(candidate_edges),"potential edges at depth",i,"for",len(current_nodes),"nodes")

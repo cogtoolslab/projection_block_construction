@@ -1,4 +1,4 @@
-from BFS_Agent import BFS_Agent
+from BFS_Agent import BFS_Agent, Ast_edge, Ast_node
 import blockworld
 import random
 import copy
@@ -69,7 +69,7 @@ class MCTS_Agent(BFS_Agent):
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
         return [[str(b) for b in a.action] for a in sequence_of_actions]
 
-    class MCTS_Ast_node(BFS_Agent.Ast_node):
+    class MCTS_Ast_node(Ast_node):
         """MCTS adaptation of Ast_node. MCTS steps are implemented in the node function for the subtree"""
        
         def __init__(self,state,world,score=None,stability=None,parent=None,MC_ratio=(0,0)):
@@ -173,7 +173,7 @@ class MCTS_Agent(BFS_Agent):
             else:
                 if target is None: #figure out the target state
                     target = MCTS_Agent.MCTS_Ast_node(self.state.world.transition(action,self.state),self.world)
-                action = BFS_Agent.Ast_edge(action,self,target) #create new action
+                action = Ast_edge(action,self,target) #create new action
                 action.target.parent_action = action #set as parent for target state
                 self.actions.append(action) #add action to node   
             return action #this is just for convenience, as the action is also added to the state

@@ -20,50 +20,6 @@ class BFS_Agent:
     def set_world(self,world):
         self.world = world
 
-    class Ast_node():
-        """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
-        def __init__(self,state,score=None,stability=None,parent_action=None):
-            # self.state = state.copy() #just to be sure
-            self.state = state
-            self.score = score
-            self.stability = stability
-            self.actions = []
-            self.parent_action = parent_action
-
-        def is_leaf(self):
-            if len(self.actions) == 0:
-                return True
-            else:
-                return False
-       
-        def add_action(self,action,target=None):
-            if action in [act.action for act in self.actions]:
-                Warning("Action ",action," is already in actionset for this node")
-                pass
-            else:
-                if target is None: #figure out the target state
-                    target = BFS_Agent.Ast_node(self.state.world.transition(action,self.state))
-                action = BFS_Agent.Ast_edge(action,self,target) #create new action
-                action.target.parent_action = action #set as parent for target state
-                self.actions.append(action) #add action to node   
-            return action #this is just for convenience, as the action is also added to the state
-
-        def print_tree(self,level=0):
-            """Prints out the tree to the command line in depth first order."""
-            print(self.state," score: ",self.score," stability: ",self.stability,sep="") 
-            for child,action in [(action.target,action.action) for action in self.actions]:
-                print("\n|","____"*(level+1)," ",[str(b) for b in action]," → ",end="",sep="")#remove __str__ for non-blockworld?
-                child.print_tree(level+1) #pass
-        
-    class Ast_edge():
-        """AST means action space tree. This class simply consists of an action connecting to ast_nodes. The target state will have to be added by the constructing function."""
-        def __init__(self,action,source,target=None):
-            self.action = action
-            self.source = source
-            self.target = target
-            #could initialize the parent action of the target here—but that would break trees that converge on states again
-            if target is None:
-                Warning("Node has empty target")
 
     def build_ast(self,state=None,horizon=None,verbose=False):
         """Builds ast from given state to a certain horizon. Returns root of tree."""
@@ -251,3 +207,49 @@ class BFS_Agent:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
         return [[str(b) for b in a.action] for a in chosen_seq.actions]
+
+        
+class Ast_node():
+    """AST means action space tree. This class serves as a tree for planning. The nodes are states of the world, and the edges are actions. The nodes store scores (if determined), the action merely deterministically move between states."""
+    def __init__(self,state,score=None,stability=None,parent_action=None):
+        # self.state = state.copy() #just to be sure
+        self.state = state
+        self.score = score
+        self.stability = stability
+        self.actions = []
+        self.parent_action = parent_action
+
+    def is_leaf(self):
+        if len(self.actions) == 0:
+            return True
+        else:
+            return False
+    
+    def add_action(self,action,target=None):
+        if action in [act.action for act in self.actions]:
+            Warning("Action ",action," is already in actionset for this node")
+            pass
+        else:
+            if target is None: #figure out the target state
+                target = BFS_Agent.Ast_node(self.state.world.transition(action,self.state))
+            action = BFS_Agent.Ast_edge(action,self,target) #create new action
+            action.target.parent_action = action #set as parent for target state
+            self.actions.append(action) #add action to node   
+        return action #this is just for convenience, as the action is also added to the state
+
+    def print_tree(self,level=0):
+        """Prints out the tree to the command line in depth first order."""
+        print(self.state," score: ",self.score," stability: ",self.stability,sep="") 
+        for child,action in [(action.target,action.action) for action in self.actions]:
+            print("\n|","____"*(level+1)," ",[str(b) for b in action]," → ",end="",sep="")#remove __str__ for non-blockworld?
+            child.print_tree(level+1) #pass
+    
+class Ast_edge():
+    """AST means action space tree. This class simply consists of an action connecting to ast_nodes. The target state will have to be added by the constructing function."""
+    def __init__(self,action,source,target=None):
+        self.action = action
+        self.source = source
+        self.target = target
+        #could initialize the parent action of the target here—but that would break trees that converge on states again
+        if target is None:
+            Warning("Node has empty target")
