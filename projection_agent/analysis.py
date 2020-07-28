@@ -8,37 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import statistics
 
-#########################################
-#run experiments to debug functions—this should live in another file
-
-#specific setups
-#initializing worlds (used for scoring re a certain silhuoette)
-silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
-worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
-worlds_small = {
-    'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
-    'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-    'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-    'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-    'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
-}
-bw_worlds = {**worlds_silhouettes,**worlds_small}
-
-dfs = ['beam_search.pkl'] #which to load
-
-#load all experiments as one dataframe
-df = pd.concat([pd.read_pickle(l) for l in dfs])
-r = df.iloc[1]['run'] #for testing purposes load a single run
-
-print("Done with setup, loaded",len(df),"lines")
-# print(df)
-
-#Debug functions
-
-##########################################
-
-
-
 class State():
     """A dummy state to pass to blockworld scoring functions"""
     def __init__(self,world,blockmap):
@@ -197,3 +166,37 @@ def get_final_blockmap(run):
     return get_blockmaps(run)[-1]
 #     return final_bm
 
+
+
+
+
+
+#########################################
+#run experiments to debug functions—this should live in another file
+
+#specific setups
+#initializing worlds (used for scoring re a certain silhuoette)
+silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
+worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
+worlds_small = {
+    'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
+    'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
+    'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+    'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+    'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+}
+bw_worlds = {**worlds_silhouettes,**worlds_small}
+
+dfs = ['beam_search.pkl'] #which to load
+
+#load all experiments as one dataframe
+df = pd.concat([pd.read_pickle(l) for l in dfs])
+r = df.iloc[1]['run'] #for testing purposes load a single run
+
+print("Done with setup, loaded",len(df),"lines")
+# print(df)
+
+#Debug functions
+mean_avg_area_under_curve(df,bw.F1score)
+
+##########################################
