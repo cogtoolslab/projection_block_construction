@@ -50,7 +50,7 @@ def mean_score(table,scoring_function):
     scores = []
     for world in unique_worlds:
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
-        for run in df[df['world'] == world]['run']:
+        for run in table[table['world'] == world]['run']:
             #get the last blockmap
             blockmap = get_final_blockmap(run)
             #create state
@@ -69,7 +69,7 @@ def mean_peak_score(table,scoring_function):
     scores = []
     for world in unique_worlds:
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
-        for run in df[df['world'] == world]['run']:
+        for run in table[table['world'] == world]['run']:
             #get index peak F1 score
             F1s = get_scores(run,bw.F1score,world_obj)
             peak_index = F1s.index(max(F1s))
@@ -88,7 +88,7 @@ def mean_avg_area_under_curve(table,scoring_function):
     scores = []
     for world in unique_worlds:
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
-        for run in df[df['world'] == world]['run']:
+        for run in table[table['world'] == world]['run']:
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
     return statistics.mean(scores),statistics.stdev(scores)
 
@@ -99,7 +99,7 @@ def mean_avg_area_under_curve_to_peakF1(table,scoring_function):
     for world in unique_worlds:
         print(world)
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
-        for run in df[df['world'] == world]['run']:
+        for run in table[table['world'] == world]['run']:
             #truncate run
             run = run_to_peakF1(run,world_obj)
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
@@ -138,7 +138,7 @@ def number_of_steps(run):
     return np.max(final_bm) #return counter of highest block placed in blockmap
 
 def get_final_status(run):
-    """Takes run as input and returns a touple of final state and reason for failure.
+    """Takes run as input and returns a tuple of final state and reason for failure.
     None if it hasn't failed."""
     #NaN == NaN returns false
     status = run[run['final result'] == run['final result']].iloc[-1]['final result']
@@ -156,7 +156,6 @@ def get_blockmaps(run):
     for i in range(np.max(final_bm)+1): #for every placed block
         bm = final_bm * (final_bm <= i+1)
         blockmaps.append(bm)
-        print(bm)
     return blockmaps
 
 def get_final_blockmap(run):
@@ -165,38 +164,3 @@ def get_final_blockmap(run):
 #     final_bm = np.array(final_bm)
     return get_blockmaps(run)[-1]
 #     return final_bm
-
-
-
-
-
-
-#########################################
-#run experiments to debug functions—this should live in another file
-
-#specific setups
-#initializing worlds (used for scoring re a certain silhuoette)
-silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
-worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
-worlds_small = {
-    'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
-    'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-    'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-    'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-    'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
-}
-bw_worlds = {**worlds_silhouettes,**worlds_small}
-
-dfs = ['beam_search.pkl'] #which to load
-
-#load all experiments as one dataframe
-df = pd.concat([pd.read_pickle(l) for l in dfs])
-r = df.iloc[1]['run'] #for testing purposes load a single run
-
-print("Done with setup, loaded",len(df),"lines")
-# print(df)
-
-#Debug functions
-mean_avg_area_under_curve(df,bw.F1score)
-
-##########################################
