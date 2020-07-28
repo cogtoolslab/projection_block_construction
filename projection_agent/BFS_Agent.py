@@ -27,13 +27,13 @@ class BFS_Agent:
             possible_actions = node.state.possible_actions()
             for action in possible_actions:     
                 #add action to current node with target state already filled out
-                node.add_action(action,BFS_Agent.Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
+                node.add_action(action,Ast_node(self.world.transition(action,node.state)))#add the result of applying the action
         if horizon is None:
             horizon = self.horizon
         #implement logic for infinite horizon (see score)
         if state is None:
             state = self.world.current_state
-        root = BFS_Agent.Ast_node(state) #make root of tree
+        root = Ast_node(state) #make root of tree
         current_nodes = [root]
         #breadth first compile the tree of possible actions exhaustively
         for i in range(horizon): #this just idles when no children are to be found
@@ -231,8 +231,8 @@ class Ast_node():
             pass
         else:
             if target is None: #figure out the target state
-                target = BFS_Agent.Ast_node(self.state.world.transition(action,self.state))
-            action = BFS_Agent.Ast_edge(action,self,target) #create new action
+                target = Ast_node(self.state.world.transition(action,self.state))
+            action = Ast_edge(action,self,target) #create new action
             action.target.parent_action = action #set as parent for target state
             self.actions.append(action) #add action to node   
         return action #this is just for convenience, as the action is also added to the state
