@@ -14,6 +14,20 @@ class State():
         self.block_map = blockmap
         self.world = world
 
+def load_bw_worlds():
+    #setting up the world objects
+    #initializing worlds (used for scoring re a certain silhuoette)
+    silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
+    worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
+    worlds_small = {
+        'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
+        'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
+        'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+        'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+        'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+    }
+    bw_worlds = {**worlds_silhouettes,**worlds_small}
+    return bw_worlds
 
 # Scalar measures
 
@@ -43,7 +57,7 @@ def avg_steps_to_end(table):
     results = [number_of_steps(r) for r in table['run']]
     return statistics.mean(results), statistics.stdev(results)
 
-def mean_score(table,scoring_function):
+def mean_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     """Returns the mean and standard deviation of the chosen score at the end of a run. Pass a scoring function like bw.F1score"""
     # get unique worlds
     unique_worlds = table['world'].unique()
@@ -60,7 +74,7 @@ def mean_score(table,scoring_function):
             scores.append(score)
     return statistics.mean(scores),statistics.stdev(scores)    
 
-def mean_peak_score(table,scoring_function):
+def mean_peak_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     """Returns the mean and standard deviation of the chosen score at the peak of F1 score for a run. 
     Pass a scoring function like bw.F1score
     Useful for """
@@ -82,7 +96,7 @@ def mean_peak_score(table,scoring_function):
             scores.append(score)
     return statistics.mean(scores),statistics.stdev(scores)    
 
-def mean_avg_area_under_curve(table,scoring_function):
+def mean_avg_area_under_curve(table,scoring_function,bw_worlds=load_bw_worlds()):
     # get unique worlds
     unique_worlds = table['world'].unique()
     scores = []
@@ -92,7 +106,7 @@ def mean_avg_area_under_curve(table,scoring_function):
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
     return statistics.mean(scores),statistics.stdev(scores)
 
-def mean_avg_area_under_curve_to_peakF1(table,scoring_function):
+def mean_avg_area_under_curve_to_peakF1(table,scoring_function,bw_worlds=load_bw_worlds()):
     # get unique worlds
     unique_worlds = table['world'].unique()
     scores = []
