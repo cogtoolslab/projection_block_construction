@@ -16,7 +16,8 @@ class State():
 
 def load_bw_worlds():
     #setting up the world objects
-    #initializing worlds (used for scoring re a certain silhuoette)
+    #initializing worlds (used for scoring re a certain silhouette)
+    #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
     silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
