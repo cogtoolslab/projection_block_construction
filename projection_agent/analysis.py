@@ -40,7 +40,10 @@ def mean_win(table):
         if row == 'Win':
             wins+=1
         total += 1
-    return wins/total
+    try:
+        return wins/total
+    except ZeroDivisionError:
+        return 0
 
 def mean_failure_reason(table,reason):
     """Proportion of fails for a certain reason ("Full","Unstable", for fast fail:"Holes","Outside") over all runs (incl wins)"""
@@ -51,12 +54,18 @@ def mean_failure_reason(table,reason):
         if run_status == 'Fail' and run_reason == reason:
             count+=1
         total += 1
-    return count/total
+    try:
+        return count/total
+    except ZeroDivisionError:
+        return 0
 
 def avg_steps_to_end(table):
     """Returns average steps until the end of the run. Only pass wins if we want a measure of success."""
     results = [number_of_steps(r) for r in table['run']]
-    return statistics.mean(results), statistics.stdev(results)
+    try:
+        return statistics.mean(results),statistics.stdev(results)
+    except statistics.StatisticsError:
+        return 0,0
 
 def mean_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     """Returns the mean and standard deviation of the chosen score at the end of a run. Pass a scoring function like bw.F1score"""
@@ -73,7 +82,10 @@ def mean_score(table,scoring_function,bw_worlds=load_bw_worlds()):
             #calculate score using scoring function
             score = scoring_function(state)
             scores.append(score)
-    return statistics.mean(scores),statistics.stdev(scores)    
+    try:
+        return statistics.mean(scores),statistics.stdev(scores)
+    except statistics.StatisticsError:
+        return 0,0
 
 def mean_peak_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     """Returns the mean and standard deviation of the chosen score at the peak of F1 score for a run. 
@@ -95,7 +107,10 @@ def mean_peak_score(table,scoring_function,bw_worlds=load_bw_worlds()):
             #calculate score using scoring function
             score = scoring_function(state)
             scores.append(score)
-    return statistics.mean(scores),statistics.stdev(scores)    
+    try:
+        return statistics.mean(scores),statistics.stdev(scores)
+    except statistics.StatisticsError:
+        return 0,0
 
 def mean_avg_area_under_curve(table,scoring_function,bw_worlds=load_bw_worlds()):
     # get unique worlds
@@ -105,20 +120,25 @@ def mean_avg_area_under_curve(table,scoring_function,bw_worlds=load_bw_worlds())
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
         for run in table[table['world'] == world]['run']:
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
-    return statistics.mean(scores),statistics.stdev(scores)
+    try:
+        return statistics.mean(scores),statistics.stdev(scores)
+    except statistics.StatisticsError:
+        return 0,0
 
 def mean_avg_area_under_curve_to_peakF1(table,scoring_function,bw_worlds=load_bw_worlds()):
     # get unique worlds
     unique_worlds = table['world'].unique()
     scores = []
     for world in unique_worlds:
-        print(world)
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
         for run in table[table['world'] == world]['run']:
             #truncate run
             run = run_to_peakF1(run,world_obj)
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
-    return statistics.mean(scores),statistics.stdev(scores)
+    try:
+        return statistics.mean(scores),statistics.stdev(scores)
+    except statistics.StatisticsError:
+        return 0,0
 
 #helper functions
 
@@ -179,3 +199,31 @@ def get_final_blockmap(run):
 #     final_bm = np.array(final_bm)
     return get_blockmaps(run)[-1]
 #     return final_bm
+
+
+
+#########################################
+print("Debugging active")
+#run experiments to debug functions—this should live in another file
+dfs = ['breadth_to_4_sum.pkl'] #which to load
+
+#load all experiments as one dataframe
+df = pd.concat([pd.read_pickle(l) for l in dfs])
+r = df.iloc[1]['run'] #for testing purposes load a single run
+worlds = df['world'].unique()
+agents = df['agent'].unique()
+chosen_world = 'int_struct_15'
+
+print("Done with setup, loaded",len(df),"lines")
+
+#Debug functions
+# results = [avg_steps_to_end(df[df['world']==w]) for w in worlds]    
+# scores = [score for score,std in results]
+# stds = [std for score,std in results]
+
+#📊 avg_steps_to_end
+#all
+scores = [mean_win(df[(df['world']==chosen_world) & (df['agent']==a)]) for a in agents]    
+print(scores)
+##########################################
+
