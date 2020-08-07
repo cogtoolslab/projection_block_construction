@@ -172,12 +172,33 @@ class Blockworld(World):
         def __eq__(self,other):
             """The order of the blocks does not matter, as they have their location attached. So the sorted list should be equal between two states which consist of the same blocks no matter the order in which they were placed"""
             return self.blocks.sorted() == other.blocks.sorted()
+
+        def order_invariant_blockmap(self):
+            """Returns an np.array of the blockmap that ignores the order in which the blocks were placed, ie outputs the same blockmap for all the states that have the same kinds of blocks in the same locations, but not the same order in which these blocks have been placed.
+            Use (A==B).all() to compare two numpy arrays for equality."""
+            return self._get_new_map_from_blocks(self.order_invariant_blocks())
+        
+        def order_invariant_blocks(self):
+            """Returns ordered list of blocks that have been placed to ensure the same order in the list even if they have been placed in a different order."""
+            def _block_key(block):
+                """Helper function returns a float to sort blocks by y location first, then x location."""
+                return float(block.y + .5/(block.x+1))
+            return sorted(self.blocks,key=_block_key,reverse=True)
         
         def _update_map_with_blocks(self, blocks, delete=False):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
             for b in blocks:
                 new_number = 0 if delete else (np.max(self.block_map)+1) #numbers increase 
                 self.block_map[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = new_number 
+        
+        def _get_new_map_from_blocks(self, blocks):
+            """Same as _update_map_with_blocks, only that it returns a new blockmap without touching the blockmap of the state."""
+            blockmap = np.zeros((self.world_height, self.world_width),dtype=int)
+            i = 0
+            for b in blocks:
+                i+=1
+                blockmap[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = i 
+            return blockmap
 
         def score(self,scoring_function):
             """Returns the score according to the the scoring function that is passed. """
