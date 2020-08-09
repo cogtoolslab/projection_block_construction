@@ -420,7 +420,7 @@ class BaseBlock:
 
 """Scoring functions. These should be passed to the scoring function of the state."""
 def F1score(state):
-    """Returns the F1 score relastatetive to the target silhoutte defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
+    """Returns the F1 score relative to the target silhouette defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
     if hasattr(state,'_F1score'):
         return state._F1score
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
@@ -512,3 +512,7 @@ def F1_stability_score(state):
 def silhouette_hole_stability_score(state):
     """Silhouette & hole heuristics with stability"""
     return silhouette_hole_score(state) + state.world.fail_penalty * (1 - state.stability())
+
+def sparse(state):
+    """Returns 1 if the silhouette is perfectly built & stable and 0 otherwise."""
+    return float(state.world.is_win(state))
