@@ -68,7 +68,7 @@ def _run_single_experiment(experiment):
     r = pd.DataFrame(columns=['blockmap','blocks','stability','F1 score','chosen action','final result','final result reason'], index=range(steps+1))
     i = 0
     while i != steps and world.status()[0] == 'Ongoing':
-        r.iloc[i]['blockmap'] = [world.current_state.block_map]
+        r.iloc[i]['blockmap'] = [world.current_state.blockmap]
         r.iloc[i]['blocks'] = [world.current_state.blocks]
         r.iloc[i]['stability'] = world.stability()
         r.iloc[i]['F1 score'] = world.F1score()
@@ -85,7 +85,7 @@ def _run_single_experiment(experiment):
         i = i + 1
     #after we stop acting
     print("Done with",agent.__str__(),'******',world.__str__(),"in %s seconds" % round((time.time() - start_time)))
-    r.iloc[i]['blockmap'] = [world.current_state.block_map]
+    r.iloc[i]['blockmap'] = [world.current_state.blockmap]
     r.iloc[i]['blocks'] = [world.current_state.blocks]
     r.iloc[i]['stability'] = world.stability()
     r.iloc[i]['F1 score'] = world.F1score()

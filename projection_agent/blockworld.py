@@ -65,7 +65,7 @@ class Blockworld(World):
             return state
         #determine y coordinates of block
         y = 0
-        while y < self.dimension[0] and state.block_map[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
+        while y < self.dimension[0] and state.blockmap[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
             y+= 1
         y = y-1 #because y marks the first full row
         #create new block
@@ -166,7 +166,7 @@ class Blockworld(World):
             self.blocks = blocks
             self.world_width = self.world.dimension[1]
             self.world_height = self.world.dimension[0]
-            self.block_map = np.zeros((self.world_height, self.world_width),dtype=int) ## bitmap for placement of blocks
+            self.blockmap = np.zeros((self.world_height, self.world_width),dtype=int) ## bitmap for placement of blocks
             self._update_map_with_blocks(blocks) #read the blocks into the blockmap
             self._stable = None
             self._cached_hash = None #Cached hash value. It's only filled once we actually generate a hash and invalidates when the blockmap is updated. ⚠️ It is NOT updated when the blockmap/block list is touched manually! ⚠️
@@ -198,14 +198,14 @@ class Blockworld(World):
             return self._cached_hash
 
         def order_sensitive_hash(self):
-            return self.block_map.tostring()
+            return self.blockmap.tostring()
 
         def _update_map_with_blocks(self, blocks, delete=False):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
             self._cached_hash = None #invalidate the hash
             for b in blocks:
-                new_number = 0 if delete else (np.max(self.block_map)+1) #numbers increase 
-                self.block_map[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = new_number 
+                new_number = 0 if delete else (np.max(self.blockmap)+1) #numbers increase 
+                self.blockmap[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = new_number 
         
         def _get_new_map_from_blocks(self, blocks):
             """Same as _update_map_with_blocks, only that it returns a new blockmap without touching the blockmap of the state."""
@@ -238,14 +238,14 @@ class Blockworld(World):
                     #check whether it overlaps the left boundary
                     if x + base_block.width <= self.world_width:
                          #and whether it overlaps the top boundary by simply looking if the block at the top is free
-                        if self.block_map[0 : base_block.height, x : x+base_block.width] .sum() == 0:
+                        if self.blockmap[0 : base_block.height, x : x+base_block.width] .sum() == 0:
                             possible_actions.append((base_block,x))
             return possible_actions
 
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way."""
             pyplot.close('all')
-            pyplot.pcolormesh(self.block_map[::-1], cmap='hot_r',vmin=0,vmax=20)
+            pyplot.pcolormesh(self.blockmap[::-1], cmap='hot_r',vmin=0,vmax=20)
             if silhouette is not None:
                 #we print the target silhouette as transparent overlay
                 pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.20,facecolors='grey',edgecolors='black')
@@ -441,7 +441,7 @@ def F1score(state):
         return state._F1score
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     precision = np.sum(built & target)/(np.sum(built) + s) 
     recall = np.sum(built & target)/(np.sum(target) + s) 
     F1score = 2 * (precision * recall)/(precision + recall + s)
@@ -451,13 +451,13 @@ def F1score(state):
 def precision(state):
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     return np.sum(built & target)/(np.sum(built) + s) 
 
 def recall(state):
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     return np.sum(built & target)/(np.sum(target) + s) 
 
 def weighted_precision_recall(state,precision_weight=1):
@@ -467,19 +467,19 @@ def weighted_precision_recall(state,precision_weight=1):
 def filled_inside(state):
     """Returns the number of cells built in inside the silhouette"""
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     return np.sum(built & target)
 
 def filled_outside(state):
     """Returns the number of cells built outside the silhouette"""
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     return np.sum(built & (1-target))
 
 def silhouette_score(state):
     """Returns a score that encourages the filling out of the silhouette gives penalty for placing blocks outside of it. 1 if silhouette perfectly filled, penalty for building outside weighted by size of silhouette."""
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     ssize = np.sum(target)
     reward = np.sum(built & target)/ssize
     penalty = np.sum(built & (1-target))/ssize
@@ -488,7 +488,7 @@ def silhouette_score(state):
 def random_scoring(state):
     """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     if np.sum((1-target) & built) > 1:
         return -1
     else:
@@ -497,7 +497,7 @@ def random_scoring(state):
 def legal(state):
     """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
     target = state.world.silhouette > 0
-    built = state.block_map > 0
+    built = state.blockmap > 0
     if np.sum((1-target) & built) > 1:
         return False
     else:
@@ -506,7 +506,7 @@ def legal(state):
 def holes(state):
     """Returns the number of holes in the structure that are covered with a block to prevent the model from creating holes it cannot fill."""
     target = state.world.silhouette > 0
-    built = (state.block_map > 0) * 2
+    built = (state.blockmap > 0) * 2
     mapped = target + built
     holes = 0
     for x in range(built.shape[1]): # we don't need to check the bottom

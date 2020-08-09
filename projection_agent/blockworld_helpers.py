@@ -402,16 +402,16 @@ class World:
         # world parameters
         self.world_width = world_width 
         self.world_height = world_height 
-        self.block_map = np.zeros((self.world_width, self.world_height), dtype=int) ## bitmap for placement of blocks        
+        self.blockmap = np.zeros((self.world_width, self.world_height), dtype=int) ## bitmap for placement of blocks        
         self.blocks = []   
         self.full = False
         
     def check_full(self):
         '''
-        Checks to see whether the World contains any empty space by summing block_map
+        Checks to see whether the World contains any empty space by summing blockmap
         '''
         if not self.full:
-            self.full = (sum(sum(self.block_map)) == self.world_width*self.world_height)
+            self.full = (sum(sum(self.blockmap)) == self.world_width*self.world_height)
             return self.full
         else:
             return True
@@ -477,10 +477,10 @@ class World:
     def _update_map_with_blocks(self, blocks, delete=False):
         new_number = 0 if delete else 1
         for b in blocks:
-            self.block_map[self.world_height-(b.y+b.height): self.world_height-b.y, b.x:(b.x+b.width)] = new_number
+            self.blockmap[self.world_height-(b.y+b.height): self.world_height-b.y, b.x:(b.x+b.width)] = new_number
     
     def can_place(self, block):
-        overlap = self.block_map[self.world_height-(block.y+block.height): self.world_height-block.y, block.x: (block.x+block.width)]
+        overlap = self.blockmap[self.world_height-(block.y+block.height): self.world_height-block.y, block.x: (block.x+block.width)]
         return (not overlap.any())
                     
     
@@ -491,15 +491,15 @@ class World:
         current_level = 0 #Start at bottom and work up
         while current_level <= self.world_height - 1: # Until at top
             #find floor
-            while self.block_map[self.world_height - current_level - 1].all() and current_level < self.world_height: # check if level is full or reached top
+            while self.blockmap[self.world_height - current_level - 1].all() and current_level < self.world_height: # check if level is full or reached top
                 current_level += 1
             if current_level == self.world_height:
                     break
             left = 0
-            while self.block_map[self.world_height - current_level - 1][left] == 1:
+            while self.blockmap[self.world_height - current_level - 1][left] == 1:
                 left += 1
             right = left
-            while right < self.world_width and self.block_map[self.world_height - current_level - 1][right] == 0:
+            while right < self.world_width and self.blockmap[self.world_height - current_level - 1][right] == 0:
                 right += 1
             #print('fill_world_here: ' + str((current_level, left, right)))
             if not self.fill_floor_here(current_level, left, right): #fills world and returns whether world changed
@@ -597,7 +597,7 @@ class World:
         In: index of block object in blocks list to be removed 
         Out: True if tower would be stable (i.e. no blocks would move) on removal of block, false otherwise
         Pre: world is 'full'
-        Post: world unchanged. block_map and blocks only copied here
+        Post: world unchanged. blockmap and blocks only copied here
         '''
         if block_number < len(self.blocks):
             # Copy blocks and remove one
@@ -605,11 +605,11 @@ class World:
             updated_blocks = self.blocks[:]    # copy list of blocks
             updated_blocks.remove(b)           # remove element
 
-            # Copy and block_map
-            new_block_map = np.copy(self.block_map)     # copy block map
-            new_block_map[self.world_height-(b.y+b.height): self.world_height-b.y, b.x:(b.x+b.width)] = 0 
+            # Copy and blockmap
+            new_blockmap = np.copy(self.blockmap)     # copy block map
+            new_blockmap[self.world_height-(b.y+b.height): self.world_height-b.y, b.x:(b.x+b.width)] = 0 
             if render:
-                print(new_block_map)
+                print(new_blockmap)
 
             # For blocks above b, check if there is enough floor beneath
             # Blocks in list stored in order of height, so just need to traverse tail of list to check for stability
@@ -617,8 +617,8 @@ class World:
             for b2 in updated_blocks[block_number:]:
                 if b2.y > 0: #block stable if on floor (and avoids indexing errors)
                     y = b2.y
-                    xs = list(range(b2.x, b2.x+b2.width)) # get x loc of base of block in block_map
-                    support = new_block_map[(self.world_height-1)-(b2.y)+1, xs] #get the floor under block
+                    xs = list(range(b2.x, b2.x+b2.width)) # get x loc of base of block in blockmap
+                    support = new_blockmap[(self.world_height-1)-(b2.y)+1, xs] #get the floor under block
                     # support is the space underneath the base of a block
                     stable = stable and (np.mean(support)>= 0.5) # stable if greater than half of support is 1 in blockmap
                     #if not(any(stable)) then block can slide down.
@@ -626,7 +626,7 @@ class World:
             if stable and not checking:
                 new_world = copy.deepcopy(self)
                 new_world.blocks = copy.deepcopy(updated_blocks)
-                new_world.block_map = new_block_map
+                new_world.blockmap = new_blockmap
                 if render:
                     draw_world(new_world)
                 return (stable, new_world)

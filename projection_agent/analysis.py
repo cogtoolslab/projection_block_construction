@@ -11,7 +11,7 @@ import statistics
 class State():
     """A dummy state to pass to blockworld scoring functions"""
     def __init__(self,world,blockmap):
-        self.block_map = blockmap
+        self.blockmap = blockmap
         self.world = world
 
 def load_bw_worlds():
