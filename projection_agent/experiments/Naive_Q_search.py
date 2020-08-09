@@ -19,7 +19,7 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 10/16
 
-    agents = [Naive_Q_Agent(max_episodes=e) for e in [10**i for i in range(2,5)]]
+    agents = [Naive_Q_Agent(heuristic=lambda x: bw.F1_stability_score(x)+bw.sparse(x)*1000,max_episodes=e) for e in [10**i for i in range(2,7)]]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in [15,1]}#[14,15,5,8,12,1]}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
