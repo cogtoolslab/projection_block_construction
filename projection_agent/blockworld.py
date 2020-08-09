@@ -159,7 +159,8 @@ class Blockworld(World):
 
 
     class State():
-        """This subclass contains a (possible or current) state of the world and implements a range of functions to score it, namely for F1 (how much of the figure are we filling out) and physical stability. It also generates possible actions. The blockworld classes wrap around this class"""
+        """This subclass contains a (possible or current) state of the world and implements a range of functions to score it, namely for F1 (how much of the figure are we filling out) and physical stability. It also generates possible actions. The blockworld classes wrap around this class.
+        Hashes of this class are orderinvariant as to the order the blocks were placed (but not their positions). Use 'order_sensitive_hash' for an hash that takes placement order of blocks into account."""
         def __init__(self,world,blocks):
             self.world = world
             self.blocks = blocks
@@ -168,10 +169,14 @@ class Blockworld(World):
             self.block_map = np.zeros((self.world_height, self.world_width),dtype=int) ## bitmap for placement of blocks
             self._update_map_with_blocks(blocks) #read the blocks into the blockmap
             self._stable = None
+            self._cached_hash = None #Cached hash value. It's only filled once we actually generate a hash and invalidates when the blockmap is updated. ⚠️ It is NOT updated when the blockmap/block list is touched manually! ⚠️
         
         def __eq__(self,other):
             """The order of the blocks does not matter, as they have their location attached. So the sorted list should be equal between two states which consist of the same blocks no matter the order in which they were placed"""
-            return self.blocks.sorted() == other.blocks.sorted()
+            return self.order_invariant_hash() == other.order_invariant_hash()
+        
+        def __hash__(self):
+                return self.order_invariant_hash()
 
         def order_invariant_blockmap(self):
             """Returns an np.array of the blockmap that ignores the order in which the blocks were placed, ie outputs the same blockmap for all the states that have the same kinds of blocks in the same locations, but not the same order in which these blocks have been placed.
@@ -185,8 +190,19 @@ class Blockworld(World):
                 return float(block.y + .5/(block.x+1))
             return sorted(self.blocks,key=_block_key,reverse=True)
         
+        def order_invariant_hash(self):
+            """String of order invariant blockmap"""
+            if self._cached_hash is None: #create hash if necessary
+                self._cached_hash = self.order_invariant_blockmap().tostring() #Long hex string
+                # self._cached_hash = self.order_invariant_blockmap().__str__() #Slower, but human readable
+            return self._cached_hash
+
+        def order_sensitive_hash(self):
+            return self.block_map.tostring()
+
         def _update_map_with_blocks(self, blocks, delete=False):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
+            self._cached_hash = None #invalidate the hash
             for b in blocks:
                 new_number = 0 if delete else (np.max(self.block_map)+1) #numbers increase 
                 self.block_map[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = new_number 
