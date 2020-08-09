@@ -63,7 +63,7 @@ class Q_table:
 
 def state_key(state):
     """Returns orderinvariant representation of state as string"""
-    return state.order_invariant_blockmap().__str__()
+    return state.order_invariant_hash() #slow, but readable
 
 def action_key(action):
     """Returns string representation of action. This is also what is returned by argmax_Q. Needs a dictionary for that if the string representation is not enough."""
