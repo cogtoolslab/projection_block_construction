@@ -11,22 +11,20 @@ class Naive_Q_Agent(BFS_Agent):
     You can (and probably should) specify a total number of episodes and a limit on steps that the agent can take.
     After the model achieves *streaks* many wins in a row, we terminate and consider the model fully trained.
     """
-    #- [ ] make prettier
-    #taken from the maze learning thing
-    explore_rate = 0.8 
-    learning_rate = 0.9925
-    discount_factor = 0.99
-
-    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_episodes=10**6,max_streaks=100,max_steps=40):
+ 
+    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_episodes=10**6,max_streaks=100,max_steps=40,explore_rate = 0.8 , learning_rate = 1, discount_factor = 1,):
         self.world = world
         self.max_episodes = max_episodes
         self.max_streaks = max_streaks
         self.max_steps = max_steps
         self.heuristic = heuristic
+        self.explore_rate = explore_rate
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
     
     def __str__(self):
         """Yields a string representation of the agent"""
-        return 'type: '+self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_steps)+' max_streaks: '+str(max_streaks)
+        return 'type: '+self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_steps)+' max_streaks: '+str(max_streaks)+' explore_rate: '+str(explore_rate)+' learning_rate: '+str(learning_rate)+' discount_factor: '+str(discount_factor)
 
     def train(self,max_episodes=None,max_streaks=None,max_steps=40,Qs=None,verbose=False):
         """Trains a Q matrix and returns it. It's not automatically set to the agent!
@@ -75,13 +73,14 @@ class Naive_Q_Agent(BFS_Agent):
             #if we've won
             if self.world.is_win(current_state): 
                 streaks += 1 #increment streaks
-            else: streaks = 0 #😭
+            else: streaks = 0 #reset streaks :(
             if streaks > self.max_streaks: #if we've won enough streaks, we end training
                 break
         return Qs,stats
     
     def sample_action(self,state,Qs,):
         """Sample a random action or choose the best possible action to take according to explore rate.
+        This is where the policy driving the learning lives.
         - [ ] could be a lot more sophisticated (softmax etc)"""
         if random() > self.explore_rate: 
             #we chose the best action so far
