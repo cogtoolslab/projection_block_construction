@@ -57,8 +57,8 @@ class Blockworld(World):
         """Takes an action and a state and returns the resulting state without applying it to the current state of the world."""
         if state is None:
             state = self.current_state
-        if action not in self.possible_actions(state): #this might be slow and could be taken out for performance sake
-            print("Action is not in possible actions")
+        # if action not in self.possible_actions(state): #this might be slow and could be taken out for performance sake
+            # print("Action is not in possible actions")
         #determine where the new block would land
         baseblock, x = action #unpacking the action
         if baseblock is None:
