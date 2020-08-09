@@ -17,7 +17,7 @@ if __name__=="__main__": #required for multiprocessing
     start_time = time.time()
 
     #16 for nightingale
-    fraction_of_cpus = 1
+    fraction_of_cpus = 10/16
 
     agents = [Naive_Q_Agent(max_episodes=e) for e in [10**i for i in range(2,5)]]
 
