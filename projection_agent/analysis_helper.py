@@ -201,30 +201,3 @@ def get_final_blockmap(run):
     return get_blockmaps(run)[-1]
 #     return final_bm
 
-
-
-#########################################
-print("Debugging active")
-#run experiments to debug functions—this should live in another file
-dfs = ['breadth_to_4_sum.pkl'] #which to load
-
-#load all experiments as one dataframe
-df = pd.concat([pd.read_pickle(l) for l in dfs])
-r = df.iloc[1]['run'] #for testing purposes load a single run
-worlds = df['world'].unique()
-agents = df['agent'].unique()
-chosen_world = 'int_struct_15'
-
-print("Done with setup, loaded",len(df),"lines")
-
-#Debug functions
-# results = [avg_steps_to_end(df[df['world']==w]) for w in worlds]    
-# scores = [score for score,std in results]
-# stds = [std for score,std in results]
-
-#📊 avg_steps_to_end
-#all
-scores = [mean_win(df[(df['world']==chosen_world) & (df['agent']==a)]) for a in agents]    
-print(scores)
-##########################################
-
