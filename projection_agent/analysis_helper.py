@@ -1,4 +1,5 @@
-#this file contains helper functions to generate plots and scalar measures.
+"""This file contains helper functions to generate plots and scalar measures. 
+Actual code for graphs can be found in graphs.py"""
 
 #setup
 import blockworld as bw
