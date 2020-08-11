@@ -6,7 +6,7 @@ import blockworld
 class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
-    def __init__(self, world=None, horizon = 3, scoring = 'Final state', sparse=False,scoring_function=blockworld.silhouette_score):
+    def __init__(self, world=None, horizon = 3, scoring = 'Final_state', sparse=False,scoring_function=blockworld.silhouette_score):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
@@ -115,13 +115,13 @@ class BFS_Agent:
             current_nodes = children_nodes
         return [BFS_Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
 
-    def score_action_sequences(self,action_sequences,method = 'Final state',verbose=False):
+    def score_action_sequences(self,action_sequences,method = 'Final_state',verbose=False):
         """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average, Fixed. Operates in place."""
         # if action_sequences[0].actions[0].source.score is None: #if the tree hasn't been scored yet
         #     print("Tree must be scored.")
         #     return None
         for act_seq in action_sequences: #score every action sequence
-            if method == 'Final state':
+            if method == 'Final_state':
                 score = act_seq.actions[-1].target.score + (not act_seq.actions[-1].target.stability) * self.world.fail_penalty 
             elif method == 'Sum':
                 score = []
