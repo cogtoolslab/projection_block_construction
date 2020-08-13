@@ -21,8 +21,9 @@ Use `experiment_runner` to run suites of experiments and save them to a data fra
 
 Requirements:
 - Python 3
-- p_tqdm
+- tqdm
 - pygame
+- Box2D
 - numpy
 - PIL
 - matplotlib
