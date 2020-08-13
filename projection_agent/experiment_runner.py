@@ -8,11 +8,6 @@ import random
 import multiprocessing
 import tqdm
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', None)
-
 def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,parallelized=True):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readability of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs tp use."""
     #we want human readable labels for the dataframe
