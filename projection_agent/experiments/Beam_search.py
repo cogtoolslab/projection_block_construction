@@ -19,20 +19,21 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 1
 
-    agents = [Beam_Search_Agent(beam_width=w) for w in [10**i for i in range(6)]]
+    agents = [Beam_Search_Agent(beam_width=w,max_depth=40) for w in [1,2,3,8,16,32,64,256]]#[2**i for i in range(1,6,2)]]
 
-    silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
+    silhouette8 = [14,11,3,13,12,1,15,5]
+    silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
         'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-        'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-        'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-        'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+        # 'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+        # 'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+        # 'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,60,verbose=False,parallelized=fraction_of_cpus,save='beam_search')
+    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='beam_search')
     print(results[['agent','world','outcome']])
 
     print("Done in %s seconds" % (time.time() - start_time))

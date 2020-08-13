@@ -1,4 +1,4 @@
-    if __name__=="__main__": #required for multiprocessing
+if __name__=="__main__": #required for multiprocessing
     #add the parent path to import the modules
     from inspect import getsourcefile
     import os.path
@@ -9,22 +9,26 @@
     sys.path.insert(0, parent_dir)
 
     from BFS_Agent import BFS_Agent
-    from MCTS_Agent import MCTS_Agent
     import blockworld as bw
     import random
     import blockworld_library as bl
     import experiment_runner
 
-    import random
     import time
     start_time = time.time()
 
-    """⚠️ Takes about 30GB per thread for horizon 10^6⚠️"""
-
-    agents = [MCTS_Agent(horizon=10**i) for i in range(1,6)]
-
-    #16 for nightingale
+    #16 for nightingale, 96 for google cloud
     fraction_of_cpus = 1
+
+    agents = [
+        BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Average'),
+        BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
+        BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
+        BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average'),
+        BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'),
+        BFS_Agent(horizon=4,scoring_function=bw.F1score,scoring='Average'),
+        # BFS_Agent(horizon=5,scoring_function=bw.F1score,scoring='Average'),
+        ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
@@ -38,7 +42,7 @@
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='MCTS')
+    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='breadth_search')
     print(results[['agent','world','outcome']])
 
     print("Done in %s seconds" % (time.time() - start_time))

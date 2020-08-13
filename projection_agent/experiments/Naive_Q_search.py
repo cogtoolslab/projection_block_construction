@@ -17,15 +17,12 @@ if __name__=="__main__": #required for multiprocessing
     start_time = time.time()
 
     #16 for nightingale
-    fraction_of_cpus = 10/16
+    fraction_of_cpus = 1
 
-    def heuristic(state):
-        #lambda x: bw.F1_stability_score(x)+bw.sparse(x)*1000
-        return bw.F1_stability_score(state)+bw.sparse(state)*1000
+    agents = [Naive_Q_Agent(heuristic=bw.F1score,max_episodes=e) for e in [10**2,10**4,10**6]]
 
-    agents = [Naive_Q_Agent(heuristic=heuristic,max_episodes=e) for e in [10**i for i in range(2,7)]]
-
-    silhouettes = {i : bl.load_interesting_structure(i) for i in [15,1]}#[14,15,5,8,12,1]}
+    silhouette8 = [14,11,3,13,12,1,15,5]
+    silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
@@ -36,7 +33,7 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,60,verbose=False,parallelized=fraction_of_cpus,save='Naive_Q_search')
+    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='Naive_Q_search')
     print(results[['agent','world','outcome']])
 
     print("Done in %s seconds" % (time.time() - start_time))
