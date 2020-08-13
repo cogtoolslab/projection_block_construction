@@ -1,4 +1,4 @@
-    if __name__=="__main__": #required for multiprocessing
+if __name__=="__main__": #required for multiprocessing
     #add the parent path to import the modules
     from inspect import getsourcefile
     import os.path
