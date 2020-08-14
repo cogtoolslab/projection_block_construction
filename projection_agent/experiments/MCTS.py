@@ -21,7 +21,7 @@ if __name__=="__main__": #required for multiprocessing
 
     """⚠️ Takes about 30GB per thread for horizon 10^6⚠️"""
 
-    agents = [MCTS_Agent(horizon=10**i) for i in range(1,6)]
+    agents = [MCTS_Agent(horizon=10**i) for i in range(1,5)]
 
     #16 for nightingale
     fraction_of_cpus = 1
