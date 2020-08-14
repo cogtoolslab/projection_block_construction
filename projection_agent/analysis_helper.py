@@ -9,17 +9,72 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import statistics
 
+#initializing worlds (used for scoring re a certain silhuoette)
+#functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
+silhouettes = {i : bl.load_interesting_structure(i) for i in range(15)} #loading all worlds
+worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
+worlds_small = {
+    'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
+    'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
+    'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+    'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+    'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+}
+bw_worlds = {**worlds_silhouettes,**worlds_small}
+print("{} worlds loaded".format(len(bw_worlds)))
+
 class State():
     """A dummy state to pass to blockworld scoring functions"""
     def __init__(self,world,blockmap):
         self.blockmap = blockmap
         self.world = world
 
+#prettier names
+
+def short_world_name(world_name):
+    return world_name.split('|')[0]
+
+def short_agent_name(agent_name):
+    return agent_name[6:]
+
+def agent_type(agent_name):
+    return short_agent_name(agent_name).split(' ')[0]
+
+def smart_short_agent_names(names):
+    """Only shows the difference between agent names when they differ."""
+    #workaround for old dataframes
+    names = [n.replace('Final state','Final_state') for n in names]
+    #split names
+    new_names = [short_agent_name(n).split(' ') for n in names]
+    change_map = [[False for w in n] for n in names]
+    #only compare within types
+    types = set([n[0] for n in new_names])
+    type_maps = {}
+    for type in types:
+        type_names = [n for n in new_names if n[0] == type]
+        change_map = [False for w in type_names[0]] #map of changes
+        change_map[0] = True #always print type
+        last = type_names[0]
+        for type_name in type_names:
+            for i in range(len(type_name)):
+                if last[i] != type_name[i]: change_map[i] = True
+            last = type_name
+        type_maps[type] = change_map
+    #construct output list
+    out_names = []
+    for name in new_names:
+        type = name[0]
+        #include preceding word since it's the descriptor
+        descriptor = [name[i-1]+' '+name[i] for i in range(2,len(name)) if type_maps[type][i] is True]
+        out_names.append(type + ' ' + ' '.join(descriptor))
+    return out_names
+
+
 def load_bw_worlds():
     #setting up the world objects
     #initializing worlds (used for scoring re a certain silhouette)
     #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
-    silhouettes = {i : bl.load_interesting_structure(i) for i in [14,15,5,8,12,1]}
+    silhouettes = {i : bl.load_interesting_structure(i) for i in range(15)} #loading all worlds
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
