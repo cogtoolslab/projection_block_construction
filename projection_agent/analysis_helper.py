@@ -242,6 +242,8 @@ def get_blockmaps(run):
     (as MCTS does)."""
     blockmaps = []
     final_bm = run[run['final result'].notnull()]['blockmap'].iloc[-1] #grab final bm
+    #maybe it's wrapped in a list
+    if len(final_bm) == 1: final_bm = final_bm[0]
     final_bm = np.array(final_bm)
     #generate sequence of blockmaps
     for i in range(np.max(final_bm)+1): #for every placed block
