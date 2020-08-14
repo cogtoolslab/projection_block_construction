@@ -20,7 +20,7 @@ print('Finished with world in state:",w.status())
 Use `experiment_runner` to run suites of experiments and save them to a data frame in the current directory.
 
 Requirements:
-- Python 3
+- Python > 3.7
 - tqdm
 - pygame
 - Box2D
