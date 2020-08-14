@@ -17,7 +17,7 @@ if __name__=="__main__": #required for multiprocessing
     start_time = time.time()
 
     #16 for nightingale
-    fraction_of_cpus = 1
+    fraction_of_cpus = 0.5
 
 
     agents = [Astar_Agent(),Astar_Agent(heuristic=bw.F1score)]
