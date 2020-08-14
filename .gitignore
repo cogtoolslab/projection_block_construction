@@ -60,3 +60,4 @@ settings.json
 .vscode/launch.json
 projection_agent/.vscode/*
 *.prof
+running experiments notes.md
