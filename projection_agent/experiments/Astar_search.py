@@ -17,10 +17,10 @@ if __name__=="__main__": #required for multiprocessing
     start_time = time.time()
 
     #16 for nightingale
-    fraction_of_cpus = 0.5
+    fraction_of_cpus = 0.25
 
 
-    agents = [Astar_Agent(),Astar_Agent(heuristic=bw.F1score)]
+    agents = [Astar_Agent(heuristic=bw.F1score)]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
