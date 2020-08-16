@@ -10,6 +10,8 @@ import tqdm
 
 def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,parallelized=True):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds & agents as named dictionary for readability of result. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs tp use."""
+    #shuffle agents to prevent collisions between memory heavy agents
+    random.shuffle(agents)
     #we want human readable labels for the dataframe
     if type(worlds) is dict:
         world_labels = [label+'|'+w.__str__() for label,w in worlds.items()]
@@ -25,7 +27,6 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     #we need to copy the world and agent to reset them
     # create a list of experiments to run
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds]    
-    random.shuffle(experiments)
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
     P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
