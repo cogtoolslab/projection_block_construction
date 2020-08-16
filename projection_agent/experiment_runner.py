@@ -28,7 +28,7 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     labels = [(w,a) for i in range(per_exp) for a in agent_labels for w in world_labels]
     # lets run the experiments
     P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-    results_mapped = tqdm.tqdm(P.imap(_run_single_experiment,experiments), total=len(experiments))
+    results_mapped = tqdm.tqdm(P.map(_run_single_experiment,experiments), total=len(experiments))
     P.close()
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
@@ -52,9 +52,9 @@ def _run_single_experiment(experiment):
     # to prevent memory overflows only run if enough free memory exists.
     start_time = time.time()
     world,agent,steps,verbose = experiment
-    # while psutil.virtual_memory().percent > 60:
-    #     print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 1000 seconds.")
-    #     time.sleep(1000)
+    while psutil.virtual_memory().percent > 65:
+        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 1000 seconds.")
+        time.sleep(1000)
     
     print('Running',agent.__str__(),'******',world.__str__())
     agent.set_world(world)
