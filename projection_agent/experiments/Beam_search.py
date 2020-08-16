@@ -19,7 +19,7 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 1
 
-    agents = [Beam_Search_Agent(beam_width=w,max_depth=40) for w in [1,2,3,8,16,32,64,256]]#[2**i for i in range(1,6,2)]]
+    agents = [Beam_Search_Agent(beam_width=w,max_depth=40) for w in [1,2,3,8,16,32]]#,64,256]]#[2**i for i in range(1,6,2)]]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
@@ -33,7 +33,7 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='beam_search')
+    results = experiment_runner.run_experiment(worlds,agents,1,40,verbose=False,parallelized=fraction_of_cpus,save='beam_search')
     print(results[['agent','world','outcome']])
 
     print("Done in %s seconds" % (time.time() - start_time))
