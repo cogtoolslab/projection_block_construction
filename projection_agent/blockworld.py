@@ -322,12 +322,14 @@ class Block:
         return y_overlap and buttressing_side
     
     def vertical_touch(self, other):
-        ''' Test to see whether this block sits top to bottom against other block.
+        ''' Test to see whether this block sits top to bottom against other block or bottom to top against other block.
             Corner to corner treated as not touching.
         '''
         x_overlap = not self.leftof(other) and not self.rightof(other) 
         buttressing_up = self.y == other.y + other.height or other.y == self.y + self.height
-        return x_overlap and buttressing_up
+        buttressing_down = self.y == other.y - other.height or other.y == self.y - self.height
+        buttressing = buttressing_down or buttressing_up
+        return x_overlap and buttressing
     
     def touching(self, other):
         ''' Test to see if this block is touching another block.
