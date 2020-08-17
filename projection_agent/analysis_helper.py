@@ -9,19 +9,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import statistics
 
-#initializing worlds (used for scoring re a certain silhuoette)
-#functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
-silhouettes = {i : bl.load_interesting_structure(i) for i in range(15)} #loading all worlds
-worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
-worlds_small = {
-    'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
-    'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-    'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-    'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-    'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
-}
-bw_worlds = {**worlds_silhouettes,**worlds_small}
-print("{} worlds loaded".format(len(bw_worlds)))
 
 class State():
     """A dummy state to pass to blockworld scoring functions"""
@@ -74,17 +61,18 @@ def load_bw_worlds():
     #setting up the world objects
     #initializing worlds (used for scoring re a certain silhouette)
     #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
-    silhouettes = {i : bl.load_interesting_structure(i) for i in range(15)} #loading all worlds
+    silhouette8 = [14,11,3,13,12,1,15,5]
+    silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
         'stonehenge_3_3' : bw.Blockworld(silhouette=bl.stonehenge_3_3,block_library=bl.bl_stonehenge_3_3),
-        'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
-        'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
-        'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
+        # 'block' : bw.Blockworld(silhouette=bl.block,block_library=bl.bl_stonehenge_3_3),
+        # 'T' : bw.Blockworld(silhouette=bl.T,block_library=bl.bl_stonehenge_6_4),
+        # 'side_by_side' : bw.Blockworld(silhouette=bl.side_by_side,block_library=bl.bl_stonehenge_6_4),
     }
-    bw_worlds = {**worlds_silhouettes,**worlds_small}
-    return bw_worlds
+    worlds = {**worlds_silhouettes,**worlds_small}
+    return worlds
 
 # Scalar measures
 
@@ -130,7 +118,8 @@ def mean_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     scores = []
     for world in unique_worlds:
         world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
-        for run in table[table['world'] == world]['run']:
+        for index,row in table[table['world'] == world].iterrows():
+            run = row['run']
             #get the last blockmap
             blockmap = get_final_blockmap(run)
             #create state
@@ -253,8 +242,9 @@ def get_blockmaps(run):
 
 def get_final_blockmap(run):
     """Takes a run as input and returns the final blockmap."""
-#     final_bm = run[run['final result'].notnull()]['blockmap'].iloc[-1] #grab final bm
-#     final_bm = np.array(final_bm)
     return get_blockmaps(run)[-1]
-#     return final_bm
 
+#initializing worlds (used for scoring re a certain silhouette)
+#functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
+bw_worlds = load_bw_worlds()
+print("{} worlds loaded".format(len(bw_worlds)))
