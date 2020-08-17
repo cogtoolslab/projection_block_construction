@@ -225,6 +225,9 @@ def get_final_status(run):
     reason = run[run['final result'] == run['final result']].iloc[-1]['final result reason']
     return status, reason
 
+def get_final_blocks(run):
+    return run[run['blocks'].notnull()].iloc[-1]['blocks'][0]
+
 def get_blockmaps(run):
     """Takes a run as input and returns the sequence of blockmaps.
     This produces one blockmap per action taken, even if the act function has only been called once
@@ -243,6 +246,16 @@ def get_blockmaps(run):
 def get_final_blockmap(run):
     """Takes a run as input and returns the final blockmap."""
     return get_blockmaps(run)[-1]
+
+def touching_last_block_placements(blocks):
+    """Takes in a sequence of block objects and returns an array with true if a block was placed touching the last placed block. Nothing is returned for the first block"""
+    local_placements = []
+    for i in range(1,len(blocks)):
+        if blocks[i].touching(blocks[i-1]):
+            local_placements.append(True)
+        else:
+            local_placements.append(False)
+    return local_placements
 
 #initializing worlds (used for scoring re a certain silhouette)
 #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
