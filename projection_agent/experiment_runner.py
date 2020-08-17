@@ -23,7 +23,7 @@ def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,pa
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose) for i in range(per_exp) for a in agents for w in worlds.items()]    
     # lets run the experiments
     P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-    results_mapped = tqdm.tqdm(P.map(_run_single_experiment,experiments), total=len(experiments))
+    results_mapped = tqdm.tqdm(P.imap(_run_single_experiment,experiments), total=len(experiments))
     P.close()
     results = pd.DataFrame(columns=['agent','world','outcome','run'],index=range(len(experiments)))
     #put the experiments into a dataframe
