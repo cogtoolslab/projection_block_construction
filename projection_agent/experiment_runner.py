@@ -8,7 +8,7 @@ import random
 import multiprocessing
 import tqdm
 
-def run_experiment(worlds,agents,per_exp=10,steps=100,verbose=False,save=True,parallelized=True):
+def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use."""
     #we want human readable labels for the dataframe
     if type(worlds) is not dict:
@@ -49,9 +49,9 @@ def _run_single_experiment(experiment):
     world_dict,agent,steps,verbose = experiment
     world_label = world_dict[0]
     world = world_dict[1]
-    # while psutil.virtual_memory().percent > 65:
-    #     print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 1000 seconds.")
-    #     time.sleep(1000)
+    while psutil.virtual_memory().percent > 65:
+        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 1000 seconds.")
+        time.sleep(1000)
     
     print('Running',agent.__str__(),'******',world.__str__())
     agent.set_world(world)

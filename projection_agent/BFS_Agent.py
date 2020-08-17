@@ -1,5 +1,4 @@
 from random import randint
-from multiprocessing.dummy import Pool
 from itertools import repeat
 import blockworld
 
