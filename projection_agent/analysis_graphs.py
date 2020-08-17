@@ -229,3 +229,27 @@ def graph_avg_blocksize_over_time_per_agent(df):
     plt.xlabel("Step")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def mean_touching_last_block_per_agent(df):
+    agents = df['agent'].unique()
+    #all
+    results = [touching_last_block_score(df[df['agent']==a]) for a in agents]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
+    #win
+    results = [touching_last_block_score(df[(df['agent']==a) & (df['outcome'] == 'Win')]) for a in agents]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    #fail
+    results = [touching_last_block_score(df[(df['agent']==a) & (df['outcome'] == 'Fail')]) for a in agents]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.ylabel("Proportion of block placements touching last placed block")
+    plt.ylim(0,1)
+    plt.title("Proportion of local placements")
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.show()

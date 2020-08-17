@@ -257,6 +257,15 @@ def touching_last_block_placements(blocks):
             local_placements.append(False)
     return local_placements
 
+def touching_last_block_score(df):
+    """Takes in dataframe and returns mean between 1 and 0 and STD for touching_last_block_placements."""
+    scores = []
+    for run in df['run']:
+        seq = touching_last_block_placements(get_final_blocks(run))
+        mean = statistics.mean(seq)
+        scores.append(mean)
+    return statistics.mean(scores), statistics.stdev(scores)
+
 #initializing worlds (used for scoring re a certain silhouette)
 #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used
 bw_worlds = load_bw_worlds()
