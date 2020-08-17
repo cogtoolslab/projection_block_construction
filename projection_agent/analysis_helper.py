@@ -4,6 +4,8 @@ Actual code for graphs can be found in graphs.py"""
 #setup
 import blockworld as bw
 import blockworld_library as bl
+import math
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -265,6 +267,35 @@ def touching_last_block_score(df):
         mean = statistics.mean(seq)
         scores.append(mean)
     return statistics.mean(scores), statistics.stdev(scores)
+
+def euclidean_distance_between_blocks(blocks1,blocks2):
+    """Returns the euclidean distance between the two sequence of blocks.
+
+    >For any pair of action sequences, we define the “raw action dissimilarity” as the mean Euclidean distance between corresponding pairs of [x, y, w, h] action vectors (Fig. 4A, light). When two sequences are of different lengths, we evaluate this metric over the first k actions in both, where k represents the length of the shorter sequence.
+    """
+    distances_sum = 0
+    for i in range(min(len(blocks1),len(blocks2))):
+        b1 = blocks1[i]
+        b2 = blocks2[i]
+        distance = math.sqrt((b1.x-b2.x)**2+(b1.y-b2.y)**2+(b1.width-b2.width)**2+(b1.height-b2.height)**2)
+        distances_sum += distance
+    return distances_sum
+
+def pairwise_euclidean_distance_between_blocks_across_all_runs(df):
+    """Calculates the average euclidean distance between runs—returns mean and standard deviation. Note that this comparision really only makes sense for a particular world.
+
+    ⚠️ Scales exponentially! ⚠️
+
+    >For any pair of action sequences, we define the “raw action dissimilarity” as the mean Euclidean distance between corresponding pairs of [x, y, w, h] action vectors (Fig. 4A, light). When two sequences are of different lengths, we evaluate this metric over the first k actions in both, where k represents the length of the shorter sequence.
+    """
+    #get list of final blocks
+    all_blocks = [get_final_blocks(r) for r in df['run']]
+    #get all possible combinations
+    pairs = itertools.combinations(all_blocks,2)
+    #calculate distances
+    distances = [euclidean_distance_between_blocks(b1,b2) for b1,b2 in pairs]
+    return statistics.mean(distances), statistics.stdev(distances)
+
 
 #initializing worlds (used for scoring re a certain silhouette)
 #functions that use bw_worlds can also be explicitly passed a dictionary of world objects if different worlds are used

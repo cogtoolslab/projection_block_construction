@@ -253,3 +253,28 @@ def mean_touching_last_block_per_agent(df):
     plt.title("Proportion of local placements")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def mean_pairwise_euclidean_distance_between_runs(df):
+    agents = df['agent'].unique()
+    worlds =df['world'].unique()
+    #all
+    results = [euclidean_distance_between_blocks_across_all_runs(df[(df['agent']==a) & df['world'] == w]) for a in agents for w in worlds]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
+    #win
+    results = [euclidean_distance_between_blocks_across_all_runs(df[(df['agent']==a) & (df['outcome'] == 'Win') & df['world'] == w]) for a in agents for w in worlds]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    #fail
+    results = [euclidean_distance_between_blocks_across_all_runs(df[(df['agent']==a) & (df['outcome'] == 'Fail') & df['world'] == w]) for a in agents for w in worlds]
+    scores = [score for score,std in results]
+    stds = [std for score,std in results]
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.ylabel("Average pairwise Euclidean distance between runs on same silhouette per agent")
+    plt.ylim(0,1)
+    plt.title("Mean Euclidean distance")
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.show()
