@@ -111,7 +111,7 @@ def mean_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     unique_worlds = table['world'].unique()
     scores = []
     for world in unique_worlds:
-        world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
+        world_obj = bw_worlds[world] #get the instantiated world object
         for index,row in table[table['world'] == world].iterrows():
             run = row['run']
             #get the last blockmap
@@ -134,7 +134,7 @@ def mean_peak_score(table,scoring_function,bw_worlds=load_bw_worlds()):
     unique_worlds = table['world'].unique()
     scores = []
     for world in unique_worlds:
-        world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
+        world_obj = bw_worlds[world] #get the instantiated world object
         for run in table[table['world'] == world]['run']:
             #get index peak F1 score
             F1s = get_scores(run,bw.F1score,world_obj)
@@ -156,7 +156,7 @@ def mean_avg_area_under_curve(table,scoring_function,bw_worlds=load_bw_worlds())
     unique_worlds = table['world'].unique()
     scores = []
     for world in unique_worlds:
-        world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
+        world_obj = bw_worlds[world] #get the instantiated world object
         for run in table[table['world'] == world]['run']:
             scores.append(avg_area_under_curve_score(run,scoring_function,world_obj))
     try:
@@ -169,7 +169,7 @@ def mean_avg_area_under_curve_to_peakF1(table,scoring_function,bw_worlds=load_bw
     unique_worlds = table['world'].unique()
     scores = []
     for world in unique_worlds:
-        world_obj = bw_worlds[world.split('|')[0]] #get the instantiated world object
+        world_obj = bw_worlds[world] #get the instantiated world object
         for run in table[table['world'] == world]['run']:
             #truncate run
             run = run_to_peakF1(run,world_obj)

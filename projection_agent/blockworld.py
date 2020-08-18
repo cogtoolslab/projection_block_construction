@@ -51,7 +51,7 @@ class Blockworld(World):
 
     def __str__(self):
         """String representation of the world"""
-        return 'Type: '+self.__class__.__name__+' dimension: '+str(self.dimension)#+' silhouette: '+str(hash(self.silhouette.tostring()))
+        return self.__class__.__name__
 
     def  transition(self,action,state=None):
         """Takes an action and a state and returns the resulting state without applying it to the current state of the world."""

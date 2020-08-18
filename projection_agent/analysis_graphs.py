@@ -156,7 +156,7 @@ def graph_mean_F1_over_time_per_agent(df):
             scores = []
             for bm in blockmaps:
                 #make a State to score
-                state = State(bw_worlds[short_world_name(row['world'])],bm)
+                state = State(bw_worlds[row['world']],bm)
                 score = bw.F1score(state)
                 scores.append(score)
             #append (pad) score with last value to xlim as a way of handling the early termination of trials
