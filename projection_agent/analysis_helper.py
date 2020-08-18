@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import statistics
-
+from pathos.multiprocessing import ProcessPool
 
 class State():
     """A dummy state to pass to blockworld scoring functions"""
@@ -260,11 +260,15 @@ def touching_last_block_score(df):
         scores.append(mean)
     return statistics.mean(scores), statistics.stdev(scores)
 
-def euclidean_distance_between_blocks(blocks1,blocks2):
+def raw_euclidean_distance_between_blocks(blocks1,blocks2=None):
     """Returns the euclidean distance between the two sequence of blocks.
 
     >For any pair of action sequences, we define the “raw action dissimilarity” as the mean Euclidean distance between corresponding pairs of [x, y, w, h] action vectors (Fig. 4A, light). When two sequences are of different lengths, we evaluate this metric over the first k actions in both, where k represents the length of the shorter sequence.
     """
+    if blocks2 is None:
+        #special case for parallelization allows passing a tuple
+        blocks2 = blocks1[1]
+        blocks1 = blocks1[0]
     distances_sum = 0
     for i in range(min(len(blocks1),len(blocks2))):
         b1 = blocks1[i]
@@ -273,20 +277,22 @@ def euclidean_distance_between_blocks(blocks1,blocks2):
         distances_sum += distance
     return distances_sum
 
-def pairwise_euclidean_distance_between_blocks_across_all_runs(df):
+def pairwise_raw_euclidean_distance_between_blocks_across_all_runs(df):
     """Calculates the average euclidean distance between runs—returns mean and standard deviation. Note that this comparision really only makes sense for a particular world.
 
     ⚠️ Scales exponentially! ⚠️
 
     >For any pair of action sequences, we define the “raw action dissimilarity” as the mean Euclidean distance between corresponding pairs of [x, y, w, h] action vectors (Fig. 4A, light). When two sequences are of different lengths, we evaluate this metric over the first k actions in both, where k represents the length of the shorter sequence.
     """
+    # if there are no relevant runs
+    if len(df) == 0: return []
     #get list of final blocks
     all_blocks = [get_final_blocks(r) for r in df['run']]
     #get all possible combinations
     pairs = itertools.combinations(all_blocks,2)
     #calculate distances
-    distances = [euclidean_distance_between_blocks(b1,b2) for b1,b2 in pairs]
-    return statistics.mean(distances), statistics.stdev(distances)
+    distances = [raw_euclidean_distance_between_blocks(b1,b2) for b1,b2 in pairs]
+    return distances
 
 
 #initializing worlds (used for scoring re a certain silhouette)
