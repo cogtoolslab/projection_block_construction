@@ -18,23 +18,15 @@ class State():
         self.blockmap = blockmap
         self.world = world
 
-#prettier names
-
-def short_world_name(world_name):
-    return world_name.split('|')[0]
-
-def short_agent_name(agent_name):
-    return agent_name[6:]
-
 def agent_type(agent_name):
-    return short_agent_name(agent_name).split(' ')[0]
+    return agent_name.split(' ')[0]
 
 def smart_short_agent_names(names):
     """Only shows the difference between agent names when they differ."""
     #workaround for old dataframes
     names = [n.replace('Final state','Final_state') for n in names]
     #split names
-    new_names = [short_agent_name(n).split(' ') for n in names]
+    new_names = [n.split(' ') for n in names]
     change_map = [[False for w in n] for n in names]
     #only compare within types
     types = set([n[0] for n in new_names])
