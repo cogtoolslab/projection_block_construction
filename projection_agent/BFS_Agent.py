@@ -14,11 +14,10 @@ class BFS_Agent:
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return 'type: '+self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)
+        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)
 
     def set_world(self,world):
         self.world = world
-
 
     def build_ast(self,state=None,horizon=None,verbose=False):
         """Builds ast from given state to a certain horizon. Returns root of tree."""

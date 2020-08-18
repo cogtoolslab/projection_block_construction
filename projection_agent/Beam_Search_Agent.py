@@ -22,7 +22,7 @@ class Beam_Search_Agent(BFS_Agent):
     
     def __str__(self):
         """Yields a string representation of the agent"""
-        return 'type: '+self.__class__.__name__+' beam_width: '+str(self.beam_width)+' heuristic: '+self.heuristic.__name__+' max_depth '+str(self.max_depth)
+        return self.__class__.__name__+' beam_width: '+str(self.beam_width)+' heuristic: '+self.heuristic.__name__+' max_depth '+str(self.max_depth)
 
     def act(self,steps = None, verbose = False):
         """By default, we perform one beam search and then perform the entire sequence that has been found.
