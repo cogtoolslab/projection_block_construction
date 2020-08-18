@@ -229,7 +229,7 @@ def mean_touching_last_block_per_agent(df):
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
-def mean_pairwise_euclidean_distance_between_runs(df):
+def mean_pairwise_raw_euclidean_distance_between_runs(df):
     agents = df['agent'].unique()
     worlds =df['world'].unique()
     #all
@@ -248,8 +248,8 @@ def mean_pairwise_euclidean_distance_between_runs(df):
     stds = [statistics.stdev([l for aw in a for l in aw]) for a in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
-    plt.ylabel("Average pairwise Euclidean distance between runs on same silhouette per agent")
+    plt.ylabel("Mean Euclidean distance")
     plt.ylim(0,1)
-    plt.title("Mean Euclidean distance")
+    plt.title("Average pairwise Euclidean distance between runs on same silhouette per agent")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
