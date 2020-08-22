@@ -279,6 +279,10 @@ class Block:
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.height == other.height and self.width == other.width
+
+    def __str__(self):
+        """width, height at (x,y)"""
+        return "{}x{} at ({},{})".format(self.width,self.height,self.x,self.y)
     
     #Block Relational Properties
     def above(self, other):
