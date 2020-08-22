@@ -24,6 +24,14 @@ class Beam_Search_Agent(BFS_Agent):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' beam_width: '+str(self.beam_width)+' heuristic: '+self.heuristic.__name__+' max_depth '+str(self.max_depth)
 
+    def get_parameters(self):
+        """Returns dictionary of agent parameters."""
+        return {
+            'agent_type':self.__class__.__name__,
+            'heuristic':self.heuristic.__name__,
+            'beam_width':self.beam_width
+            }
+
     def act(self,steps = None, verbose = False):
         """By default, we perform one beam search and then perform the entire sequence that has been found.
         The ast represents the entire trajectory that we've explored so far."""

@@ -26,6 +26,15 @@ class Naive_Q_Agent(BFS_Agent):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_episodes)+' max_streaks: '+str(self.max_streaks)+' explore_rate: '+str(self.explore_rate)+' learning_rate: '+str(self.learning_rate)+' discount_factor: '+str(self.discount_factor)
 
+  def get_parameters(self):
+        """Returns dictionary of agent parameters."""
+        return {
+            'agent_type':self.__class__.__name__,
+            'max_episodes':self.scoring_function.__name__,
+            'explore_rate':self.explore_rate,
+            'learning_rate':self.learning_rate
+            }
+
     def train(self,max_episodes=None,max_streaks=None,max_steps=40,Qs=None,verbose=False):
         """Trains a Q matrix and returns it. It's not automatically set to the agent!
         Pass an existing table to Qs to update it, otherwise a new one is created."""

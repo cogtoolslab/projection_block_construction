@@ -17,6 +17,13 @@ class MCTS_Agent(BFS_Agent):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' horizon: '+str(self.horizon)
 
+  def get_parameters(self):
+        """Returns dictionary of agent parameters."""
+        return {
+            'agent_type':self.__class__.__name__,
+            'horizon':self.horizon,
+            }
+
     def MCTS(self,iterations,state=None,verbose=False):
         """Performs MCTS on the given state iterations times."""
         if state is None:

@@ -32,6 +32,14 @@ class Astar_Agent(BFS_Agent):
     def __str__(self):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_steps '+str(self.max_steps)
+    
+  def get_parameters(self):
+        """Returns dictionary of agent parameters."""
+        return {
+            'agent_type':self.__class__.__name__,
+            'heuristic':self.scoring_function.__name__,
+            'max_steps':self.max_steps
+            }    
 
     def act(self,steps = None, verbose = False):
         """By default performs a full iteration of A*, then acts all the steps."""

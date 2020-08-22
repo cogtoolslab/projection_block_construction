@@ -19,6 +19,15 @@ class BFS_Agent:
     def set_world(self,world):
         self.world = world
 
+    def get_parameters(self):
+        """Returns dictionary of agent parameters."""
+        return {
+            'agent_type':self.__class__.__name__,
+            'scoring_function':self.scoring_function.__name__,
+            'horizon':self.horizon,
+            'scoring_type':self.scoring
+            }
+
     def build_ast(self,state=None,horizon=None,verbose=False):
         """Builds ast from given state to a certain horizon. Returns root of tree."""
         def fill_node(node):
