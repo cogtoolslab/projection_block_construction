@@ -61,7 +61,7 @@ class Astar_Agent(BFS_Agent):
             if step == steps: break #if we have acted x steps, stop acting
         if verbose:
             print("Done, reached world status: ",self.world.status())
-        return [e.action for e in edges]
+        return [e.action for e in edges][:step]
 
     def Astar_search(self,verbose=False):
         root = Ast_node(self.world.current_state)

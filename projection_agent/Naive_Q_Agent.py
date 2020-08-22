@@ -102,12 +102,15 @@ class Naive_Q_Agent(BFS_Agent):
         """Trains the Q value for a while, then acts according to it by sampling the argmax of the Q value over the current state"""
         #train
         Qs,stats = self.train(verbose=verbose)
+        actions = []
         while self.world.status()[0] == 'Ongoing':
             #get best action
             action = Qs.argmax_Q(self.world.current_state)
+            actions.append(action)
             self.world.apply_action(action)
             if verbose:
                 print(self.world.status())
                 self.world.current_state.visual_display(True,self.world.silhouette)
-        print('Done,',self.world.status())
+        if verbose: print('Done,',self.world.status())
+        return actions
 

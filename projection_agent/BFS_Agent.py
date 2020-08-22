@@ -213,7 +213,7 @@ class BFS_Agent:
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
-        return [[str(b) for b in a.action] for a in chosen_seq.actions]
+        return [[str(b) for b in a.action] for a in chosen_seq.actions[:steps]] #only returns however many steps we actually acted, not the entire sequence
 
         
 class Ast_node():

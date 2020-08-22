@@ -74,7 +74,7 @@ class MCTS_Agent(BFS_Agent):
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
-        return [[str(b) for b in a.action] for a in sequence_of_actions]
+        return [[str(b) for b in a.action] for a in sequence_of_actions][step]
 
     class MCTS_Ast_node(Ast_node):
         """MCTS adaptation of Ast_node. MCTS steps are implemented in the node function for the subtree"""
