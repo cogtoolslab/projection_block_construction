@@ -30,7 +30,7 @@ class Naive_Q_Agent(BFS_Agent):
         """Returns dictionary of agent parameters."""
         return {
             'agent_type':self.__class__.__name__,
-            'max_episodes':self.scoring_function.__name__,
+            'max_episodes':self.max_episodes,
             'explore_rate':self.explore_rate,
             'learning_rate':self.learning_rate
             }
