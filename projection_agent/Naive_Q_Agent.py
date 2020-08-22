@@ -26,7 +26,7 @@ class Naive_Q_Agent(BFS_Agent):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_episodes)+' max_streaks: '+str(self.max_streaks)+' explore_rate: '+str(self.explore_rate)+' learning_rate: '+str(self.learning_rate)+' discount_factor: '+str(self.discount_factor)
 
-  def get_parameters(self):
+    def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {
             'agent_type':self.__class__.__name__,
