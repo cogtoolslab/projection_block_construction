@@ -14,11 +14,11 @@ import tqdm
 A row corresponds to an individual action taken, ie. a single block placed.
 ## every action
 'run_ID': unique ID for that run (very long)
-'agent_type': type of agent as string
+'agent': type of agent as string
 'world': name of world as string
-'agent_full': full agent string
 'step': index of action taken. Starts at 0
 'planning_step': index of planning step. Starts at 0
+'states_scored': in the process of planning, how often was a state evaluated? A proxy for how expensive planning is
 'action': action as human readable string (['(width x height)', 'x location'])
 '_action': action as object (for analysis)
 'action_x': x coordinate of block placed
@@ -34,10 +34,10 @@ various agent parameters (depends on agent loaded)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
 'world_failure_reason': if world_status is fail, then the reason is given here
-'random_seed': random seed of the agent
+**agent attributes** as provided by the class of agent. Includes random_seed
 """
 
-DF_COLS = ['run_ID','agent_type','world','agent_full','step','planning_step','states_scored','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason','random_seed']
+DF_COLS = ['run_ID','agent','world','step','planning_step','states_scored','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
@@ -75,7 +75,6 @@ def _run_single_experiment(experiment):
     # to prevent memory overflows only run if enough free memory exists.
     world_dict,agent,steps,verbose,run_nr = experiment
     world_label = world_dict[0]
-    agent_str = agent.__str__()
     world = world_dict[1]
     run_ID = world_label+agent.__str__()+str(run_nr)+'|'+str(random.randint(0,9999)) #unique string representing the run
     while psutil.virtual_memory().percent > RAM_LIMIT:
@@ -105,12 +104,14 @@ def _run_single_experiment(experiment):
         #unroll the chosen actions to get step-by-step entries in the dataframe
         planning_step_blockmaps = get_blockmaps(world.current_state.blockmap) # the blockmap for every step
         for ai,action in enumerate(chosen_actions):
+            if ai > steps: 
+                Warning("Number of actions ({}) exceeding steps ({}).".format(ai,steps))
+                break
             # adding the agent parameters
             r.iloc[i] = agent_parameters
             r.iloc[i]['run_ID'] = run_ID
-            r.iloc[i]['agent_type'] = agent_parameters['agent_type']
+            r.iloc[i]['agent'] = agent_parameters['agent_type']
             r.iloc[i]['world'] = world_label
-            r.iloc[i]['agent_full'] = agent_str
             r.iloc[i]['step'] = i
             r.iloc[i]['planning_step'] = planning_step
             r.iloc[i]['action'] = [str(e) for e in action] #human readable action
@@ -131,7 +132,7 @@ def _run_single_experiment(experiment):
 
     #after we stop acting
     # add info one last time
-    print("Done with",agent.__str__(),'******',world.__str__(),"in %s seconds with outcome "% round((time.time() - start_time)),str(world_status))
+    print("Done with",agent.__str__(),'******',world.__str__(),"in %s seconds with outcome "% round((time.perf_counter() - start_time)),str(world_status))
     #truncate df and return
     return  r[r['run_ID'].notnull()]
 
