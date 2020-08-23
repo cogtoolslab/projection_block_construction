@@ -21,6 +21,9 @@ A row corresponds to an individual action taken, ie. a single block placed.
 'planning_step': index of planning step. Starts at 0
 'action': action as human readable string (['(width x height)', 'x location'])
 '_action': action as object (for analysis)
+'action_x': x coordinate of block placed
+'action_block_width': width of block placed
+'action_block_height: height of block placed
 'blocks': blocks in world as human readable string ("width, height at x,y")
 '_blocks': blocks as objects (for analysis)
 'blockmap': bitmap of the world at the current state
@@ -31,9 +34,10 @@ various agent parameters (depends on agent loaded)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
 'world_failure_reason': if world_status is fail, then the reason is given here
+'random_seed': random seed of the agent
 """
 
-DF_COLS = ['run_ID','agent_type','world','agent_full','step','planning_step','action','_action','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason']
+DF_COLS = ['run_ID','agent_type','world','agent_full','step','planning_step','states_scored','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason','random_seed']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
@@ -111,6 +115,9 @@ def _run_single_experiment(experiment):
             r.iloc[i]['planning_step'] = planning_step
             r.iloc[i]['action'] = [str(e) for e in action] #human readable action
             r.iloc[i]['_action'] = action #action as object
+            r.iloc[i]['action_x'] = action[1]
+            r.iloc[i]['action_block_width'] = action[0].width
+            r.iloc[i]['action_block_height'] = action[0].height
             r.iloc[i]['blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
             r.iloc[i]['_blocks'] = world.current_state.blocks[:i+1]
             r.iloc[i]['blockmap'] = planning_step_blockmaps[i]
