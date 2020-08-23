@@ -1,20 +1,22 @@
-from random import randint
+from random import randint,seed
 from itertools import repeat
 import blockworld
 
 class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
 
-    def __init__(self, world=None, horizon = 3, scoring = 'Final_state', sparse=False,scoring_function=blockworld.silhouette_score):
+    def __init__(self, world=None, horizon = 3, scoring = 'Final_state', sparse=False,scoring_function=blockworld.silhouette_score,random_seed=None):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
         self.scoring = scoring
         self.scoring_function = scoring_function
+        if random_seed is None: random_seed = randint(0,99999)
+        self.random_seed = random_seed
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)
+        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed)
 
     def set_world(self,world):
         self.world = world
@@ -25,7 +27,8 @@ class BFS_Agent:
             'agent_type':self.__class__.__name__,
             'scoring_function':self.scoring_function.__name__,
             'horizon':self.horizon,
-            'scoring_type':self.scoring
+            'scoring_type':self.scoring,
+            'random_seed':self.random_seed
             }
 
     def build_ast(self,state=None,horizon=None,verbose=False):
@@ -162,6 +165,7 @@ class BFS_Agent:
     def select_action_seq(self,scored_actions): #could implement softmax here
         max_score = max([action_seq.score for action_seq in scored_actions if action_seq.score is not None])
         max_action_seqs = [action_seq for action_seq in scored_actions if action_seq.score == max_score] #choose randomly from highest actions
+        seed(self.random_seed) #fix random seed
         return max_action_seqs[randint(0,len(max_action_seqs)-1)]
 
     def act(self,steps = None,planning_horizon =None,verbose=False,scoring=None): 

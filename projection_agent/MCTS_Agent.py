@@ -9,19 +9,22 @@ class MCTS_Agent(BFS_Agent):
     """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search."""
     #super()
     pass
-    def __init__(self,world=None, horizon = 10000):
+    def __init__(self,world=None, horizon = 10000, random_seed=None):
         self.world = world
         self.horizon = horizon
+        if random_seed is None: random_seed = random.randint(0,99999)
+        self.random_seed = random_seed
     
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' horizon: '+str(self.horizon)
+        return self.__class__.__name__+' horizon: '+str(self.horizon)+' random seed: '+str(self.random_seed)
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {
             'agent_type':self.__class__.__name__,
             'horizon':self.horizon,
+            'random_seed':self.random_seed
             }
 
     def MCTS(self,iterations,state=None,verbose=False):
@@ -116,6 +119,7 @@ class MCTS_Agent(BFS_Agent):
                 #sample from children_nodes using UCT weighting
                 scored_children = [[action.target.UCT(),action.target] for action in cur.actions]
                 max_score = max([a[0] for a in scored_children])
+                random.seed(self.random_seed)
                 cur = random.choice([a[1] for a in scored_children if a[0] == max_score])
             return cur
 
@@ -138,6 +142,7 @@ class MCTS_Agent(BFS_Agent):
             for action in pos_actions:
                 self.add_action(action)
             # and sample one child state to return
+            random.seed(self.random_seed)
             child = random.sample([a.target for a in self.actions],1)[0]
             return child
 

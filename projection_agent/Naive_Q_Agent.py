@@ -1,6 +1,6 @@
 from BFS_Agent import BFS_Agent
 import blockworld
-from random import random,choice
+from random import random,choice,seed,randint
 from Q_table import Q_table,state_key,action_key
 
 class Naive_Q_Agent(BFS_Agent):
@@ -12,7 +12,7 @@ class Naive_Q_Agent(BFS_Agent):
     After the model achieves *streaks* many wins in a row, we terminate and consider the model fully trained.
     """
  
-    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_episodes=10**6,max_streaks=100,max_steps=40,explore_rate = 0.8 , learning_rate = 1, discount_factor = 1,):
+    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_episodes=10**6,max_streaks=100,max_steps=40,explore_rate = 0.8 , learning_rate = 1, discount_factor = 1,random_seed=None):
         self.world = world
         self.max_episodes = max_episodes
         self.max_streaks = max_streaks
@@ -21,10 +21,13 @@ class Naive_Q_Agent(BFS_Agent):
         self.explore_rate = explore_rate
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
+        if random_seed is None: random_seed = randint(0,99999)
+        self.random_seed = random_seed
+
     
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_episodes)+' max_streaks: '+str(self.max_streaks)+' explore_rate: '+str(self.explore_rate)+' learning_rate: '+str(self.learning_rate)+' discount_factor: '+str(self.discount_factor)
+        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_episodes: '+str(self.max_episodes)+' max_streaks: '+str(self.max_streaks)+' explore_rate: '+str(self.explore_rate)+' learning_rate: '+str(self.learning_rate)+' discount_factor: '+str(self.discount_factor)+' random seed: '+str(self.random_seed)
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
@@ -32,7 +35,8 @@ class Naive_Q_Agent(BFS_Agent):
             'agent_type':self.__class__.__name__,
             'max_episodes':self.max_episodes,
             'explore_rate':self.explore_rate,
-            'learning_rate':self.learning_rate
+            'learning_rate':self.learning_rate,
+            'random_seed':self.random_seed
             }
 
     def train(self,max_episodes=None,max_streaks=None,max_steps=40,Qs=None,verbose=False):
@@ -96,6 +100,7 @@ class Naive_Q_Agent(BFS_Agent):
             return Qs.argmax_Q(state)
         else:
             # we randomly sample an action that's possible in this state
+            seed(self.random_seed)
             return choice(state.possible_actions())
         
     def act(self,verbose=False):
