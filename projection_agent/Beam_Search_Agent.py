@@ -40,7 +40,7 @@ class Beam_Search_Agent(BFS_Agent):
             print("Can't act with world in status",self.world.status())
             return
         step = 0
-        edges = self.beam_search(verbose)
+        edges,number_of_states_evaluated = self.beam_search(verbose)
         for edge in edges: #act in the world for each edge
             self.world.apply_action(edge.action)
             step += 1
@@ -50,7 +50,7 @@ class Beam_Search_Agent(BFS_Agent):
             if step == steps: break #if we have acted x steps, stop acting
         if verbose:
             print("Done, reached world status: ",self.world.status())
-        return [e.action for e in edges][:step]
+        return [e.action for e in edges][:step],number_of_states_evaluated
 
     def beam_search(self,verbose=False):
         """Performs beam search. Each state is assigned a parent, which means that converging states are still treated as individual here. If we want converging states, we need a more sophisticated way of choosing the final trajectory and a constructor of states that prevents multiple instantions of the same world state.
@@ -58,6 +58,7 @@ class Beam_Search_Agent(BFS_Agent):
         #make root of ast
         root = Ast_node(self.world.current_state)
         i = 0
+        number_of_states_evaluated = 0
         current_nodes = [root] #contains the states at the current level of depth that we expand upon
         while i < self.max_depth:
             #Perform one expansion in beam search  
@@ -70,11 +71,12 @@ class Beam_Search_Agent(BFS_Agent):
                     edge = Ast_edge(action,node,target) #make edge
                     edge.target.parent_action = edge #add the parent action to allow for backtracking the found path
                     candidate_edges.append(edge)
+                    number_of_states_evaluated += 1
             if verbose: print("Found",len(candidate_edges),"potential edges at depth",i,"for",len(current_nodes),"nodes")
             if candidate_edges == []: #if we can't act any further, end the search
                 if verbose: print("No candidate edges, ending with current best node")
                 current_nodes.sort(key=get_score_node)
-                return backtrack(current_nodes[0]) #return the path to the best current state            
+                return backtrack(current_nodes[0]),number_of_states_evaluated #return the path to the best current state            
             current_nodes = []
             #select the most promising edges
             def get_score_edge(edge): #helper function to get the score of a target state according to heuristic function
@@ -94,11 +96,11 @@ class Beam_Search_Agent(BFS_Agent):
                 if self.world.is_win(node.state):
                     #we have a winner state, returns its trajectory
                     if verbose: print("Found winning node")
-                    return backtrack(node)
+                    return backtrack(node),number_of_states_evaluated
         #if we haven't found a winning state before reaching max depth, return best known state at current depth
         current_nodes.sort(key=get_score_node)
         if verbose: print("Didn't find winning node, returning best so far")
-        return backtrack(current_nodes[0]) #return the path to the best current state
+        return backtrack(current_nodes[0]),number_of_states_evaluated #return the path to the best current state
                 
             
 def backtrack(state):

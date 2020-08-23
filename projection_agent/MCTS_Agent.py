@@ -6,7 +6,9 @@ import math
 import sys
 
 class MCTS_Agent(BFS_Agent):
-    """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search."""
+    """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search.
+    
+    Planning cost is each state visited during light rollout."""
     #super()
     pass
     def __init__(self,world=None, horizon = 10000, random_seed=None):
@@ -29,13 +31,15 @@ class MCTS_Agent(BFS_Agent):
 
     def MCTS(self,iterations,state=None,verbose=False):
         """Performs MCTS on the given state iterations times."""
+        number_of_states_visited = 0
         if state is None:
             state = self.world.current_state
-        root = MCTS_Agent.MCTS_Ast_node(state,self.world)
+        root = MCTS_Agent.MCTS_Ast_node(state,self.world,random_seed=self.random_seed)
         for i in range(iterations):
             selected_node = root.selection()
             new_node = selected_node.expansion()
-            outcome = new_node.simulation()
+            outcome,_states_scored = new_node.simulation()
+            number_of_states_visited += _states_scored
             new_node.backpropagation(outcome)
             if verbose:
                 print(i,"of" ,iterations,"with result",str(outcome))
@@ -43,7 +47,7 @@ class MCTS_Agent(BFS_Agent):
         if verbose:
             print("MCTS is done")
             root.print_tree()
-        return root
+        return root,number_of_states_visited
 
     def act(self,steps=-1,iterations=None,verbose=False,exploration_parameter=math.sqrt(2)):
         """Makes the agent act, including changing the world state. By default: the agent plans once, then acts until the end of planning. Not guaranteed to finish
@@ -54,7 +58,7 @@ class MCTS_Agent(BFS_Agent):
             print("Can't act with world in status",self.world.status())
             return
         #perform MCTS
-        cur = self.MCTS(iterations,verbose=verbose)
+        cur,number_of_states_visited = self.MCTS(iterations,verbose=verbose)
         step = 0
         sequence_of_actions = []
         while self.world.status()[0] == 'Ongoing' and steps != 0:# and not cur.is_leaf():
@@ -77,16 +81,17 @@ class MCTS_Agent(BFS_Agent):
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
-        return [[str(b) for b in a.action] for a in sequence_of_actions][:step]
+        return [[b for b in a.action] for a in sequence_of_actions][:step],number_of_states_visited
 
     class MCTS_Ast_node(Ast_node):
         """MCTS adaptation of Ast_node. MCTS steps are implemented in the node function for the subtree"""
        
-        def __init__(self,state,world,score=None,stability=None,parent=None,MC_ratio=(0,0)):
+        def __init__(self,state,world,score=None,stability=None,parent=None,MC_ratio=(0,0),random_seed=None):
             super().__init__(state,score,stability,parent)
             self.MC_ratio = MC_ratio
             self.world = world
-            # self.UCT = 1
+            if random_seed is None: random_seed = random.randint(0,99999) 
+            self.random_seed = random_seed 
 
         def UCT(self,c=math.sqrt(2)):
             """Per Kocsis, Levente; Szepesvári, Csaba (2006). "Bandit based Monte-Carlo Planning". In Fürnkranz, Johannes; Scheffer, Tobias; Spiliopoulou, Myra (eds.). Machine Learning: ECML 2006, 17th European Conference on Machine Learning, Berlin, Germany, September 18–22, 2006, Proceedings. Lecture Notes in Computer Science. 4212"""
@@ -148,6 +153,7 @@ class MCTS_Agent(BFS_Agent):
 
         def simulation(self,max=1000):
             """Performs the simulation step of MCTS by simulating a game from the current state by randomly choosing legal actions (ie. light playouts). Performs maximally max steps (set negative for infinite steps). Return True for win, False for loose and did not finish."""
+            number_of_states_visited = 0
             w = copy.deepcopy(self.world)            
             w.current_state = self.state
             #heavy rollout
@@ -166,8 +172,9 @@ class MCTS_Agent(BFS_Agent):
                 action = random.sample(legal_actions,1)[0]
                 # w.current_state.visual_display(blocking=True,silhouette=w.silhouette)
                 w.apply_action(action)
+                number_of_states_visited += 1
                 max = max - 1
-            return True if w.status()[0] == 'Win' else False
+            return (True, number_of_states_visited) if w.status()[0] == 'Win' else (False, number_of_states_visited)
 
         def backpropagation(self,outcome):
             """Implements the backpropagtion step of MCTS"""
@@ -184,7 +191,7 @@ class MCTS_Agent(BFS_Agent):
                 pass
             else:
                 if target is None: #figure out the target state
-                    target = MCTS_Agent.MCTS_Ast_node(self.state.world.transition(action,self.state),self.world)
+                    target = MCTS_Agent.MCTS_Ast_node(self.state.world.transition(action,self.state),self.world,random_seed=self.random_seed)
                 action = Ast_edge(action,self,target) #create new action
                 action.target.parent_action = action #set as parent for target state
                 self.actions.append(action) #add action to node   

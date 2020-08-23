@@ -42,6 +42,7 @@ class Naive_Q_Agent(BFS_Agent):
     def train(self,max_episodes=None,max_streaks=None,max_steps=40,Qs=None,verbose=False):
         """Trains a Q matrix and returns it. It's not automatically set to the agent!
         Pass an existing table to Qs to update it, otherwise a new one is created."""
+        number_of_states_evaluated = 0
         if Qs is None:
             Qs = Q_table(action_space = self.world.possible_actions())
         if max_steps is None: max_steps = self.max_steps
@@ -70,6 +71,7 @@ class Naive_Q_Agent(BFS_Agent):
                 #update the current state
                 current_state = next_state
                 last_i = step_i
+                number_of_states_evaluated += 1
                 #Have we reached a terminal state?
                 if self.world.is_fail(current_state) or self.world.is_win(current_state): 
                     if verbose > 0 and self.world.is_win(current_state): print("You're Winner! 🏆")
@@ -89,7 +91,7 @@ class Naive_Q_Agent(BFS_Agent):
             else: streaks = 0 #reset streaks :(
             if streaks > self.max_streaks: #if we've won enough streaks, we end training
                 break
-        return Qs,stats
+        return Qs,stats,number_of_states_evaluated
     
     def sample_action(self,state,Qs,):
         """Sample a random action or choose the best possible action to take according to explore rate.
@@ -106,8 +108,9 @@ class Naive_Q_Agent(BFS_Agent):
     def act(self,verbose=False):
         """Trains the Q value for a while, then acts according to it by sampling the argmax of the Q value over the current state"""
         #train
-        Qs,stats = self.train(verbose=verbose)
+        Qs,stats,number_of_states_evaluated = self.train(verbose=verbose)
         actions = []
+        step = 0
         while self.world.status()[0] == 'Ongoing':
             #get best action
             action = Qs.argmax_Q(self.world.current_state)
@@ -116,6 +119,8 @@ class Naive_Q_Agent(BFS_Agent):
             if verbose:
                 print(self.world.status())
                 self.world.current_state.visual_display(True,self.world.silhouette)
+            if step > self.max_steps: break
+            step += 1
         if verbose: print('Done,',self.world.status())
-        return actions
+        return actions,number_of_states_evaluated
 

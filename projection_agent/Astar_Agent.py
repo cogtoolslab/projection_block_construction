@@ -37,7 +37,7 @@ class Astar_Agent(BFS_Agent):
         """Returns dictionary of agent parameters."""
         return {
             'agent_type':self.__class__.__name__,
-            'heuristic':self.scoring_function.__name__,
+            'heuristic':self.heuristic.__name__,
             'max_steps':self.max_steps
             }    
 
@@ -51,7 +51,7 @@ class Astar_Agent(BFS_Agent):
         self._silhouette_size = self.world.silhouette.sum() #the number of cells in the silhouette
         self._avg_block_size = mean([block.width * block.height for block in self.world.block_library])
         step = 0
-        edges = self.Astar_search(verbose)
+        edges,number_of_states_evaluated = self.Astar_search(verbose)
         for edge in edges: #act in the world for each edge
             self.world.apply_action(edge.action)
             step += 1
@@ -61,11 +61,12 @@ class Astar_Agent(BFS_Agent):
             if step == steps: break #if we have acted x steps, stop acting
         if verbose:
             print("Done, reached world status: ",self.world.status())
-        return [e.action for e in edges][:step]
+        return [e.action for e in edges][:step],number_of_states_evaluated
 
     def Astar_search(self,verbose=False):
         root = Ast_node(self.world.current_state)
         i = 0
+        number_of_states_evaluated = 0
         open_set = queue.PriorityQueue() #using a priority queue to manage the states
         open_set.put(FringeNode(self.f(root),root))
         while not open_set.empty() and i != self.max_steps:
@@ -74,7 +75,7 @@ class Astar_Agent(BFS_Agent):
             #check if that node is winning
             if self.world.is_win(current_node.state): #🎉
                 if verbose: print("Found winning state after",i)
-                return backtrack(current_node)
+                return backtrack(current_node),number_of_states_evaluated
             #get children of current state
             possible_actions = current_node.state.possible_actions()
             for action in possible_actions:
@@ -85,10 +86,11 @@ class Astar_Agent(BFS_Agent):
                 edge.target.parent_action = edge #add the parent action to allow for backtracking the found path
                 #TODO only place non-penalized nodes in the action set for memory
                 #place the children in the open set
-                open_set.put(FringeNode(self.f(target_node),target_node)) 
+                open_set.put(FringeNode(self.f(target_node),target_node))
+                number_of_states_evaluated += 1 
             if verbose: print("Step",i,"with open set with",open_set.qsize(), "members")
         if verbose: print("A* unsuccessful after iteration ",i)
-        return backtrack(current_node)
+        return backtrack(current_node),number_of_states_evaluated
 
     def f(self,node):
         """The combined cost function that takes into account the cost to get to the node (g) as well as the projected cost of reaching the goal (h).

@@ -82,15 +82,18 @@ class BFS_Agent:
             counter = -1
         else:
             counter = horizon
+        number_of_states_evaluated = 0
         current_nodes = [root]
         nodes = [root]
         while current_nodes  != [] and counter != 0:
             children_nodes = []
             for node in current_nodes:
                 self.score_node(node,sparse,dense_stability)
+                number_of_states_evaluated += 1
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
             counter = counter -1 
+        return number_of_states_evaluated
 
     def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False,verbose=False):
         """Generate all possible sequences of actions for the given horizon. """
@@ -193,7 +196,7 @@ class BFS_Agent:
         #make ast
         ast = self.build_ast(horizon=planning_horizon,verbose=verbose)  
         #score it
-        self.score_ast(ast)
+        number_of_states_evaluated = self.score_ast(ast)
         #generate action sequences
         act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False,verbose=verbose)
         if act_seqs == []: #if we can't act. Should be covered by world fail state above.
@@ -217,7 +220,7 @@ class BFS_Agent:
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
-        return [[str(b) for b in a.action] for a in chosen_seq.actions[:steps]] #only returns however many steps we actually acted, not the entire sequence
+        return [[b for b in a.action] for a in chosen_seq.actions[:steps]],number_of_states_evaluated #only returns however many steps we actually acted, not the entire sequence
 
         
 class Ast_node():
