@@ -18,7 +18,7 @@ A row corresponds to an individual action taken, ie. a single block placed.
 'world': name of world as string
 'step': index of action taken. Starts at 0
 'planning_step': index of planning step. Starts at 0
-'states_scored': in the process of planning, how often was a state evaluated? A proxy for how expensive planning is
+'states_evaluated': in the process of planning, how often was a state evaluated? A proxy for how expensive planning is
 'action': action as human readable string (['(width x height)', 'x location'])
 '_action': action as object (for analysis)
 'action_x': x coordinate of block placed
@@ -34,10 +34,11 @@ various agent parameters (depends on agent loaded)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
 'world_failure_reason': if world_status is fail, then the reason is given here
-**agent attributes** as provided by the class of agent. Includes random_seed
+'agent_attributes': the attributes of the agent as dictionary. Allow for easy grouping of agents across runs. Does not include random seed.
+**agent attributes unrolled** as provided by the class of agent. Includes random_seed.
 """
 
-DF_COLS = ['run_ID','agent','world','step','planning_step','states_scored','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason']
+DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
@@ -84,6 +85,7 @@ def _run_single_experiment(experiment):
     
     print('Running',agent.__str__(),'******',world.__str__())
     agent_parameters = agent.get_parameters()
+    agent_parameters_w_o_random_seed = {key:value for key,value in agent_parameters.items() if key != 'random_seed'}    
     agent.set_world(world)
     #create dataframe
     r = pd.DataFrame(columns=DF_COLS+list(agent_parameters.keys()), index=range(steps+1))
@@ -93,15 +95,12 @@ def _run_single_experiment(experiment):
         #execute the action
         try:
             start_time = time.perf_counter()
-            chosen_actions = agent.act(verbose=verbose)
+            chosen_actions,number_of_states_evaluated = agent.act(verbose=verbose)
             duration = time.perf_counter() - start_time 
             planning_step += 1
         except SystemError as e:
             print("Error while acting:",e)
             print(traceback.format_exc())
-        if type(chosen_actions) is not list:
-            #if we get a single action, we wrap it in a list so it can be unpacked
-            chosen_actions = [chosen_actions]
         #unroll the chosen actions to get step-by-step entries in the dataframe
         planning_step_blockmaps = get_blockmaps(world.current_state.blockmap) # the blockmap for every step
         for ai,action in enumerate(chosen_actions):
@@ -112,9 +111,11 @@ def _run_single_experiment(experiment):
             r.iloc[i] = agent_parameters
             r.iloc[i]['run_ID'] = run_ID
             r.iloc[i]['agent'] = agent_parameters['agent_type']
+            r.iloc[i]['agent_attributes'] = agent_parameters_w_o_random_seed
             r.iloc[i]['world'] = world_label
             r.iloc[i]['step'] = i
             r.iloc[i]['planning_step'] = planning_step
+            r.iloc[i]['states_evaluated'] = number_of_states_evaluated
             r.iloc[i]['action'] = [str(e) for e in action] #human readable action
             r.iloc[i]['_action'] = action #action as object
             r.iloc[i]['action_x'] = action[1]
