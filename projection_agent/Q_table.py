@@ -7,8 +7,6 @@ class Q_table:
     
       The Q table is a dictionary, where the key is a state and the value is another dictionary where the key is an action and the value is the Q value.
         Actions are represented as tuple ('BaseBlock.__str__(),x_loc').
-        This could be extended to create an array or some other datastructure, right now it's a dictionary so we don't need to build up the state space in advance. Hash functions would be the sane choice here.
-        - [ ] use array with hash functions
         """
 
     def __init__(self,action_space=None,state_space=None, initial_value=0):
