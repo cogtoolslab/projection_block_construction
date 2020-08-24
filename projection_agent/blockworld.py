@@ -63,6 +63,8 @@ class Blockworld(World):
         baseblock, x = action #unpacking the action
         if baseblock is None:
             return state
+        #check for legality of transition
+        if action not in self.current_state.possible_actions(): raise Exception("Action not possible") 
         #determine y coordinates of block
         y = 0
         while y < self.dimension[0] and state.blockmap[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
@@ -107,6 +109,7 @@ class Blockworld(World):
 
     """Simple functions inherited from the class World"""
     def apply_action(self,action):
+        if action not in self.current_state.possible_actions(): raise Exception("Action not possible")
         self.current_state = self.transition(action,self.current_state)
 
     def is_fail(self,state = None):
@@ -440,7 +443,8 @@ class BaseBlock:
         return area   
 
 
-"""Scoring functions. These should be passed to the scoring function of the state."""
+"""Scoring functions. These should be passed to the scoring function of the state. Note that these operate on the blockmap, not the blocks."""
+
 def F1score(state):
     """Returns the F1 score relative to the target silhouette defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
     if hasattr(state,'_F1score'):
