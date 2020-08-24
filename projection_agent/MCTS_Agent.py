@@ -136,11 +136,11 @@ class MCTS_Agent(BFS_Agent):
                 return self
             #pick an edge to expand—just random sampling for now
             # pos_actions = self.state.possible_actions()
-            #pick an edge to expand—only considering legal action
-            pos_actions = [a for a in self.state.possible_actions() if blockworld.legal(self.state.world.transition(a,self.state))]
+            #pick an edge to expand
+            pos_actions = self.state.possible_actions()
 
             if pos_actions == []:
-                # print("No legal actions to expand to")
+                #return self if this is a leaf node
                 return self
 
             # we expand all children
