@@ -74,7 +74,6 @@ class Naive_Q_Agent(BFS_Agent):
                 number_of_states_evaluated += 1
                 #Have we reached a terminal state?
                 if self.world.is_fail(current_state) or self.world.is_win(current_state): 
-                    if verbose > 0 and self.world.is_win(current_state): print("You're Winner! 🏆")
                     #perform terminal Q update (which is just the reward of the terminal state) for all possible actions
                     Qs.fill_Q(current_state,self.heuristic(current_state))
                     break #terminate the episode
@@ -122,5 +121,5 @@ class Naive_Q_Agent(BFS_Agent):
             if step > self.max_steps: break
             step += 1
         if verbose: print('Done,',self.world.status())
-        return actions,number_of_states_evaluated
+        return actions[:step],number_of_states_evaluated
 
