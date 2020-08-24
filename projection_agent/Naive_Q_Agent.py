@@ -93,12 +93,15 @@ class Naive_Q_Agent(BFS_Agent):
         return Qs,stats,number_of_states_evaluated
     
     def sample_action(self,state,Qs,):
-        """Sample a random action or choose the best possible action to take according to explore rate.
+        """Sample a random action or choose the best possible action to take according to explore rate. Implements **epsilon greedy** action sampling.
+        If no known best value is known, we return a random action.
         This is where the policy driving the learning lives.
+        If not a 
         - [ ] could be a lot more sophisticated (softmax etc)"""
-        if random() > self.explore_rate: 
+        arg_max_action =  Qs.argmax_Q(state) #get the best known action in the current state
+        if random() > self.explore_rate and arg_max_action is not None: 
             #we chose the best action so far
-            return Qs.argmax_Q(state)
+            return arg_max_action
         else:
             # we randomly sample an action that's possible in this state
             seed(self.random_seed)
@@ -113,6 +116,9 @@ class Naive_Q_Agent(BFS_Agent):
         while self.world.status()[0] == 'Ongoing':
             #get best action
             action = Qs.argmax_Q(self.world.current_state)
+            if action is None:
+                #if we've reached a state for which we don't have any Q values, stop executing
+                break
             actions.append(action)
             self.world.apply_action(action)
             if verbose:

@@ -48,14 +48,20 @@ class Q_table:
         S = state_key(state)
         # since we might not have seen the state before querying it
         self.check(state)
+        if list(self.Qs[S].values()).count(0) == len(self.Qs[S]):
+            #if we don't have initialized Q values yet return 0
+            return 0
         return self.Qs[S][self.argmax_Q(state)]
 
     def argmax_Q(self,state):
         """Returns the maximum action for Q(s,a) where we take the maximum over all a already initialized in this state.
-        - [x] What about uninitialized actions? -> Shouldn't exist per set_Q"""
+        Returns None if there are no Q values yet."""
         S = state_key(state)
         # since we might not have seen the state before querying it
         self.check(state)
+        if list(self.Qs[S].values()).count(0) == len(self.Qs[S]):
+            #if we don't have initialized Q values yet return None
+            return None
         return max(self.Qs[S], key=self.Qs[S].get)
 
 
