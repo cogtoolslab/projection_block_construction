@@ -29,7 +29,7 @@ A row corresponds to an individual action taken, ie. a single block placed.
 'blockmap': bitmap of the world at the current state
 various agent parameters (depends on agent loaded)
 ## only at planning step
-'_world_cur_state': current state of the world as object (for analysis)
+'_world_cur_state': current state of the world as object (for analysis). State is only updated at each planning step.
 '_blocks': current list of blocks in the world as object (for analysis)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
@@ -55,11 +55,12 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     # create a list of experiments to run
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose,i) for i in range(per_exp) for a in agents for w in worlds.items()]    
     # lets run the experiments
-    P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-    results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
-    # results_mapped = P.map(_run_single_experiment,experiments), total=len(experiments)
-    # results_mapped =list(map(_run_single_experiment,experiments))
-    P.close()
+    if parallelized is not False:
+        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
+        results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
+        P.close()
+    else:
+        results_mapped =list(map(_run_single_experiment,experiments))
 
     results = pd.concat(results_mapped).reset_index(drop = True)
 
@@ -78,14 +79,15 @@ def _run_single_experiment(experiment):
     world_dict,agent,steps,verbose,run_nr = experiment
     world_label = world_dict[0]
     world = world_dict[1]
-    run_ID = world_label+agent.__str__()+str(run_nr)+'|'+str(random.randint(0,9999)) #unique string representing the run
+    run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999)) #unique string representing the run
     while psutil.virtual_memory().percent > RAM_LIMIT:
-        print("Delaying running",agent.__str__(),'******',world.__str__(),"because of RAM usage. Trying again in 1000 seconds.")
+        print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds.")
         time.sleep(1000)
     
     print('Running',agent.__str__(),'******',world.__str__())
     agent_parameters = agent.get_parameters()
     agent_parameters_w_o_random_seed = {key:value for key,value in agent_parameters.items() if key != 'random_seed'}    
+    agent_parameters_w_o_random_seed = agent_para_dict(agent_parameters_w_o_random_seed)
     agent.set_world(world)
     #create dataframe
     r = pd.DataFrame(columns=DF_COLS+list(agent_parameters.keys()), index=range(steps+1))
@@ -124,17 +126,17 @@ def _run_single_experiment(experiment):
             r.iloc[i]['blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
             r.iloc[i]['_blocks'] = world.current_state.blocks[:i+1]
             r.iloc[i]['blockmap'] = planning_step_blockmaps[i]
+            r.iloc[i-1]['_world_cur_state'] = world.current_state
             i += 1 
         #the following are only filled for each planning step, not action step
         r.iloc[i-1]['execution_time'] = duration
-        r.iloc[i-1]['_world_cur_state'] = world.current_state
         world_status = world.status()
         r.iloc[i-1]['world_status'] = world_status[0] 
         r.iloc[i-1]['world_failure_reason'] = world_status[1]
 
     #after we stop acting
     # add info one last time
-    print("Done with",agent.__str__(),'******',world.__str__(),"in %s seconds with outcome "% round((time.perf_counter() - start_time)),str(world_status))
+    print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - start_time)),str(world_status))
     #truncate df and return
     return  r[r['run_ID'].notnull()]
 
@@ -151,3 +153,13 @@ def get_blockmaps(blockmap):
         bm = blockmap * (blockmap <= i+1)
         blockmaps.append(bm)
     return blockmaps
+
+class agent_para_dict(dict):
+    """A class for hashable dicts for agent parameters. Derives from a regular dictionary. 
+    ENTRIES MUST NOT BE CHANGED AFTER CREATION"""
+    def __key(self):
+        return tuple((k,self[k]) for k in sorted(self))
+    def __hash__(self):
+        return hash(self.__key())
+    def __eq__(self, other):
+        return self.__key() == other.__key()
