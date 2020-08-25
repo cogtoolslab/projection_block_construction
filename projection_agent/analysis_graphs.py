@@ -263,3 +263,29 @@ def mean_pairwise_raw_euclidean_distance_between_runs(df):
     plt.title("Average pairwise Euclidean distance between runs on same silhouette per agent")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def total_avg_states_evaluated_per_agent(df):
+    agents = df['agent_attributes'].unique()
+    #all
+    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ df['agent_attributes'] == a ])] for a in agents]
+    means = [statistics.mean(r) for r in scores]
+    stds = [statistics.stdev(r) for r in scores]
+    plt.bar(np.arange(len(scores))+0,means,align='center',yerr=stds,label="All",width=0.2)
+    #win
+    run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
+    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
+    means = [statistics.mean(r) if r != [] else 0 for r in scores]
+    stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
+    plt.bar(np.arange(len(scores))+.2,means,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    #fail
+    run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
+    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
+    means = [statistics.mean(r) if r != [] else 0 for r in scores]
+    stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
+    plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.ylim(bottom=0)
+    plt.ylabel("Average planning cost ")
+    plt.title("Average planning cost (number of states evaluated) per run")
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.show()
