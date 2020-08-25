@@ -20,7 +20,7 @@ class Q_table:
         """Run to ensure that the dictionary for the state exists. Fills them out with initial value if needed."""
         S = state_key(state)
         if S not in self.Qs:
-            self.Qs[S] = {a:self.initial_value for a in self.action_space}
+            self.Qs[S] = {a:self.initial_value for a in state.possible_actions()}
 
     
     def get_Q(self,state,action):
