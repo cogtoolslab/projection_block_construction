@@ -79,6 +79,12 @@ def _run_single_experiment(experiment):
     world_dict,agent,steps,verbose,run_nr = experiment
     world_label = world_dict[0]
     world = world_dict[1]
+    #if the agent has no random seed assigned yet, assign one now only for this run
+    try:
+        if agent.random_seed is None:
+            agent.random_seed = random.randint(0,99999)
+    except AttributeError:
+        pass
     run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999)) #unique string representing the run
     while psutil.virtual_memory().percent > RAM_LIMIT:
         print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds.")
