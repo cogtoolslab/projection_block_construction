@@ -11,7 +11,6 @@ class BFS_Agent:
         self.sparse = sparse
         self.scoring = scoring
         self.scoring_function = scoring_function
-        if random_seed is None: random_seed = randint(0,99999)
         self.random_seed = random_seed
 
     def __str__(self):
@@ -173,6 +172,8 @@ class BFS_Agent:
 
     def act(self,steps = None,planning_horizon =None,verbose=False,scoring=None): 
         """Make the agent act, including changing the world state. The agent deliberates once and then acts n steps. To get the agent to deliberate more than once, call action repeatedly. Setting the planning_horizon higher than the steps gives the agent foresight. To get dumb agent behavior, set scoring to Fixed."""
+        #Ensure that we have a random seed if none is set
+        if self.random_seed is None: self.random_seed = randint(0,99999)
         if scoring is None:
             scoring = self.scoring
         if planning_horizon is None:

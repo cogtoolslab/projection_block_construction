@@ -14,7 +14,6 @@ class MCTS_Agent(BFS_Agent):
     def __init__(self,world=None, horizon = 10000, random_seed=None):
         self.world = world
         self.horizon = horizon
-        if random_seed is None: random_seed = random.randint(0,99999)
         self.random_seed = random_seed
     
     def __str__(self):
@@ -52,6 +51,8 @@ class MCTS_Agent(BFS_Agent):
     def act(self,steps=-1,iterations=None,verbose=False,exploration_parameter=math.sqrt(2)):
         """Makes the agent act, including changing the world state. By default: the agent plans once, then acts until the end of planning. Not guaranteed to finish
          The agent samples according Kocsis, Levente; Szepesvári, Csaba (2006). "Bandit based Monte-Carlo Planning". """
+        #Ensure that we have a random seed if none is set
+        if self.random_seed is None: self.random_seed = random.randint(0,99999)
         if iterations is None:
             iterations = self.horizon
         if self.world.status()[0] != 'Ongoing':

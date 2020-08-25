@@ -21,7 +21,6 @@ class Naive_Q_Agent(BFS_Agent):
         self.explore_rate = explore_rate
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
-        if random_seed is None: random_seed = randint(0,99999)
         self.random_seed = random_seed
 
     
@@ -109,6 +108,8 @@ class Naive_Q_Agent(BFS_Agent):
         
     def act(self,verbose=False):
         """Trains the Q value for a while, then acts according to it by sampling the argmax of the Q value over the current state"""
+        #Ensure that we have a random seed if none is set
+        if self.random_seed is None: self.random_seed = randint(0,99999)
         #train
         Qs,stats,number_of_states_evaluated = self.train(verbose=verbose)
         actions = []
