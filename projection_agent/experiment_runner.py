@@ -56,7 +56,7 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose,i) for i in range(per_exp) for a in agents for w in worlds.items()]    
     # lets run the experiments
     if parallelized is not False:
-        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized)) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
+        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
         results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
         P.close()
     else:
