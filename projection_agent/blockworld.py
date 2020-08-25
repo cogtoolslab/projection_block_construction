@@ -430,10 +430,10 @@ class BaseBlock:
         output: absolute coordinates of top_left, bottom_left, bottom_right, top_right
         '''
         corners = {}
-        corners['bottom_left'] = verts[0]
-        corners['top_left'] = verts[1]
-        corners['top_right'] = verts[2]
-        corners['bottom_right'] = verts[3]
+        corners['bottom_left'] = base_verts[0]
+        corners['top_left'] = base_verts[1]
+        corners['top_right'] = base_verts[2]
+        corners['bottom_right'] = base_verts[3]
         return corners
 
     def get_area(self,shape='rectangle'):
