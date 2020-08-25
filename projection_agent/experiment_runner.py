@@ -99,7 +99,7 @@ def _run_single_experiment(experiment):
     r = pd.DataFrame(columns=DF_COLS+list(agent_parameters.keys()), index=range(steps+1))
     i = 0 #the ith action taken
     planning_step = 0
-    while i != steps and world.status()[0] == 'Ongoing':
+    while i != steps and planning_step != steps and world.status()[0] == 'Ongoing':
         #execute the action
         try:
             start_time = time.perf_counter()
