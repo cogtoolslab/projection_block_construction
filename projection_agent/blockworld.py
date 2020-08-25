@@ -181,6 +181,16 @@ class Blockworld(World):
         def __hash__(self):
                 return self.order_invariant_hash()
 
+        def clear(self):
+            """Clears the various cached values of the state and updates the blockmap."""
+            caches = [self._F1score,self._stable,self._cached_hash]
+            for cache in caches:
+                try:
+                    del(cache)
+                except:
+                    pass
+            self._update_map_with_blocks(self.blocks)
+
         def order_invariant_blockmap(self):
             """Returns an np.array of the blockmap that ignores the order in which the blocks were placed, ie outputs the same blockmap for all the states that have the same kinds of blocks in the same locations, but not the same order in which these blocks have been placed.
             Use (A==B).all() to compare two numpy arrays for equality."""
