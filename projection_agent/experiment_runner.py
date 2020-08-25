@@ -29,7 +29,7 @@ A row corresponds to an individual action taken, ie. a single block placed.
 'blockmap': bitmap of the world at the current state
 various agent parameters (depends on agent loaded)
 ## only at planning step
-'_world_cur_state': current state of the world as object (for analysis). State is only updated at each planning step.
+'_world: current state of the world as object (for analysis). State is only updated at each planning step.
 '_blocks': current list of blocks in the world as object (for analysis)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
@@ -38,7 +38,7 @@ various agent parameters (depends on agent loaded)
 **agent attributes unrolled** as provided by the class of agent. Includes random_seed.
 """
 
-DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world_cur_state','execution_time','world_status','world_failure_reason','agent_attributes']
+DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
@@ -56,7 +56,7 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose,i) for i in range(per_exp) for a in agents for w in worlds.items()]    
     # lets run the experiments
     if parallelized is not False:
-        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
+        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized)) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
         results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
         P.close()
     else:
@@ -132,7 +132,7 @@ def _run_single_experiment(experiment):
             r.iloc[i]['blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
             r.iloc[i]['_blocks'] = world.current_state.blocks[:i+1]
             r.iloc[i]['blockmap'] = planning_step_blockmaps[i]
-            r.iloc[i-1]['_world_cur_state'] = world.current_state
+            r.iloc[i]['_world'] = world
             i += 1 
         #the following are only filled for each planning step, not action step
         r.iloc[i-1]['execution_time'] = duration
