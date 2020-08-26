@@ -34,6 +34,6 @@ if __name__=="__main__": #required for multiprocessing
     worlds = {**worlds_silhouettes,**worlds_small}
 
     results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='beam_search')
-    print(results[['agent','world','outcome']])
+    print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
