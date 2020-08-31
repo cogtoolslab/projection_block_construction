@@ -289,3 +289,16 @@ def total_avg_states_evaluated_per_agent(df):
     plt.title("Average planning cost (number of states evaluated) per run")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def illustrate_worlds(df):
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    plt.figure(figsize=(20,20))  
+    for i,(name,world_obj) in enumerate(list(unique_world_obj.items())):
+        plt.subplot(math.sqrt(len(unique_world_obj)),math.sqrt(len(unique_world_obj))+1,i+1)
+        plt.imshow(world_obj.silhouette)
+        plt.title(name)
+        plt.xticks([])
+        plt.yticks([])
+    plt.show()
