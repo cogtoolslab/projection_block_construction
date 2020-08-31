@@ -154,6 +154,11 @@ class Blockworld(World):
             state = self.current_state
         return state.possible_actions()
 
+    def legal_actions(self,state=None):
+        if state is None:
+            state = self.current_state
+        return state.legal_actions()
+
     def stability(self,state=None):
         if state is None:
             state = self.current_state
@@ -180,6 +185,10 @@ class Blockworld(World):
         
         def __hash__(self):
                 return self.order_invariant_hash()
+
+        def transition(self,action):
+            """Takes an action and returns the resulting state without applying it to the current state of the world."""
+            return self.world.transition(action,self)
 
         def clear(self):
             """Clears the various cached values of the state and updates the blockmap."""
@@ -254,6 +263,10 @@ class Blockworld(World):
                         if self.blockmap[0 : base_block.height, x : x+base_block.width] .sum() == 0:
                             possible_actions.append((base_block,x))
             return possible_actions
+        
+        def legal_actions(self):
+            """Returns the subset of possible actions where the placed block is fully within the silhouette"""
+            return [a for a in self.possible_actions() if legal(self.transition(a))]
 
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way."""
