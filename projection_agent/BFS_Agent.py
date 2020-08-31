@@ -94,7 +94,7 @@ class BFS_Agent:
             counter = counter -1 
         return number_of_states_evaluated
 
-    def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = False,verbose=False):
+    def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = True,verbose=False):
         """Generate all possible sequences of actions for the given horizon. """
         def get_path(leaf):
             """Gets the path from leaf to root in order root -> leaf""" 
@@ -199,7 +199,7 @@ class BFS_Agent:
         #score it
         number_of_states_evaluated = self.score_ast(ast)
         #generate action sequences
-        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=False,verbose=verbose)
+        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=True,verbose=verbose)
         if act_seqs == []: #if we can't act. Should be covered by world fail state above.
             print("No possible actions")
             return
@@ -208,7 +208,7 @@ class BFS_Agent:
         #choose an action sequence
         chosen_seq = self.select_action_seq(act_seqs)
         if verbose:
-            self.Ast_node.print_tree(ast)
+            Ast_node.print_tree(ast)
             for act_seq in act_seqs:
                 act_seq.print_actseq()
             print("Chosen action sequence:",[[str(b) for b in a.action] for a in chosen_seq.actions], "with score: ",chosen_seq.score)
