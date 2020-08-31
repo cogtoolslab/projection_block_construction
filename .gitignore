@@ -61,3 +61,8 @@ settings.json
 projection_agent/.vscode/*
 *.prof
 running experiments notes.md
+projection_agent/Analysis many graphs.ipynb
+projection_agent/Analysis before migration.ipynb
+projection_agent/analysis_main.py
+projection_agent/experiments/exp_runner_tests.py
+old runs/beam_search.pkl copy
