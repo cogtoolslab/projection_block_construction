@@ -22,7 +22,8 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
-        Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=1))     
+        Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=1), scoring_function=bw.F1score,scoring='Average'),     
+        Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=3),scoring_function=bw.F1score,scoring='Average')     
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
