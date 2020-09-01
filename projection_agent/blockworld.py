@@ -53,7 +53,7 @@ class Blockworld(World):
         """String representation of the world"""
         return self.__class__.__name__
 
-    def  transition(self,action,state=None):
+    def transition(self,action,state=None,force=False):
         """Takes an action and a state and returns the resulting state without applying it to the current state of the world."""
         if state is None:
             state = self.current_state
@@ -64,7 +64,8 @@ class Blockworld(World):
         if baseblock is None:
             return state
         #check for legality of transition
-        if action not in self.current_state.possible_actions(): raise Exception("Action not possible") 
+        if not force: 
+            if action not in self.current_state.possible_actions(): raise Exception("Action not possible") 
         #determine y coordinates of block
         y = 0
         while y < self.dimension[0] and state.blockmap[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
@@ -108,9 +109,11 @@ class Blockworld(World):
 
 
     """Simple functions inherited from the class World"""
-    def apply_action(self,action):
-        if action not in self.current_state.possible_actions(): raise Exception("Action not possible")
-        self.current_state = self.transition(action,self.current_state)
+    def apply_action(self,action,force=False):
+        if not force:
+                if action not in self.current_state.possible_actions(): 
+                    raise Exception("Action not possible")
+        self.current_state = self.transition(action,self.current_state,force=force)
 
     def is_fail(self,state = None):
         if state is None:
