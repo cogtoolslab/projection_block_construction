@@ -19,7 +19,7 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 0.5
 
-    agents = [Naive_Q_Agent(heuristic=bw.F1score,max_episodes=e) for e in [10**2,10**4,10**5]]
+    agents = [Naive_Q_Agent(heuristic=bw.F1score,max_episodes=e) for e in [10**1,10**2,10**3,10**4]]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
