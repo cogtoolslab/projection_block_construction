@@ -51,7 +51,7 @@ def final_rows(df):
     """Returns the dataframe only with the final row of each run."""
     rows = []
     for run_ID in df['run_ID'].unique():
-        rows.append(df[(df['run_ID'] == run_ID)].iloc[-1:])
+        rows.append(df[(df['run_ID'] == run_ID)].tail(1))
     if rows != []: return pd.concat(rows) 
     else: return pd.DataFrame()
 
@@ -115,7 +115,8 @@ def mean_peak_score(table,scoring_function):
         F1s = get_scores(table[table['run_ID'] == row['run_ID']],bw.F1score)
         peak_index = F1s.index(max(F1s))
         #get the last blockmap
-        bm = table[(table['run_ID'] == row['run_ID']) & (table['step'] == peak_index)]['blockmap'].tail(1).item()
+        bm = row['blockmap'] * (row['blockmap'] <= peak_index + 1) #its cheaper to recreate the blockmap than to find it in the df
+        # bm = table[(table['run_ID'] == row['run_ID']) & (table['step'] == peak_index)]['blockmap'].tail(1).item()
         world = row['_world']
         state = State(world,bm) #create the dummy state object
         state.blockmap = bm
