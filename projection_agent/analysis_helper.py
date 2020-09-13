@@ -51,8 +51,7 @@ def final_rows(df):
     """Returns the dataframe only with the final row of each run."""
     rows = []
     for run_ID in df['run_ID'].unique():
-        final_step = df[df['run_ID'] == run_ID]['step'].iloc[-1]
-        rows.append(df[(df['run_ID'] == run_ID) & (df['step'] == final_step)])
+        rows.append(df[(df['run_ID'] == run_ID)].iloc[-1:])
     if rows != []: return pd.concat(rows) 
     else: return pd.DataFrame()
 
