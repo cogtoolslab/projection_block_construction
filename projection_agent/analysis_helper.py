@@ -12,6 +12,8 @@ import pandas as pd
 import statistics
 from pathos.multiprocessing import ProcessPool
 
+_final_row_dict = {} #type: dict
+
 class State():
     """A dummy state to pass to blockworld scoring functions"""
     def __init__(self,world,blockmap):
@@ -49,11 +51,27 @@ def get_runs(table):
 
 def final_rows(df):
     """Returns the dataframe only with the final row of each run."""
+    global _final_row_dict
+    df_hash = hash(df.values.tobytes())
+    try:
+        return _final_row_dict[df_hash]
+    except KeyError:
+        cache_final_rows(df)
+        return _final_row_dict[df_hash]
+
+def compute_final_rows(df):
+    """Returns the dataframe only with the final row of each run."""
     rows = []
     for run_ID in df['run_ID'].unique():
         rows.append(df[(df['run_ID'] == run_ID)].tail(1))
     if rows != []: return pd.concat(rows) 
-    else: return pd.DataFrame()
+    
+def cache_final_rows(df):
+    """Calculating the final rows is expensive, so let's save the dataframe with the final rows in a dictionary to only compute it once.
+    """
+    global _final_row_dict
+    df_hash = hash(df.values.tobytes())
+    _final_row_dict[hash(df.values.tobytes())] = compute_final_rows(df)
 
 def mean_win(table):
     """Proportion of wins, aka perfect & stable reconstructions"""
