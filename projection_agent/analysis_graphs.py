@@ -302,6 +302,38 @@ def illustrate_worlds(df):
         plt.xticks([])
         plt.yticks([])
     plt.show()
+
+def mean_win_per_agent_over_worlds(df):
+    df = final_rows(df)
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    #create plot
+    plt.rcParams.update({'font.size': 22})
+    fig, axes = plt.subplots(len(unique_world_names),2,figsize=(10,20))
+    fig.suptitle("Perfect reconstruction per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        #from mean_win_per_agent: plot
+        scores = [mean_win(_df[_df['agent_attributes']==a]) for a in agents]    
+        axes[i,1].bar(np.arange(len(scores)),scores,align='center',label=smart_short_agent_names(agents))
+        # axes[i,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+        axes[i,1].set_xticks([])
+        axes[i,1].set_ylim(0,1)
+        # axes[i,1].set_ylabel("Proportion of runs with perfect reconstruction")
+        # axes[i,1].set_title("Perfect reconstruction on "+world_name)
+    #only show agent labels at the bottom
+    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+    axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
+    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.show()
+
 def mean_peak_F1_per_agent_over_worlds(df):
     scoring_function = bw.F1score
     agents = df['agent_attributes'].unique()
