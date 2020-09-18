@@ -70,7 +70,7 @@ class Construction_Paper_Agent(BFS_Agent):
         full_silhouette = self.world.silhouette
         new_silhouette = self.decompose()
         if verbose: print("Got decomposition ",new_silhouette)
-        #create temporary world object
+        #create temporary world object containing the modified silhouette
         temp_world = copy.deepcopy(self.world)
         temp_world.silhouette = new_silhouette
         self.lower_agent.set_world(temp_world)
@@ -82,7 +82,7 @@ class Construction_Paper_Agent(BFS_Agent):
             action_seq += action
             costs += cost
         #apply actions to the world
-        if verbose: print("Decomposition success, applying action_seq:",str([str(a) for a in action_seq]))
+        if verbose: print("Decomposition done, applying action_seq:",str([str(a) for a in action_seq]))
         for action in action_seq:
             self.world.apply_action(action,force=True) # we need force here since the baseblock objects are in different memory locations 
         return action_seq,costs
