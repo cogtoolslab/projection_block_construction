@@ -377,3 +377,46 @@ def mean_peak_F1_per_agent_over_worlds(df):
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
+    df = final_rows(df)
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    #create plot
+    plt.rcParams.update({'font.size': 22})
+    fig, axes = plt.subplots(len(unique_world_names),2,figsize=(10,20))
+    fig.suptitle("Perfect reconstruction per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        #from mean_peak_score_per_agent: plot
+        #full
+        scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Full") for a in agents]    
+        axes[i,1].bar(np.arange(len(scores))+0,scores,align='center',label="Full",width=0.15)
+        #Unstable
+        scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Unstable") for a in agents]    
+        axes[i,1].bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color='green',width=0.15)
+        #Ongoing
+        scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Ongoing") for a in agents]    
+        axes[i,1].bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
+        if fast_fail:
+            #Outside
+            scores = [mean_failure_reason(_df[_df['agent_attributes']==a],"Outside") for a in agents]    
+            axes[i,1].bar(np.arange(len(scores))+.45,scores,align='center',label="Outside",color='orange',width=0.15)
+            #Holes
+            scores = [mean_failure_reason(_df[_df['agent_attributes']==a],"Holes") for a in agents]    
+            axes[i,1].bar(np.arange(len(scores))+.6,scores,align='center',label="Holes",color='red',width=0.15)
+        axes[i,1].set_ylim(0)
+        axes[i,1].set_xticks([])
+    #only show agent labels at the bottom
+    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+    axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
+    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.show()
