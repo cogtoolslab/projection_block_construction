@@ -51,13 +51,13 @@ def avg_steps_to_end_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    results = [avg_steps_to_end(df[df['run_ID'].isin(run_IDs)]) for a in agents]    
+    results = [avg_steps_to_end(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    results = [avg_steps_to_end(df[df['run_ID'].isin(run_IDs)]) for a in agents]    
+    results = [avg_steps_to_end(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
@@ -79,13 +79,13 @@ def mean_score_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    results = [mean_peak_score(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    results = [mean_peak_score(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
@@ -107,13 +107,13 @@ def mean_peak_score_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    results = [mean_peak_score(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    results = [mean_peak_score(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
@@ -135,13 +135,13 @@ def mean_avg_area_under_curve_to_peakF1_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    results = [mean_avg_area_under_curve_to_peakF1(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_avg_area_under_curve_to_peakF1(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    results = [mean_avg_area_under_curve_to_peakF1(df[df['run_ID'].isin(run_IDs)],scoring_function) for a in agents]    
+    results = [mean_avg_area_under_curve_to_peakF1(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
@@ -221,13 +221,13 @@ def mean_touching_last_block_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    results = [touching_last_block_score(df[df['run_ID'].isin(run_IDs)]) for a in agents]
+    results = [touching_last_block_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    results = [touching_last_block_score(df[df['run_ID'].isin(run_IDs)]) for a in agents]
+    results = [touching_last_block_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
@@ -290,6 +290,7 @@ def total_avg_states_evaluated_per_agent(df):
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
+#on worlds
 def illustrate_worlds(df):
     unique_world_names = df['world'].unique()
     unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
