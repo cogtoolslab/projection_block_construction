@@ -12,6 +12,7 @@ import pandas as pd
 import statistics
 from pathos.multiprocessing import ProcessPool
 
+# dictionary to cache the final rows of the dataframe for performance
 _final_row_dict = {} #type: dict
 
 class State():
@@ -90,6 +91,8 @@ def mean_failure_reason(table,reason):
         count = len(table[table['world_failure_reason'] == reason])
     except KeyError:
         count = 0
+    except TypeError: # if we get a none object as table, ie empty
+        return 0
     total = len(table)
     try:
         return count/total
