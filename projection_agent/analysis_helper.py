@@ -128,18 +128,21 @@ def mean_peak_score(table,scoring_function):
     Pass a scoring function like bw.F1score"""
     table_final_rows = final_rows(table)
     scores = []
-    for i,row in table_final_rows.iterrows():
-        #get index peak F1 score
-        F1s = get_scores(table[table['run_ID'] == row['run_ID']],bw.F1score)
-        peak_index = F1s.index(max(F1s))
-        #get the last blockmap
-        bm = row['blockmap'] * (row['blockmap'] <= peak_index + 1) #its cheaper to recreate the blockmap than to find it in the df
-        # bm = table[(table['run_ID'] == row['run_ID']) & (table['step'] == peak_index)]['blockmap'].tail(1).item()
-        world = row['_world']
-        state = State(world,bm) #create the dummy state object
-        state.blockmap = bm
-        score = scoring_function(state)
-        scores.append(score)
+    try:
+        for i,row in table_final_rows.iterrows():
+            #get index peak F1 score
+            F1s = get_scores(table[table['run_ID'] == row['run_ID']],bw.F1score)
+            peak_index = F1s.index(max(F1s))
+            #get the last blockmap
+            bm = row['blockmap'] * (row['blockmap'] <= peak_index + 1) #its cheaper to recreate the blockmap than to find it in the df
+            # bm = table[(table['run_ID'] == row['run_ID']) & (table['step'] == peak_index)]['blockmap'].tail(1).item()
+            world = row['_world']
+            state = State(world,bm) #create the dummy state object
+            state.blockmap = bm
+            score = scoring_function(state)
+            scores.append(score)
+    except AttributeError:
+        return 0,0
     try:
         return statistics.mean(scores),statistics.stdev(scores)
     except statistics.StatisticsError:
