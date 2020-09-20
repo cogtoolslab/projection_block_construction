@@ -274,6 +274,7 @@ class Blockworld(World):
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way. Silhouette is shown as dotted outline."""
             pyplot.close('all')
+            plt.figure(figsize=(4,4))
             pyplot.pcolor(self.blockmap[::-1], cmap='hot_r',vmin=0,vmax=20,linewidth=0,edgecolor='none')
             if silhouette is None: #try to get silhouette
                 try: 
