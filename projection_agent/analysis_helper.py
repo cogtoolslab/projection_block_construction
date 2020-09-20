@@ -34,6 +34,14 @@ def get_F1(row):
     state.blockmap = row['blockmap']
     return bw.F1score(state,force=True)
 
+def fill_final_row(df):
+    """Marks final row of run in place. Could use this in place of final_rows."""
+    df['final_row'] = False
+    for run_ID in df['run_ID'].unique():
+        last_step = max(df[(df['run_ID'] == run_ID)]['step']) #get last step
+        #use Boolean mask in loc
+        df.loc[(df['run_ID'] == run_ID) & (df['step'] == last_step),'final_row'] = True
+
 def smart_short_agent_names(attr_dicts):
     """Takes in a list of agent attributes and returns a list of strings corresponding to agent descriptions showing only properties that differ within an agent. """
     #split names
