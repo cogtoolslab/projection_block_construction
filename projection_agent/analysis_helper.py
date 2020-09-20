@@ -60,6 +60,14 @@ def final_rows(df):
         cache_final_rows(df)
         return _final_row_dict[df_hash]
 
+def peak_F1_rows(df):
+    """Returns the dataframe only with the peak F1 row of each run."""
+    last_rows = []
+    for run_ID in df['run_ID'].unique():
+        #get the row with peak F1 score
+        last_rows.append(run_to_peakF1(df[df['run_ID'] == run_ID]).tail(1))
+    return pd.concat(last_rows)
+
 def compute_final_rows(df):
     """Returns the dataframe only with the final row of each run."""
     rows = []
@@ -118,6 +126,10 @@ def mean_score(table,scoring_function):
         bm = row['blockmap']
         state = State(world,bm) #create the dummy state object
         state.blockmap = bm
+        try:
+            #try to recompute the score to ensure that we're not using a cached value
+            score = scoring_function(state,force=True)
+        except TypeError:
         score = scoring_function(state)
         scores.append(score)
     try:
@@ -142,6 +154,10 @@ def mean_peak_score(table,scoring_function):
             world = row['_world']
             state = State(world,bm) #create the dummy state object
             state.blockmap = bm
+            try:
+                #try to recompute the score to ensure that we're not using a cached value
+                score = scoring_function(state,force=True)
+            except TypeError:
             score = scoring_function(state)
             scores.append(score)
     except AttributeError:
@@ -175,7 +191,11 @@ def mean_avg_area_under_curve_to_peakF1(table,scoring_function):
         state = State(world,bm) #create the dummy state object
         state.blockmap = bm
         run = run_to_peakF1(table[table['run_ID'] == row['run_ID']])
-        score = avg_area_under_curve_score(run,scoring_function)
+        try:
+            #try to recompute the score to ensure that we're not using a cached value
+            score = scoring_function(state,force=True)
+        except TypeError:
+            score = scoring_function(state)        
         scores.append(score)
     try:
         return statistics.mean(scores),statistics.stdev(scores)
@@ -201,6 +221,9 @@ def get_scores(table,scoring_function):
     for bm in blockmaps:
         state = State(world,bm)
         state.blockmap = bm
+        try:
+            score = scoring_function(state,force=True)
+        except TypeError:
         score = scoring_function(state)
         scores.append(score)
     return scores    

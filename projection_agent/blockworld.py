@@ -471,9 +471,11 @@ class BaseBlock:
 
 """Scoring functions. These should be passed to the scoring function of the state. Note that these operate on the blockmap, not the blocks."""
 
-def F1score(state):
-    """Returns the F1 score relative to the target silhouette defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN."""
-    if hasattr(state,'_F1score'):
+def F1score(state,force=False):
+    """Returns the F1 score relative to the target silhouette defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN.
+    
+    By default, the F1 score is cached for performance. Use force if the blockmap has been manually changed."""
+    if hasattr(state,'_F1score') and not force:
         return state._F1score
     s = sys.float_info[3] #smallest possible float to prevent division by zero. Not the prettiest of hacks
     target = state.world.silhouette > 0
