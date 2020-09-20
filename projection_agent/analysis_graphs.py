@@ -421,3 +421,31 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
+
+def heatmaps_at_peak_per_agent_over_world(df):
+    df = peak_F1_rows(df)
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    #create plot
+    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(10,14))
+    fig.suptitle("Heatmap at peak F1 per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        #generate heatmaps
+        for j,agent in enumerate(agents):
+            bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
+            shape = bms.head(1).item().shape
+            bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
+            heatmap = np.sum(bms)
+            axes[i,j+1].imshow(heatmap,cmap='viridis')    
+            axes[i,j+1].set_yticks([])
+            axes[i,j+1].set_xticks([])
+            axes[i,j+1].set_title(smart_short_agent_names(agents)[j], fontsize=6,wrap=True)
+    plt.show()
