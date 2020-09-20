@@ -272,12 +272,17 @@ class Blockworld(World):
             return [a for a in self.possible_actions() if legal(self.transition(a))]
 
         def visual_display(self,blocking=False,silhouette=None):
-            """Shows the state in a pretty way."""
+            """Shows the state in a pretty way. Silhouette is shown as dotted outline."""
             pyplot.close('all')
-            pyplot.pcolormesh(self.blockmap[::-1], cmap='hot_r',vmin=0,vmax=20)
+            pyplot.pcolor(self.blockmap[::-1], cmap='hot_r',vmin=0,vmax=20,linewidth=0,edgecolor='none')
+            if silhouette is None: #try to get silhouette
+                try: 
+                    silhouette = self.world.silhouette
+                except:
+                    pass
             if silhouette is not None:
                 #we print the target silhouette as transparent overlay
-                pyplot.pcolormesh(silhouette[::-1], cmap='Greens',alpha=0.20,facecolors='grey',edgecolors='black')
+                pyplot.pcolor(silhouette[::-1],cmap='binary',alpha=.8,linewidth=2,facecolor='none',edgecolor='black',capstyle='round',joinstyle='round',linestyle=':')
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
