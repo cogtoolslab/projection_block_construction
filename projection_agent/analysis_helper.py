@@ -356,6 +356,7 @@ def pairwise_raw_euclidean_distance_between_blocks_across_all_runs(table):
 
 def display_state(series):
     """Expects a series (row of df) and plots out the current state and overlaid silhouette"""
+    assert(type(series) == pd.core.series.Series),"Needs a series, not a dataframe"
     bm = series['blockmap']
     w = series['_world']
     w.current_state.blockmap = bm
