@@ -23,7 +23,6 @@ if __name__=="__main__": #required for multiprocessing
     agents = [
         BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Average'),
         BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
-        BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
         BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average'),
         BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'),
         BFS_Agent(horizon=4,scoring_function=bw.F1score,scoring='Average'),
