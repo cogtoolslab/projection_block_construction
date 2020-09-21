@@ -22,8 +22,7 @@ def load_silhouette_from_Json(path,dimensions=(13,18)):
 def load_interesting_structure(number,dimensions=(8,8)):
     """Loads a JSON structure from the folder block_construction/stimuli/interesting_structures by number. There are 16."""
     path = "interesting_structures"
-    files = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
-    return load_silhouette_from_Json(files[number],dimensions)
+    return load_silhouette_from_Json('interesting_structures/hand_selected_'+str(number).zfill(3)+'.json',dimensions)
 
 def plot_interesting_figures():
     import matplotlib.pyplot as plt
