@@ -79,7 +79,11 @@ def final_rows(df):
         return _final_row_dict[df_hash]
     except KeyError:
         cache_final_rows(df)
+    try:
         return _final_row_dict[df_hash]
+    except KeyError:
+        #sometimes the hashing doesn't work for views and produces a different key every time
+        return compute_final_rows(df)
 
 def peak_F1_rows(df):
     """Returns the dataframe only with the peak F1 row of each run."""
