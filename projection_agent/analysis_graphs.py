@@ -1,5 +1,6 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
 from analysis_helper import *
+import textwrap
 
 PADDING = 20 #How long should runs be padded to ensure no missing value for early termination?
 
@@ -429,7 +430,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
     unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
     unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
     #create plot
-    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(10,14))
+    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(2+2*len(agents),4+2*len(unique_world_names)))
     fig.suptitle("Heatmap at peak F1 per agent over silhouettes")
     for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
         _df = df[df['world'] == world_name]
@@ -438,6 +439,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
         # axes[i,0].set_title(world_name)
         axes[i,0].set_xticks([])
         axes[i,0].set_yticks([])
+        axes[i,0].set_title(textwrap.fill(world_name,width=20), fontsize=10,wrap=True)
         #generate heatmaps
         for j,agent in enumerate(agents):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
@@ -447,5 +449,6 @@ def heatmaps_at_peak_per_agent_over_world(df):
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
-            axes[i,j+1].set_title(smart_short_agent_names(agents)[j], fontsize=6,wrap=True)
+            tit = smart_short_agent_names(agents)[j]
+            axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
     plt.show()
