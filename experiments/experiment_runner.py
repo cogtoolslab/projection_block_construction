@@ -1,3 +1,10 @@
+# set up directories
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+results_dir = os.path.join(proj_dir,'results')
+df_dir = os.path.join(results_dir,'dataframes')
+
 import pandas as pd
 import numpy as np
 import copy
@@ -67,9 +74,11 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     if save is not False:
         #save the results to a file.
         if type(save) is str:
-            results.to_pickle(save+".pkl")
+            results.to_pickle(os.path.join(df_dir,save+".pkl"))
+            print("Saved to",os.path.join(df_dir,save+".pkl"))
         else:
-            results.to_pickle("Experiment "+str(datetime.datetime.today())+".pkl")
+            results.to_pickle(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+".pkl"))
+            print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+".pkl")
 
     return results
 

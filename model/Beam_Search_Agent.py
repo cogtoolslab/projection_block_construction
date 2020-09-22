@@ -1,3 +1,9 @@
+# set up imports
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+utils_dir = os.path.join(proj_dir,'utils')
+
 from BFS_Agent import BFS_Agent, Ast_node, Ast_edge
 import blockworld
  

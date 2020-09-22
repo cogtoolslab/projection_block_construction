@@ -1,3 +1,10 @@
+# set up imports
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+utils_dir = os.path.join(proj_dir,'utils')
+sys.path.append(utils_dir)
+
 from random import randint,seed
 from itertools import repeat
 import blockworld

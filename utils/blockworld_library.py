@@ -1,5 +1,11 @@
 """This file contains a number of silhouettes and sets of baseblocks."""
 
+# set up imports
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+stimuli_dir = os.path.join(proj_dir,'stimuli')
+
 import numpy as np
 import blockworld
 import json
@@ -21,8 +27,7 @@ def load_silhouette_from_Json(path,dimensions=(13,18)):
 
 def load_interesting_structure(number,dimensions=(8,8)):
     """Loads a JSON structure from the folder block_construction/stimuli/interesting_structures by number. There are 16."""
-    path = "interesting_structures"
-    return load_silhouette_from_Json('interesting_structures/hand_selected_'+str(number).zfill(3)+'.json',dimensions)
+    return load_silhouette_from_Json(os.path.join(stimuli_dir,'interesting_structures/hand_selected_'+str(number).zfill(3)+'.json'),dimensions)
 
 def plot_interesting_figures():
     import matplotlib.pyplot as plt
