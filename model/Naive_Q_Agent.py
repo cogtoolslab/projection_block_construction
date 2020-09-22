@@ -1,3 +1,11 @@
+# set up imports
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+agent_dir = os.path.join(proj_dir,'model')
+agent_util_dir = os.path.join(agent_dir,'utils')
+sys.path.append(agent_util_dir)
+
 from BFS_Agent import BFS_Agent
 import blockworld
 from random import random,choice,seed,randint

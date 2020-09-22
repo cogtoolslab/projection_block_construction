@@ -1,12 +1,13 @@
 if __name__=="__main__": #required for multiprocessing
-    #add the parent path to import the modules
-    from inspect import getsourcefile
-    import os.path
+    import os
     import sys
-    current_path = os.path.abspath(getsourcefile(lambda:0))
-    current_dir = os.path.dirname(current_path)
-    parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
-    sys.path.insert(0, parent_dir)
+    proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    utils_dir = os.path.join(proj_dir,'utils')
+    sys.path.append(utils_dir)
+    agent_dir = os.path.join(proj_dir,'model')
+    sys.path.append(agent_dir)
+    agent_util_dir = os.path.join(agent_dir,'utils')
+    sys.path.append(agent_util_dir)
 
     from Beam_Search_Agent import Beam_Search_Agent
     from BFS_Agent import BFS_Agent
@@ -34,7 +35,7 @@ if __name__=="__main__": #required for multiprocessing
         Astar_Agent(max_steps=10)
     ]
 
-    silhouette8 = [14,11,3,13,12,1,15,5]
+    silhouette8 = [14,11,]#3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {
@@ -46,6 +47,6 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,30,40,verbose=False,parallelized=True,save='exp_runner_test')
+    results = experiment_runner.run_experiment(worlds,agents,1,20,verbose=False,parallelized=True,save='exp_runner_test')
     print(results[['agent_type','world','world_status']])
     print("Done in %s seconds" % (time.time() - start_time))
