@@ -1,12 +1,13 @@
 if __name__=="__main__": #required for multiprocessing
-    #add the parent path to import the modules
-    from inspect import getsourcefile
-    import os.path
+    import os
     import sys
-    current_path = os.path.abspath(getsourcefile(lambda:0))
-    current_dir = os.path.dirname(current_path)
-    parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
-    sys.path.insert(0, parent_dir)
+    proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    utils_dir = os.path.join(proj_dir,'utils')
+    sys.path.append(utils_dir)
+    agent_dir = os.path.join(proj_dir,'model')
+    sys.path.append(agent_dir)
+    agent_util_dir = os.path.join(agent_dir,'utils')
+    sys.path.append(agent_util_dir)
 
     from Astar_Agent import Astar_Agent
     import blockworld as bw
