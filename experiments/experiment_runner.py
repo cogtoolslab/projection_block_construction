@@ -72,6 +72,9 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     results = pd.concat(results_mapped).reset_index(drop = True)
 
     if save is not False:
+        #check if results directory exists
+        if not os.path.isdir(df_dir):
+            os.makedirs(df_dir)
         #save the results to a file.
         if type(save) is str:
             results.to_pickle(os.path.join(df_dir,save+".pkl"))
