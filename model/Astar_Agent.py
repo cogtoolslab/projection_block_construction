@@ -1,3 +1,8 @@
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0,proj_dir)
+
 from model.BFS_Agent import BFS_Agent, Ast_node, Ast_edge
 from model.Beam_Search_Agent import backtrack
 import utils.blockworld as blockworld

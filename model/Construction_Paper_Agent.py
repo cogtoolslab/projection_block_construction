@@ -1,3 +1,8 @@
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0,proj_dir)
+
 from model.BFS_Agent import *
 import numpy as np
 import copy
@@ -149,7 +154,7 @@ class Construction_Paper_Agent(BFS_Agent):
 
     def __str__(self):
             """Yields a string representation of the agent"""
-            return self.__class__.__name__+' lower level agent: '+self.lower_agent.__str__() + ' decomposition function' + self.decompose.__name__()
+            return self.__class__.__name__+' lower level agent: '+self.lower_agent.__str__() + ' decomposition function' + self.decompose.__name__
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
