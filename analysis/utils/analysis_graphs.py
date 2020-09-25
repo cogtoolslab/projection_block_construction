@@ -1,7 +1,13 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
+# set up imports
+import os
+import sys
+proj_dir =  os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.append(proj_dir)
+
 from analysis_helper import *
 import textwrap
-import analysis.utils.trajectory
+import analysis.utils.trajectory as trajectory
 
 PADDING = 20 #How long should runs be padded to ensure no missing value for early termination?
 
@@ -448,6 +454,39 @@ def heatmaps_at_peak_per_agent_over_world(df):
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
             heatmap = np.sum(bms)
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
+            axes[i,j+1].set_yticks([])
+            axes[i,j+1].set_xticks([])
+            tit = smart_short_agent_names(agents)[j]
+            axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
+    plt.show()
+
+def trajectory_per_agent_over_world(df):
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    unique_world_names = df['world'].unique()
+    #create plot
+    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(2+4*len(agents),2+3*len(unique_world_names)))
+    fig.suptitle("Trajectory graph per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        dfic = trajectory.agentdf_to_dfic(_df)
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        axes[i,0].set_title(textwrap.fill(world_name,width=20), fontsize=10,wrap=True)
+        #generate heatmaps
+        for j,agent in enumerate(dfic['agent'].unique()):
+            img = trajectory.plot_trajectory_graph(data=dfic,
+                    target_name = world_name, 
+                    agent = agent,
+                    show = False,
+                    save = False,
+                    x_upper_bound = world_obj.silhouette.shape[0])
+            axes[i,j+1].imshow(img)    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
             tit = smart_short_agent_names(agents)[j]
