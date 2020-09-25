@@ -23,8 +23,13 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
-        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=1, scoring_function=bw.F1score,scoring='Average')),     
-        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'))     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_1),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_2),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_3),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_4),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.random_1_4),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.horizontal_construction_paper_holes),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.vertical_construction_paper_holes),     
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
@@ -39,7 +44,7 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='construction_paper_agent')
+    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='construction_paper_agent_decompositions')
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
