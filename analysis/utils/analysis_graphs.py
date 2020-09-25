@@ -1,6 +1,7 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
 from analysis_helper import *
 import textwrap
+import analysis.utils.trajectory
 
 PADDING = 20 #How long should runs be padded to ensure no missing value for early termination?
 
