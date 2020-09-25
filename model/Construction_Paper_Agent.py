@@ -1,4 +1,4 @@
-from BFS_Agent import *
+from model.BFS_Agent import *
 import numpy as np
 import copy
 

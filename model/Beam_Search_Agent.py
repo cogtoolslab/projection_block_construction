@@ -1,11 +1,5 @@
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-utils_dir = os.path.join(proj_dir,'utils')
-
-from BFS_Agent import BFS_Agent, Ast_node, Ast_edge
-import blockworld
+from model.BFS_Agent import BFS_Agent, Ast_node, Ast_edge
+import utils.blockworld as blockworld
  
 class Beam_Search_Agent(BFS_Agent):
     """An agent using beam search—the agent expands only a certain number of promising nodes at each step and performs breadth first search over the resulting smaller tree. 

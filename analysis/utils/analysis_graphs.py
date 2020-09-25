@@ -1,11 +1,5 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append(proj_dir)
-
-from analysis_helper import *
+from analysis.utils.analysis_helper import *
 import textwrap
 import analysis.utils.trajectory as trajectory
 

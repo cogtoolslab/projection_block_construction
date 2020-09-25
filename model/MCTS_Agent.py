@@ -1,15 +1,8 @@
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-utils_dir = os.path.join(proj_dir,'utils')
-
-from BFS_Agent import BFS_Agent, Ast_edge, Ast_node
-import blockworld
+from model.BFS_Agent import BFS_Agent, Ast_edge, Ast_node
+import utils.blockworld as blockworld
 import random
 import copy
 import math
-import sys
 
 class MCTS_Agent(BFS_Agent):
     """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search.

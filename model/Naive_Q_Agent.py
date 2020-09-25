@@ -1,15 +1,7 @@
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-agent_dir = os.path.join(proj_dir,'model')
-agent_util_dir = os.path.join(agent_dir,'utils')
-sys.path.append(agent_util_dir)
-
-from BFS_Agent import BFS_Agent
-import blockworld
+from model.BFS_Agent import BFS_Agent
+import utils.blockworld as blockworld
 from random import random,choice,seed,randint
-from Q_table import Q_table,state_key,action_key
+from model.utils.Q_table import Q_table,state_key,action_key
 
 class Naive_Q_Agent(BFS_Agent):
     """This class implements naive Q learning. 

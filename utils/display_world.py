@@ -3,7 +3,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 from pygame.locals import *
 import json
-import blockworld_helpers as bw
+import utils.blockworld_helpers as bw
 from Box2D import *
 import random
 import argparse

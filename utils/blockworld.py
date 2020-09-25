@@ -1,4 +1,4 @@
-from world import World
+from utils.world import World
 
 import numpy as np
 from PIL import Image
@@ -14,12 +14,12 @@ import datetime
 import random
 from random import randint
 import string
+import sys
 import os
 
-import blockworld_helpers
-import display_world
+import utils.blockworld_helpers as blockworld_helpers
+import utils.display_world as display_world
 
-import sys
 
 class Blockworld(World):
     """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter. 

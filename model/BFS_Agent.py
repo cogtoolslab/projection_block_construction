@@ -1,13 +1,6 @@
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-utils_dir = os.path.join(proj_dir,'utils')
-sys.path.append(utils_dir)
-
 from random import randint,seed
 from itertools import repeat
-import blockworld
+import utils.blockworld as blockworld
 
 class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""

@@ -7,7 +7,7 @@ proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 stimuli_dir = os.path.join(proj_dir,'stimuli')
 
 import numpy as np
-import blockworld
+import utils.blockworld as blockworld
 import json
 from io import open
 from os import listdir

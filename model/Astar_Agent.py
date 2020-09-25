@@ -1,12 +1,6 @@
-# set up imports
-import os
-import sys
-proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-utils_dir = os.path.join(proj_dir,'utils')
-
-from BFS_Agent import BFS_Agent, Ast_node, Ast_edge
-from Beam_Search_Agent import backtrack
-import blockworld
+from model.BFS_Agent import BFS_Agent, Ast_node, Ast_edge
+from model.Beam_Search_Agent import backtrack
+import utils.blockworld as blockworld
 import queue
 from dataclasses import dataclass, field
 from typing import Any
