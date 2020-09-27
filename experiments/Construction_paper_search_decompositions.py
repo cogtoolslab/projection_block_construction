@@ -23,6 +23,7 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.no_decomposition),     
         CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_1),     
         CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_2),     
         CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=2, scoring_function=bw.F1score,scoring='Average'),decomposition_function=CPA.fixed_3),     

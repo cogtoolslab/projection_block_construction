@@ -136,6 +136,10 @@ def fixed_4(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
     return fixed(self,4,current_built)
 
+def no_decomposition(self,current_built=None):
+    """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
+    return self.world.silhouette
+
 # Agent
 class Construction_Paper_Agent(BFS_Agent):
     """Implements the construction paper proposal for a projection based agent.
