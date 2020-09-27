@@ -553,7 +553,7 @@ def legal(state):
         return True
 
 def holes(state):
-    """Returns the number of holes in the structure that are covered with a block to prevent the model from creating holes it cannot fill."""
+    """Returns the number of cells that are in the silhouette, but not built, but have something built on top of them. This tracks the number of holes."""
     target = state.world.silhouette > 0
     built = (state.blockmap > 0) * 2
     mapped = target + built

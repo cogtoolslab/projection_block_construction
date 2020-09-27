@@ -76,7 +76,10 @@ def smart_short_agent_names(attr_dicts):
 
 def get_runs(table):
     """Returns a list of tables corresponding to one run."""
-    return [table[table['run_ID'] == id] for id in table['run_ID'].unique()]
+    try:
+        return [table[table['run_ID'] == id] for id in table['run_ID'].unique()]
+    except KeyError:
+        return []
 
 def final_rows(df):
     """Returns the dataframe only with the final row of each run."""
@@ -105,7 +108,9 @@ def compute_final_rows(df):
     rows = []
     for run_ID in df['run_ID'].unique():
         rows.append(df[(df['run_ID'] == run_ID)].tail(1))
-    if rows != []: return pd.concat(rows) 
+    if rows != []: return pd.concat(rows)
+    else:
+        return pd.DataFrame() 
     
 def cache_final_rows(df):
     """Calculating the final rows is expensive, so let's save the dataframe with the final rows in a dictionary to only compute it once.
@@ -149,7 +154,7 @@ def avg_steps_to_end(table):
     except statistics.StatisticsError:
         return 0,0
 
-def mean_score(table,scoring_function):
+def mean_score(table,scoring_function=bw.F1score):
     """Returns the mean and standard deviation of the chosen score at the end of a run. Pass a scoring function like bw.F1score"""
     table = final_rows(table)
     scores = []
@@ -165,12 +170,13 @@ def mean_score(table,scoring_function):
             score = scoring_function(state)        
         scores.append(score)
     try:
+        scores = [float(s) for s in scores] #cast to float because otherwise statistics spits out the mean in ints
         return statistics.mean(scores),statistics.stdev(scores)
     except statistics.StatisticsError:
         return 0,0
 
 
-def mean_peak_score(table,scoring_function):
+def mean_peak_score(table,scoring_function=bw.F1score):
     """Returns the mean and standard deviation of the chosen score at the peak of F1 score for a run. 
     Pass a scoring function like bw.F1score"""
     table_final_rows = final_rows(table)
@@ -328,7 +334,8 @@ def touching_last_block_score(table):
         seq = touching_last_block_placements(get_final_blocks(run))
         mean = statistics.mean(seq)
         scores.append(mean)
-    return statistics.mean(scores), statistics.stdev(scores)
+    try: return statistics.mean(scores), statistics.stdev(scores)
+    except statistics.StatisticsError: return 0,0
 
 def raw_euclidean_distance_between_blocks(blocks1,blocks2=None):
     """Returns the euclidean distance between the two sequence of blocks.

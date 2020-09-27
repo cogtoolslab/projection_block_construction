@@ -71,9 +71,8 @@ def avg_steps_to_end_per_agent(df):
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
-def mean_score_per_agent(df):
+def mean_score_per_agent(df,scoring_function=bw.F1score):
     agents = df['agent_attributes'].unique()
-    scoring_function = bw.F1score
     #all
     results = [mean_score(df[df['agent_attributes']==a],scoring_function) for a in agents]    
     scores = [score for score,std in results]
@@ -93,15 +92,14 @@ def mean_score_per_agent(df):
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
-    plt.ylabel("Mean F1 score at end")
+    plt.ylabel("Mean "+scoring_function.__name__+" at end")
     plt.ylim(0)
     plt.title("Mean end score: "+scoring_function.__name__)
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
-def mean_peak_score_per_agent(df):
+def mean_peak_score_per_agent(df,scoring_function=bw.F1score):
     agents = df['agent_attributes'].unique()
-    scoring_function = bw.F1score
     #all
     results = [mean_peak_score(df[df['agent_attributes']==a],scoring_function) for a in agents]    
     scores = [score for score,std in results]
@@ -121,7 +119,7 @@ def mean_peak_score_per_agent(df):
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
-    plt.ylabel("Mean peak F1 score")
+    plt.ylabel("Mean "+scoring_function.__name__+" at peak")
     plt.ylim(0)
     plt.title("Mean peak score: "+scoring_function.__name__)
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
