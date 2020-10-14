@@ -30,6 +30,8 @@ class Blockworld(World):
     """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter. 
 
     Fast failure means ending returning failure for states in which the agent has built outside the silhouette or left holes that can't be filled. Enable this to spare the agent the misery of having to fill the map with blocks if it can't win anymore. 
+
+    `legal_action_space` returns only legal (meaning block fully in silhouette, but not necessarily stable) action rather than all possible blocks that can be placed. 
     
     All the important functions are implemented by the State class, which represents a particular configuration of the world. The world merely manages the current state and wraps around the functions of the class State to keep compatibility with previous uses of the class.
     
@@ -37,7 +39,7 @@ class Blockworld(World):
     
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays."""
 
-    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False):
+    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False,legal_action_space=False):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
@@ -53,6 +55,7 @@ class Blockworld(World):
         self.silhouette = self.load_silhouette(silhouette) 
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
         self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette or left a hole
+        self.legal_action_space = legal_action_space #only return legal actions?
 
     def __str__(self):
         """String representation of the world"""
@@ -70,7 +73,7 @@ class Blockworld(World):
             return state
         #check for legality of transition
         if not force: 
-            if action not in self.current_state.possible_actions(): raise Exception("Action not possible") 
+            if action not in self.current_state.possible_actions(legal=False): raise Exception("Action not possible") 
         #determine y coordinates of block
         y = 0
         while y < self.dimension[0] and state.blockmap[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
@@ -116,7 +119,7 @@ class Blockworld(World):
     """Simple functions inherited from the class World"""
     def apply_action(self,action,force=False):
         if not force:
-                if action not in self.current_state.possible_actions(): 
+                if action not in self.current_state.possible_actions(legal=False): 
                     raise Exception("Action not possible")
         self.current_state = self.transition(action,self.current_state,force=force)
 
@@ -157,9 +160,12 @@ class Blockworld(World):
             state = self.current_state
         return state.score(F1score)
 
-    def possible_actions(self,state=None):
+    def possible_actions(self,state=None,legal=None):
         if state is None:
             state = self.current_state
+        if legal is None:
+            legal = self.legal_action_space
+        if legal: return state.legal_actions()
         return state.possible_actions()
 
     def legal_actions(self,state=None):
@@ -259,9 +265,13 @@ class Blockworld(World):
             self._stable =  display_world.test_world_stability(bwworld,RENDER=visual_display)  == 'stable'
             return self._stable
 
-        def possible_actions(self):
+        def possible_actions(self,legal=None):
             """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
             Format of action is (BaseBlock from block_library, x location of lower left)."""
+            if legal is None:
+                legal = self.world.legal_action_space
+            if legal: #return legal actions instead
+                return self.legal_actions()
             possible_actions = []
             for base_block in self.world.block_library:
                 for x in range(self.world_width): #starting coordinate is bottom left
@@ -274,7 +284,7 @@ class Blockworld(World):
         
         def legal_actions(self):
             """Returns the subset of possible actions where the placed block is fully within the silhouette"""
-            return [a for a in self.possible_actions() if legal(self.transition(a))]
+            return [a for a in self.possible_actions(legal=False) if legal(self.transition(a))] #need legal false here to prevent infinite recursion
 
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way. Silhouette is shown as dotted outline."""

@@ -36,7 +36,9 @@ A row corresponds to an individual action taken, ie. a single block placed.
 'blockmap': bitmap of the world at the current state
 various agent parameters (depends on agent loaded)
 ## only at planning step
-'_world: current state of the world as object (for analysis). State is only updated at each planning step.
+'_world': current state of the world as object (for analysis). State is only updated at each planning step.
+'legal_action_space': if true, only legal (in silhouette, not necessarily stable) actions are considered
+'fast_failure': if true, the trial is ended when it is clear it can't lead to a perfect reconstruction. 
 '_blocks': current list of blocks in the world as object (for analysis)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
@@ -45,7 +47,7 @@ various agent parameters (depends on agent loaded)
 **agent attributes unrolled** as provided by the class of agent. Includes random_seed.
 """
 
-DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','execution_time','world_status','world_failure_reason','agent_attributes']
+DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
@@ -145,6 +147,8 @@ def _run_single_experiment(experiment):
             r.iloc[i]['_blocks'] = world.current_state.blocks[:i+1]
             r.iloc[i]['blockmap'] = planning_step_blockmaps[i]
             r.iloc[i]['_world'] = world
+            r.iloc[i]['legal_action_space'] = world.legal_action_space
+            r.iloc[i]['fast_failure'] = world.fast_failure
             i += 1 
         #the following are only filled for each planning step, not action step
         r.iloc[i-1]['execution_time'] = duration
