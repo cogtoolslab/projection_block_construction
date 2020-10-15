@@ -10,6 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     sys.path.append(agent_util_dir)
 
     from BFS_Agent import BFS_Agent
+    import Construction_Paper_Agent as CPA
     import blockworld as bw
     import random
     import blockworld_library as bl
@@ -28,11 +29,13 @@ if __name__=="__main__": #required for multiprocessing
         # BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=4,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=5,scoring_function=bw.F1score,scoring='Average'),
+        CPA.Construction_Paper_Agent(),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2)
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
-    worlds_silhouettes_legal = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
+    worlds_silhouettes_legal = {'int_struct_legal_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
     worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=False) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
