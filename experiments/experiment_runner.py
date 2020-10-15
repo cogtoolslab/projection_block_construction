@@ -117,7 +117,7 @@ def _run_single_experiment(experiment):
         #execute the action
         try:
             start_time = time.perf_counter()
-            chosen_actions,number_of_states_evaluated = agent.act(verbose=verbose)
+            chosen_actions,agent_step_info = agent.act(verbose=verbose)
             duration = time.perf_counter() - start_time 
             planning_step += 1
         except SystemError as e:
@@ -137,7 +137,6 @@ def _run_single_experiment(experiment):
             r.iloc[i]['world'] = world_label
             r.iloc[i]['step'] = i
             r.iloc[i]['planning_step'] = planning_step
-            r.iloc[i]['states_evaluated'] = number_of_states_evaluated
             r.iloc[i]['action'] = [str(e) for e in action] #human readable action
             r.iloc[i]['_action'] = action #action as object
             r.iloc[i]['action_x'] = action[1]
@@ -155,6 +154,15 @@ def _run_single_experiment(experiment):
         world_status = world.status()
         r.iloc[i-1]['world_status'] = world_status[0] 
         r.iloc[i-1]['world_failure_reason'] = world_status[1]
+        #if we have it, unroll the miscellaneous output from agent
+        #should include `states_evaluated`
+        for key,value in agent_step_info.items():
+            try:
+                r.iloc[i-1][key] = value
+            except KeyError:
+                #we need to create column
+                r[key] = np.NaN
+                r.iloc[i-1][key] = value
 
     #after we stop acting
     # add info one last time
@@ -163,7 +171,7 @@ def _run_single_experiment(experiment):
     return  r[r['run_ID'].notnull()]
 
 def get_blockmaps(blockmap):
-    """Takes a blockmao as input and returns the sequence of blockmaps leading up to it.
+    """Takes a blockmap as input and returns the sequence of blockmaps leading up to it.
     This produces one blockmap per action taken, even if the act function has only been called once
     (as MCTS does)."""
     blockmaps = []

@@ -140,6 +140,12 @@ def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
     return self.world.silhouette
 
+def crop(arr,(bl_x,bl_y),(tr_x,tr_y)):
+    """Crops the array that is passed to it. The first touple marks the x and y coordinates of the bottom left corner, the other the top right corner. Note that the top left corner is (0,0)."""
+    assert(
+        arr.shape
+    )
+
 # Agent
 class Construction_Paper_Agent(BFS_Agent):
     """Implements the construction paper proposal for a projection based agent.
@@ -178,7 +184,7 @@ class Construction_Paper_Agent(BFS_Agent):
             action,cost = self.act_single_higher_step(verbose)
             actions += action
             costs += cost
-        return actions,costs
+        return actions,{'states_evaluated':costs}
 
     def act_single_higher_step(self,verbose):
         """Takes a single step of the higher level agent. This means finding a new decomposition and then running the lower level agent on it. If it fails, it jumps to the next decomposition.

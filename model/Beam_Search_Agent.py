@@ -55,7 +55,7 @@ class Beam_Search_Agent(BFS_Agent):
             if step == steps: break #if we have acted x steps, stop acting
         if verbose:
             print("Done, reached world status: ",self.world.status())
-        return [e.action for e in edges][:step],number_of_states_evaluated
+        return [e.action for e in edges][:step],{'states_evaluated':number_of_states_evaluated}
 
     def beam_search(self,verbose=False):
         """Performs beam search. Each state is assigned a parent, which means that converging states are still treated as individual here. If we want converging states, we need a more sophisticated way of choosing the final trajectory and a constructor of states that prevents multiple instantions of the same world state.

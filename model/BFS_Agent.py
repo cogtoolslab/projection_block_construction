@@ -8,7 +8,9 @@ from itertools import repeat
 import utils.blockworld as blockworld
 
 class BFS_Agent:
-    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable."""
+    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable.
+    
+    All agent should return a dictionary after acting along with the chosen actions. That dictionary can be empty, but can also contain other information to be logged."""
 
     def __init__(self, world=None, horizon = 3, scoring = 'Final_state', sparse=False,scoring_function=blockworld.silhouette_score,random_seed=None):
         self.world = world
@@ -226,7 +228,8 @@ class BFS_Agent:
         if verbose:
             print("Done, reached world status: ",self.world.status())
             # self.world.current_state.visual_display(blocking=True,silhouette=self.world.silhouette)
-        return [tuple([b for b in a.action]) for a in chosen_seq.actions[:steps]],number_of_states_evaluated #only returns however many steps we actually acted, not the entire sequence
+        return [tuple([b for b in a.action]) for a in chosen_seq.actions[:steps]],{'states_evaluated':number_of_states_evaluated} 
+        #only returns however many steps we actually acted, not the entire sequence
 
         
 class Ast_node():

@@ -133,5 +133,5 @@ class Naive_Q_Agent(BFS_Agent):
             if step > self.max_steps: break
             step += 1
         if verbose: print('Done,',self.world.status())
-        return actions[:step],number_of_states_evaluated
+        return actions[:step],{'states_evaluated':number_of_states_evaluated}
 
