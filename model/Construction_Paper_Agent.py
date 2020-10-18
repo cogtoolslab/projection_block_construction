@@ -11,6 +11,7 @@ import random
 # Decomposition functions
 # pass these as arguments to the agent
 # they take the agent as the first argument
+# they should return a dictionary as second argument with information about the decomposition
 
 def horizontal_construction_paper_holes(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. 
@@ -50,15 +51,17 @@ def horizontal_construction_paper_holes(self,current_built = None):
     # get the index of the first empty row—no need to touch the area where something has been built already
     y = 0
     while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
+    start_y = y
     #slide up paper to find edge
     #get map of rows containing a vertical edge with built on top and hole below
     row_map = find_edges(full_silhouette)
     while y > 0:
         y = y - 1
         if row_map[y]: break
+    end_y = y
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
-    return new_silhouette
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'horizontal_construction_paper_holes'}
 
 def vertical_construction_paper_holes(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. 
@@ -74,17 +77,19 @@ def vertical_construction_paper_holes(self,current_built = None):
     # get the index of the first empty row—no need to touch the area where something has been built already
     y = 0
     while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
+    start_y = y
     #slide up paper to find edge
     #get map of rows containing a vertical edge with built on top and hole below
     row_map = find_edges(full_silhouette)
     while y > 0:
         y = y - 1
         if row_map[y]: break
+    end_y = y
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
     #rotate back
     new_silhouette = np.rot90(new_silhouette,k=-1)
-    return new_silhouette
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'vertical_construction_paper_holes'}
 
 def random_1_4(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
@@ -96,12 +101,13 @@ def random_1_4(self,current_built = None):
     y = 0
     while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
     #increment y
-    y = y - random.randint(1,4)
+    increment = random.randint(1,4)
+    y = y - increment
     #limit to height of area
     y = min(y,full_silhouette.shape[0])
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
-    return new_silhouette    
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_1_4'}    
 
 def fixed(self,increment,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. 
@@ -118,7 +124,7 @@ def fixed(self,increment,current_built = None):
     y = min(y,full_silhouette.shape[0])
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
-    return new_silhouette    
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed'}    
 
 def fixed_1(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
@@ -138,7 +144,7 @@ def fixed_4(self,current_built=None):
 
 def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
-    return self.world.silhouette
+    return self.world.silhouette,{'decomposition_function':'no_decomposition'}
 
 def crop(arr,(bl_x,bl_y),(tr_x,tr_y)):
     """Crops the array that is passed to it. The first touple marks the x and y coordinates of the bottom left corner, the other the top right corner. Note that the top left corner is (0,0)."""
