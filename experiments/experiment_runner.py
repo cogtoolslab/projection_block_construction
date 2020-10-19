@@ -131,38 +131,42 @@ def _run_single_experiment(experiment):
                 break
             # adding the agent parameters
             r.iloc[i] = agent_parameters
-            r.iloc[i]['run_ID'] = run_ID
-            r.iloc[i]['agent'] = agent_parameters['agent_type']
-            r.iloc[i]['agent_attributes'] = agent_parameters_w_o_random_seed
-            r.iloc[i]['world'] = world_label
-            r.iloc[i]['step'] = i
-            r.iloc[i]['planning_step'] = planning_step
-            r.iloc[i]['action'] = [str(e) for e in action] #human readable action
-            r.iloc[i]['_action'] = action #action as object
-            r.iloc[i]['action_x'] = action[1]
-            r.iloc[i]['action_block_width'] = action[0].width
-            r.iloc[i]['action_block_height'] = action[0].height
-            r.iloc[i]['blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
-            r.iloc[i]['_blocks'] = world.current_state.blocks[:i+1]
-            r.iloc[i]['blockmap'] = planning_step_blockmaps[i]
-            r.iloc[i]['_world'] = world
-            r.iloc[i]['legal_action_space'] = world.legal_action_space
-            r.iloc[i]['fast_failure'] = world.fast_failure
+            r['run_ID'].iloc[i] = run_ID
+            r['agent'].iloc[i] = agent_parameters['agent_type']
+            r['agent_attributes'].iloc[i] = str(agent_parameters_w_o_random_seed)
+            r['world'].iloc[i] = world_label
+            r['step'].iloc[i] = i
+            r['planning_step'].iloc[i] = planning_step
+            r['action'].iloc[i] = [str(e) for e in action] #human readable action
+            r['_action'].iloc[i] = action #action as object
+            r['action_x'].iloc[i] = action[1]
+            r['action_block_width'].iloc[i] = action[0].width
+            r['action_block_height'].iloc[i] = action[0].height
+            r['blocks'].iloc[i] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
+            r['_blocks'].iloc[i] = world.current_state.blocks[:i+1]
+            r['blockmap'].iloc[i] = planning_step_blockmaps[i]
+            r['_world'].iloc[i] = world
+            r['legal_action_space'].iloc[i] = world.legal_action_space
+            r['fast_failure'].iloc[i] = world.fast_failure
             i += 1 
         #the following are only filled for each planning step, not action step
-        r.iloc[i-1]['execution_time'] = duration
+        r['execution_time'].iloc[i-1] = duration
         world_status = world.status()
-        r.iloc[i-1]['world_status'] = world_status[0] 
-        r.iloc[i-1]['world_failure_reason'] = world_status[1]
+        r['world_status'].iloc[i-1] = world_status[0] 
+        r['world_failure_reason'].iloc[i-1] = world_status[1]
         #if we have it, unroll the miscellaneous output from agent
         #should include `states_evaluated`
         for key,value in agent_step_info.items():
             try:
-                r.iloc[i-1][key] = value
+                r[key]
             except KeyError:
                 #we need to create column
                 r[key] = np.NaN
-                r.iloc[i-1][key] = value
+            try:
+                r.loc[i-1,key] = value
+            except ValueError: #happens when the datatype of the columns is inferred as numeric
+                r[key] = r[key].astype(object)
+                r.loc[i-1,key] = [value]
 
     #after we stop acting
     # add info one last time
