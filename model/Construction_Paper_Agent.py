@@ -146,11 +146,11 @@ def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
     return self.world.silhouette,{'decomposition_function':'no_decomposition'}
 
-def crop(arr,(bl_x,bl_y),(tr_x,tr_y)):
-    """Crops the array that is passed to it. The first touple marks the x and y coordinates of the bottom left corner, the other the top right corner. Note that the top left corner is (0,0)."""
-    assert(
-        arr.shape
-    )
+# def crop(arr,(bl_x,bl_y),(tr_x,tr_y)):
+#     """Crops the array that is passed to it. The first tuple marks the x and y coordinates of the bottom left corner, the other the top right corner. Note that the top left corner is (0,0)."""
+#     assert(
+#         arr.shape
+#     )
 
 # Agent
 class Construction_Paper_Agent(BFS_Agent):
