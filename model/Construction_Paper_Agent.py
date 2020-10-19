@@ -187,10 +187,10 @@ class Construction_Paper_Agent(BFS_Agent):
         actions = []
         costs = 0
         while higher_step != higher_steps and self.world.status()[0] == 'Ongoing': #action loop
-            action,cost = self.act_single_higher_step(verbose)
+            action,cost,decompose_step_info = self.act_single_higher_step(verbose)
             actions += action
             costs += cost
-        return actions,{'states_evaluated':costs}
+        return actions,{'states_evaluated':costs,**decompose_step_info}
 
     def act_single_higher_step(self,verbose):
         """Takes a single step of the higher level agent. This means finding a new decomposition and then running the lower level agent on it. If it fails, it jumps to the next decomposition.
@@ -198,7 +198,7 @@ class Construction_Paper_Agent(BFS_Agent):
         The current position of the "construction paper" is inferered by comparing the what is currently built to the silhouette."""
         #get decomposition
         full_silhouette = self.world.silhouette
-        new_silhouette = self.decompose(self) #external function needs to explicitly passed the agent object
+        new_silhouette,decompose_step_info = self.decompose(self) #external function needs to explicitly passed the agent object
         if verbose: print("Got decomposition ",new_silhouette)
         #create temporary world object containing the modified silhouette
         temp_world = copy.deepcopy(self.world)
@@ -208,14 +208,15 @@ class Construction_Paper_Agent(BFS_Agent):
         action_seq = []
         costs = 0
         while temp_world.status()[0] == 'Ongoing':
-            action,cost = self.lower_agent.act(verbose=verbose)
+            action,agent_step_info = self.lower_agent.act(verbose=verbose)
+            cost = agent_step_info['states_evaluated']
             action_seq += action
             costs += cost
         #apply actions to the world
         if verbose: print("Decomposition done, applying action_seq:",str([str(a) for a in action_seq]))
         for action in action_seq:
             self.world.apply_action(action,force=True) # we need force here since the baseblock objects are in different memory locations 
-        return action_seq,costs 
+        return action_seq,costs,decompose_step_info #only returning cost here, not the other parameters of the lower level agent. That could be changed, but that would require allowing to pass a list to experiment_runner, and that's too complicated 
 
 # Helper functions
 
