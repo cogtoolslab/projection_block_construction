@@ -23,14 +23,15 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
-        BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Average'),
-        BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
+        # BFS_Agent(horizon=1,scoring_function=bw.random_scoring,scoring='Average'),
+        # BFS_Agent(horizon=1,scoring_function=bw.F1score,scoring='Average'),
         BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=4,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=5,scoring_function=bw.F1score,scoring='Average'),
         CPA.Construction_Paper_Agent(),
         CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2)
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4)
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
