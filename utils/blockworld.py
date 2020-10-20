@@ -163,10 +163,7 @@ class Blockworld(World):
     def possible_actions(self,state=None,legal=None):
         if state is None:
             state = self.current_state
-        if legal is None:
-            legal = self.legal_action_space
-        if legal: return state.legal_actions()
-        return state.possible_actions()
+        return state.possible_actions(legal=legal)
 
     def legal_actions(self,state=None):
         if state is None:
@@ -283,7 +280,7 @@ class Blockworld(World):
             return possible_actions
         
         def legal_actions(self):
-            """Returns the subset of possible actions where the placed block is fully within the silhouette"""
+            """Returns the subset of possible actions where the placed block is fully within the silhouette. Returns [] if the current state is already non-legal."""
             return [a for a in self.possible_actions(legal=False) if legal(self.transition(a))] #need legal false here to prevent infinite recursion
 
         def visual_display(self,blocking=False,silhouette=None):
@@ -554,7 +551,7 @@ def random_scoring(state):
         return 1
 
 def legal(state):
-    """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
+    """Returns True if the current blockmap is legal and false otherwise."""
     target = state.world.silhouette > 0
     built = state.blockmap > 0
     if np.sum((1-target) & built) > 1:

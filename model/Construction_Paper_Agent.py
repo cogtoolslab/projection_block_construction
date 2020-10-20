@@ -199,7 +199,7 @@ class Construction_Paper_Agent(BFS_Agent):
         #get decomposition
         full_silhouette = self.world.silhouette
         new_silhouette,decompose_step_info = self.decompose(self) #external function needs to explicitly passed the agent object
-        if verbose: print("Got decomposition ",new_silhouette)
+        if verbose: print("Got decomposition\n ",new_silhouette)
         #create temporary world object containing the modified silhouette
         temp_world = copy.deepcopy(self.world)
         temp_world.silhouette = new_silhouette
