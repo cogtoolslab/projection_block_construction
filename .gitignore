@@ -70,3 +70,4 @@ projection_agent/Analysis many graphs.ipynb
 analysis/analysis_main.py
 analysis/Analysis Playground.ipynb
 main.py
+*.pdf
