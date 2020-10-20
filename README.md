@@ -1,5 +1,7 @@
-# Projection in block construction
-This is based on the environment from [Will McCarthy’s block construction experiments](https://github.com/cogtoolslab/block_construction). Aim of the project is to investigate how agents plan by selectively performing epistemic actions: actions that serve to make planning easier. Eventually, we’re planning to investigate projection: internal and external augmentations of the visual environment in the support of planning.
+# Tools for block construction
+Aim of the project is to investigate how people and artificial agents use tools to intervene on the world to make planning easier.
+
+This is based on the environment from [Will McCarthy’s block construction experiments](https://github.com/cogtoolslab/block_construction). Find writeups [here](https://github.com/cogtoolslab/tools_block_construction_LaTeX).
 
 Two main classes: worlds and agents. See the classes and derived classes for details. For minimal example run something like:
 
