@@ -6,9 +6,9 @@ This is based on the environment from [Will McCarthy’s block construction expe
 Two main classes: worlds and agents. See the classes and derived classes for details. For minimal example run something like:
 
 ```
-from BFS_Agent import BFS_Agent
-import blockworld as bw
-import blockworld_library as bl
+from model.BFS_Agent import BFS_Agent
+import utils.blockworld as bw
+import utils.blockworld_library as bl
 
 a = BFS_Agent()
 w = bw.Blockworld(silhouette=bl.stonehenge_6_4,
@@ -23,8 +23,8 @@ Use `experiment_runner` to run suites of experiments and save them to a data fra
 
 Requirements:
 - Python > 3.7
-- tqdm
-- pygame
+- ptqdm
+- pygame *(might not work correctly in a virtualenv)*
 - Box2D
 - numpy
 - PIL
