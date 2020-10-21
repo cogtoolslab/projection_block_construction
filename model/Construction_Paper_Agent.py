@@ -212,8 +212,9 @@ class Construction_Paper_Agent(BFS_Agent):
             cost = agent_step_info['states_evaluated']
             action_seq += action
             costs += cost
+            if action == []: break # stop the loop if no further action is possible. This means that a perfect reconstruction of the temp world was not achieved
         #apply actions to the world
-        if verbose: print("Decomposition done, applying action_seq:",str([str(a) for a in action_seq]))
+        if verbose: print("Decomposition done, applying action_seq:",str([str(a) for a in action_seq]),"with world state",temp_world.status()[0])
         for action in action_seq:
             self.world.apply_action(action,force=True) # we need force here since the baseblock objects are in different memory locations 
         return action_seq,costs,decompose_step_info #only returning cost here, not the other parameters of the lower level agent. That could be changed, but that would require allowing to pass a list to experiment_runner, and that's too complicated 
