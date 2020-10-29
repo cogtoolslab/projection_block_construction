@@ -163,7 +163,7 @@ class Construction_Paper_Agent(BFS_Agent):
     Different decomposition functions can be passed to the agent.
     """
 
-    def __init__(self, world=None, lower_agent = BFS_Agent(), decomposition_function = horizontal_construction_paper_holes):
+    def __init__(self, world=None, lower_agent = BFS_Agent(only_improving_actions=True), decomposition_function = horizontal_construction_paper_holes):
             self.world = world
             self.lower_agent = lower_agent
             self.decompose = decomposition_function

@@ -19,7 +19,7 @@ class Beam_Search_Agent(BFS_Agent):
     - [ ] stochastic beam search
     """
 
-    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1_stability_score, only_improving_actions = True):
+    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1_stability_score, only_improving_actions = False):
         self.world = world
         self.beam_width = beam_width
         self.heuristic = heuristic
