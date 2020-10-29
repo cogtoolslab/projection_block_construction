@@ -192,6 +192,7 @@ class Construction_Paper_Agent(BFS_Agent):
             action,cost,decompose_step_info = self.act_single_higher_step(verbose)
             actions += action
             costs += cost
+            higher_step += 1
             decompose_step_infos.append(decompose_step_info)
         return actions,{'states_evaluated':costs,**decompose_step_info}
 
