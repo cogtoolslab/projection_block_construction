@@ -2,6 +2,7 @@ if __name__=="__main__": #required for multiprocessing
     import os
     import sys
     proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    os.path.join(proj_dir)
     utils_dir = os.path.join(proj_dir,'utils')
     sys.path.append(utils_dir)
     agent_dir = os.path.join(proj_dir,'model')
