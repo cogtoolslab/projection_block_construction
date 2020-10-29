@@ -179,17 +179,20 @@ class Construction_Paper_Agent(BFS_Agent):
             'decomposition_function':self.decompose.__name__
             }, **{"lower level: "+key:value for key,value in self.lower_agent.get_parameters().items()}}
 
-    def act(self,higher_steps=-1,lower_steps=None,verbose=False):
+    def act(self,steps=1,verbose=False):
         """Makes the agent act. This means acting for a given number of steps, where higher_steps refers to higher level of the agent (x times running the lower level agent) and lower_steps refers to the total number of steps performed by the lower level agent, ie actual steps in the world.
         
         The actual action happens in act_single_higher_step"""
+        if steps != 1: print("Using a step that isn't one will compute cost and decomposition info only for the last step for CPA")
         higher_step = 0
         actions = []
         costs = 0
-        while higher_step != higher_steps and self.world.status()[0] == 'Ongoing': #action loop
+        decompose_step_infos = []
+        while higher_step != steps and self.world.status()[0] == 'Ongoing': #action loop
             action,cost,decompose_step_info = self.act_single_higher_step(verbose)
             actions += action
             costs += cost
+            decompose_step_infos.append(decompose_step_info)
         return actions,{'states_evaluated':costs,**decompose_step_info}
 
     def act_single_higher_step(self,verbose):
