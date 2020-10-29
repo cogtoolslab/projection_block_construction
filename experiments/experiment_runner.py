@@ -130,30 +130,31 @@ def _run_single_experiment(experiment):
                 Warning("Number of actions ({}) exceeding steps ({}).".format(ai,steps))
                 break
             # adding the agent parameters
-            r.iloc[i] = agent_parameters
-            r['run_ID'].iloc[i] = run_ID
-            r['agent'].iloc[i] = agent_parameters['agent_type']
-            r['agent_attributes'].iloc[i] = str(agent_parameters_w_o_random_seed)
-            r['world'].iloc[i] = world_label
-            r['step'].iloc[i] = i
-            r['planning_step'].iloc[i] = planning_step
-            r['action'].iloc[i] = [str(e) for e in action] #human readable action
-            r['_action'].iloc[i] = action #action as object
-            r['action_x'].iloc[i] = action[1]
-            r['action_block_width'].iloc[i] = action[0].width
-            r['action_block_height'].iloc[i] = action[0].height
-            r['blocks'].iloc[i] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
-            r['_blocks'].iloc[i] = world.current_state.blocks[:i+1]
-            r['blockmap'].iloc[i] = planning_step_blockmaps[i]
-            r['_world'].iloc[i] = world
-            r['legal_action_space'].iloc[i] = world.legal_action_space
-            r['fast_failure'].iloc[i] = world.fast_failure
+            for key,value in agent_parameters.items():
+                r.at[i,key] = value
+            r.at[i,'run_ID'] = run_ID
+            r.at[i,'agent'] = agent_parameters['agent_type']
+            r.at[i,'agent_attributes'] = str(agent_parameters_w_o_random_seed)
+            r.at[i,'world'] = world_label
+            r.at[i,'step'] = i
+            r.at[i,'planning_step'] = planning_step
+            r.at[i,'action'] = [str(e) for e in action] #human readable action
+            r.at[i,'_action'] = action #action as object
+            r.at[i,'action_x'] = action[1]
+            r.at[i,'action_block_width'] = action[0].width
+            r.at[i,'action_block_height'] = action[0].height
+            r.at[i,'blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
+            r.at[i,'_blocks'] = world.current_state.blocks[:i+1]
+            r.at[i,'blockmap'] = planning_step_blockmaps[i]
+            r.at[i,'_world'] = world
+            r.at[i,'legal_action_space'] = world.legal_action_space
+            r.at[i,'fast_failure'] = world.fast_failure
             i += 1 
         #the following are only filled for each planning step, not action step
-        r['execution_time'].iloc[i-1] = duration
+        r.at[i-1,'execution_time'] = duration
         world_status = world.status()
-        r['world_status'].iloc[i-1] = world_status[0] 
-        r['world_failure_reason'].iloc[i-1] = world_status[1]
+        r.at[i-1,'world_status'] = world_status[0] 
+        r.at[i-1,'world_failure_reason'] = world_status[1]
         #if we have it, unroll the miscellaneous output from agent
         #should include `states_evaluated`
         for key,value in agent_step_info.items():
@@ -163,13 +164,15 @@ def _run_single_experiment(experiment):
                 #we need to create column
                 r[key] = np.NaN
             try:
-                r.loc[i-1,key] = value
+                r.at[i-1,key] = value
             except ValueError: #happens when the datatype of the columns is inferred as numeric
                 r[key] = r[key].astype(object)
-                r.loc[i-1,key] = [value]
+                r.at[i-1,key] = [value]
+        # if we've observed no action being taken, we stop execution. We're not changing the world, so we might as well save the CPU cycles. 
+        # Take this out if we have a non-deterministic agent that sometimes chooses no actions.
+        if chosen_actions == []: break
 
     #after we stop acting
-    # add info one last time
     print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - start_time)),str(world_status))
     #truncate df and return
     return  r[r['run_ID'].notnull()]
