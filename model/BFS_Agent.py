@@ -9,16 +9,19 @@ import utils.blockworld as blockworld
 
 class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable.
+
+    `only_improving_actions` means that the agent only takes actions if the action improves F1 score. Note that the agent returns an empty action if no actions can be taken—this will lead to infinite loops with simple while loops!
     
     All agent should return a dictionary after acting along with the chosen actions. That dictionary can be empty, but can also contain other information to be logged."""
 
-    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', sparse=False,scoring_function=blockworld.silhouette_score,random_seed=None):
+    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', only_improving_actions = False, sparse=False,scoring_function=blockworld.silhouette_score,random_seed=None):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
         self.scoring = scoring
         self.scoring_function = scoring_function
         self.random_seed = random_seed
+        self.only_improving_actions = only_improving_actions
 
     def __str__(self):
         """Yields a string representation of the agent"""
@@ -221,6 +224,11 @@ class BFS_Agent:
             print("Chosen action sequence:",[[str(b) for b in a.action] for a in chosen_seq.actions], "with score: ",chosen_seq.score)
         #take the steps
         for step in range(min([steps,len(chosen_seq.actions)])): #If the chosen sequence is shorter than the steps, only go so far
+            if self.only_improving_actions:
+                # check if action improves the current state of the world 
+                if not self.world.current_state.is_improvement(chosen_seq.actions[step].action): 
+                    steps = step # for logging
+                    break
             self.world.apply_action(chosen_seq.actions[step].action)
             if verbose:
                 print("Took step ",step+1," with action ",[str(a) for a in chosen_seq.actions[step].action]," and got world state",self.world.current_state)

@@ -306,6 +306,15 @@ class Blockworld(World):
             for b in self.blocks:
                 bwworld.add_block(b.width,b.height,b.x,wh-b.y-1)
             return bwworld
+        
+        def is_improvement(self,action):
+            """Pass an action. Returns True if that action increases F1 score, False otherwise"""
+            return F1score(self) <  F1score(self.transition(action))
+
+        def is_improvement_or_equal(self,action):
+            """Pass an action. Returns True if that action doesn't decrease F1 score, False otherwise"""
+            return F1score(self) <=  F1score(self.transition(action))
+
 
 class Block:
     '''
