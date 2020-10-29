@@ -35,7 +35,7 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes_all,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,10000,20,verbose=False,parallelized=fraction_of_cpus,save='legal_actions_experiment')
+    results = experiment_runner.run_experiment(worlds,agents,2500,20,verbose=False,parallelized=fraction_of_cpus,save='legal_actions_experiment')
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
