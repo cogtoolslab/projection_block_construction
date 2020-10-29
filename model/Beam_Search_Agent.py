@@ -19,11 +19,12 @@ class Beam_Search_Agent(BFS_Agent):
     - [ ] stochastic beam search
     """
 
-    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1_stability_score):
+    def __init__(self, world=None, beam_width = 1000,max_depth=20,heuristic = blockworld.F1_stability_score, only_improving_actions = True):
         self.world = world
         self.beam_width = beam_width
         self.heuristic = heuristic
         self.max_depth = max_depth
+        self.only_improving_actions = only_improving_actions
     
     def __str__(self):
         """Yields a string representation of the agent"""
@@ -47,6 +48,10 @@ class Beam_Search_Agent(BFS_Agent):
         step = 0
         edges,number_of_states_evaluated = self.beam_search(verbose)
         for edge in edges: #act in the world for each edge
+            if self.only_improving_actions:
+                # check if action improves the current state of the world 
+                if not self.world.current_state.is_improvement(edge.action): 
+                    break
             self.world.apply_action(edge.action)
             step += 1
             if verbose:

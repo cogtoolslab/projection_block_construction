@@ -15,7 +15,7 @@ class MCTS_Agent(BFS_Agent):
     Planning cost is each state visited during light rollout."""
     #super()
     pass
-    def __init__(self,world=None, horizon = 10000, random_seed=None):
+    def __init__(self,world=None, horizon = 10000, random_seed=None, only_improving_actions = False):
         self.world = world
         self.horizon = horizon
         self.random_seed = random_seed
@@ -74,6 +74,10 @@ class MCTS_Agent(BFS_Agent):
                 break
             index = scores.index(max(scores))
             action = [action for action in cur.actions if action.target.actions is not []][index]
+            if self.only_improving_actions:
+                # check if action improves the current state of the world 
+                if not self.world.current_state.is_improvement(action.action): 
+                    break
             self.world.apply_action(action.action)
             sequence_of_actions.append(action)
             cur = action.target

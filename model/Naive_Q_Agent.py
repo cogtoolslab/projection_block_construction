@@ -17,7 +17,7 @@ class Naive_Q_Agent(BFS_Agent):
     After the model achieves *streaks* many wins in a row, we terminate and consider the model fully trained.
     """
  
-    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_episodes=10**6,max_streaks=100,max_steps=40,explore_rate = 0.8 , learning_rate = 1, discount_factor = 1,random_seed=None):
+    def __init__(self,world = None,heuristic=blockworld.F1_stability_score, only_improving_actions = False, max_episodes=10**6,max_streaks=100,max_steps=40,explore_rate = 0.8 , learning_rate = 1, discount_factor = 1,random_seed=None):
         self.world = world
         self.max_episodes = max_episodes
         self.max_streaks = max_streaks
@@ -125,6 +125,10 @@ class Naive_Q_Agent(BFS_Agent):
             if action is None:
                 #if we've reached a state for which we don't have any Q values, stop executing
                 break
+            if self.only_improving_actions:
+                # check if action improves the current state of the world 
+                if not self.world.current_state.is_improvement(action): 
+                    break
             actions.append(action)
             self.world.apply_action(action)
             if verbose:
