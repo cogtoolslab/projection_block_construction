@@ -50,7 +50,7 @@ various agent parameters (depends on agent loaded)
 DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
-def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True):
+def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True,maxtasksperprocess=1):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use."""
     #we want human readable labels for the dataframe
     if type(worlds) is not dict:
@@ -65,7 +65,7 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
     experiments = [(copy.deepcopy(w),copy.deepcopy(a),steps,verbose,i) for i in range(per_exp) for a in agents for w in worlds.items()]    
     # lets run the experiments
     if parallelized is not False:
-        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=1) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
+        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
         results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
         P.close()
     else:
