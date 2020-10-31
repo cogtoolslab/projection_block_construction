@@ -99,9 +99,10 @@ worlds_silhouettes = {'int_struct_'+str(i) : s for i,s in silhouettes.items()}
 worlds_small = {
     'stonehenge_6_4' : bl.stonehenge_6_4,
     'stonehenge_3_3' : bl.stonehenge_3_3,
-    # 'block' : bl.block,
-    # 'T' : bl.T,
-    # 'side_by_side' : bl.side_by_side,
+    'block' : bl.block,
+    'T' : bl.T,
+    'side_by_side' : bl.side_by_side,
+    'horizontal_tile_stonehenge_6_4' : bl.horizontal_tile(bl.stonehenge_6_4)
 }
 target_maps = {**worlds_silhouettes,**worlds_small}
 

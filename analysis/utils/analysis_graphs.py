@@ -27,7 +27,7 @@ def mean_failure_reason_per_agent(df,fast_fail=False):
     scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"Unstable") for a in agents]    
     plt.bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color='green',width=0.15)
     #Ongoing
-    scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"Ongoing") for a in agents]    
+    scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"None") for a in agents]    
     plt.bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
     if fast_fail:
         #Outside
@@ -484,3 +484,5 @@ def trajectory_per_agent_over_world(df):
             tit = smart_short_agent_names(agents)[j]
             axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
     plt.show()
+
+# scatter plots
