@@ -94,11 +94,16 @@ def get_runs(table):
 
 def final_rows(df):
     """Returns the dataframe only with the final row of each run."""
+    #do we have final rows already precomputed?
+    if 'final_row' in df.columns:
+        return df.query('final_row == True')
+    #if not, do we have it cached?
     global _final_row_dict
     df_hash = hash(df.values.tobytes())
     try:
         return _final_row_dict[df_hash]
     except KeyError:
+        #if not, lets cache it
         cache_final_rows(df)
     try:
         return _final_row_dict[df_hash]
