@@ -391,6 +391,12 @@ def display_state(series):
     w.current_state.blockmap = bm
     w.current_state.visual_display()
 
+# preprocess the dataframe
+def preprocess_df(df):
+    fill_F1(df)
+    fill_final_row(df)
+    df['perfect'] = df['F1'] == 1
+
 
 # Sequence analysis
 
