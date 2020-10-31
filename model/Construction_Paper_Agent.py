@@ -91,9 +91,8 @@ def vertical_construction_paper_holes(self,current_built = None):
     new_silhouette = np.rot90(new_silhouette,k=-1)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'vertical_construction_paper_holes'}
 
-def random_1_4(self,current_built = None):
-    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
-    """
+def _random_decomposition(self,current_built=None,lower=1,upper=5):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment given. Call this from wrapper functions."""
     if current_built is None: current_built = self.world.current_state.blockmap
     full_silhouette = self.world.silhouette
     current_built = self.world.current_state.blockmap
@@ -101,13 +100,26 @@ def random_1_4(self,current_built = None):
     y = 0
     while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
     #increment y
-    increment = random.randint(1,4)
+    increment = random.randint(lower,upper)
     y = y - increment
     #limit to height of area
     y = min(y,full_silhouette.shape[0])
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
+    return new_silhouette,increment
+
+def random_1_4(self,current_built = None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
+    """
+    new_silhouette,increment = _random_decomposition(self,current_built,1,4)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_1_4'}    
+
+def random_2_4(self,current_built = None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
+    """
+    new_silhouette,increment = _random_decomposition(self,current_built,2,4)
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4'}    
+
 
 def fixed(self,increment,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. 
