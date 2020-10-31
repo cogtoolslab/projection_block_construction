@@ -12,6 +12,7 @@ import random
 # pass these as arguments to the agent
 # they take the agent as the first argument
 # they should return a dictionary as second argument with information about the decomposition
+# h/horizontal refers to horizontal construction paper
 
 def horizontal_construction_paper_holes(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. 
@@ -91,7 +92,7 @@ def vertical_construction_paper_holes(self,current_built = None):
     new_silhouette = np.rot90(new_silhouette,k=-1)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'vertical_construction_paper_holes'}
 
-def _random_decomposition(self,current_built=None,lower=1,upper=5):
+def _random_decomposition_h(self,current_built=None,lower=1,upper=5):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment given. Call this from wrapper functions."""
     if current_built is None: current_built = self.world.current_state.blockmap
     full_silhouette = self.world.silhouette
@@ -108,20 +109,20 @@ def _random_decomposition(self,current_built=None,lower=1,upper=5):
     new_silhouette[0:y,:] = 0
     return new_silhouette,increment
 
-def random_1_4(self,current_built = None):
+def random_1_4_h(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
     """
-    new_silhouette,increment = _random_decomposition(self,current_built,1,4)
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_1_4'}    
+    new_silhouette,increment = _random_decomposition_h(self,current_built,1,4)
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_1_4_h'}    
 
-def random_2_4(self,current_built = None):
+def random_2_4_h(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment between 1 and 4.
     """
-    new_silhouette,increment = _random_decomposition(self,current_built,2,4)
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4'}    
+    new_silhouette,increment = _random_decomposition_h(self,current_built,2,4)
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4_h'}    
 
 
-def fixed(self,increment,current_built = None):
+def _fixed_h(self,increment,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. 
     """
     if current_built is None: current_built = self.world.current_state.blockmap
@@ -136,23 +137,59 @@ def fixed(self,increment,current_built = None):
     y = min(y,full_silhouette.shape[0])
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed'}    
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_horizontal'}    
 
-def fixed_1(self,current_built=None):
-    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
-    return fixed(self,1,current_built)
+def _fixed_v(self,increment,current_built = None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. 
+    """
+    if current_built is None: current_built = self.world.current_state.blockmap
+    full_silhouette = self.world.silhouette
+    current_built = self.world.current_state.blockmap
+    full_silhouette = np.rot90(full_silhouette,k=1)
+    current_built = np.rot90(current_built,k=1)
+    # get the index of the first empty row—no need to touch the area where something has been built already
+    y = 0
+    while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
+    #increment y
+    y = y - increment
+    #limit to height of area
+    y = min(y,full_silhouette.shape[0])
+    new_silhouette = copy.deepcopy(full_silhouette)
+    new_silhouette[0:y,:] = 0
+    new_silhouette = np.rot90(new_silhouette,k=-1)
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_vertical'}    
 
-def fixed_2(self,current_built=None):
+def fixed_1_h(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
-    return fixed(self,2,current_built)
+    return _fixed_h(self,1,current_built)
 
-def fixed_3(self,current_built=None):
+def fixed_2_h(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
-    return fixed(self,3,current_built)
+    return _fixed_h(self,2,current_built)
 
-def fixed_4(self,current_built=None):
+def fixed_3_h(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
-    return fixed(self,4,current_built)
+    return _fixed_h(self,3,current_built)
+
+def fixed_4_h(self,current_built=None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
+    return _fixed_h(self,4,current_built)
+
+def fixed_1_v(self,current_built=None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. """
+    return _fixed_v(self,1,current_built)
+
+def fixed_2_v(self,current_built=None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. """
+    return _fixed_v(self,2,current_built)
+
+def fixed_3_v(self,current_built=None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. """
+    return _fixed_v(self,3,current_built)
+
+def fixed_4_v(self,current_built=None):
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. """
+    return _fixed_v(self,4,current_built)
 
 def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""

@@ -23,7 +23,7 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2))
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2))
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]

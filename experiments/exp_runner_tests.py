@@ -26,7 +26,7 @@ if __name__=="__main__": #required for multiprocessing
     agents = [
         CPA.Construction_Paper_Agent(lower_agent=
             BFS_Agent(horizon=1, scoring_function=bw.F1score,scoring='Average',only_improving_actions= True),
-            decomposition_function=CPA.fixed_1)     
+            decomposition_function=CPA.fixed_1_h)     
         # CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'))     
         ]
 
