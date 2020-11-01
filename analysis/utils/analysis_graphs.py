@@ -1,7 +1,15 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
+from operator import contains
 from analysis.utils.analysis_helper import *
 import textwrap
 import analysis.utils.trajectory as trajectory
+
+#Color constants for easy theming
+TOOL_COLOR = 'red'
+NO_TOOL_COLOR = 'purple'
+ALL_COLOR = 'blue' #not currently used
+WIN_COLOR = 'green'
+FAIL_COLOR = 'orange'
 
 PADDING = 20 #How long should runs be padded to ensure no missing value for early termination?
 
@@ -25,14 +33,14 @@ def mean_failure_reason_per_agent(df,fast_fail=False):
     plt.bar(np.arange(len(scores))+0,scores,align='center',label="Full",width=0.15)
     #Unstable
     scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"Unstable") for a in agents]    
-    plt.bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color='green',width=0.15)
+    plt.bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color=WIN_COLOR,width=0.15)
     #Ongoing
     scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"None") for a in agents]    
     plt.bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
     if fast_fail:
         #Outside
         scores = [mean_failure_reason(df[df['agent_attributes']==a],"Outside") for a in agents]    
-        plt.bar(np.arange(len(scores))+.45,scores,align='center',label="Outside",color='orange',width=0.15)
+        plt.bar(np.arange(len(scores))+.45,scores,align='center',label="Outside",color=FAIL_COLOR,width=0.15)
         #Holes
         scores = [mean_failure_reason(df[df['agent_attributes']==a],"Holes") for a in agents]    
         plt.bar(np.arange(len(scores))+.6,scores,align='center',label="Holes",color='red',width=0.15)
@@ -56,13 +64,13 @@ def avg_steps_to_end_per_agent(df):
     results = [avg_steps_to_end(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [avg_steps_to_end(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Average number of steps")
@@ -83,13 +91,13 @@ def mean_score_per_agent(df,scoring_function=bw.F1score):
     results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Mean "+scoring_function.__name__+" at end")
@@ -110,13 +118,13 @@ def mean_peak_score_per_agent(df,scoring_function=bw.F1score):
     results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [mean_peak_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Mean "+scoring_function.__name__+" at peak")
@@ -138,13 +146,13 @@ def mean_avg_area_under_curve_to_peakF1_per_agent(df):
     results = [mean_avg_area_under_curve_to_peakF1(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [mean_avg_area_under_curve_to_peakF1(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)],scoring_function) for a in agents]    
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Mean average F1 score")
@@ -224,13 +232,13 @@ def mean_touching_last_block_per_agent(df):
     results = [touching_last_block_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [touching_last_block_score(df[(df['run_ID'].isin(run_IDs)) & (df['agent_attributes']==a)]) for a in agents]
     scores = [score for score,std in results]
     stds = [std for score,std in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Proportion of block placements touching last placed block")
     plt.ylim(0,1)
@@ -251,13 +259,13 @@ def mean_pairwise_raw_euclidean_distance_between_runs(df):
     results = [[pairwise_raw_euclidean_distance_between_blocks_across_all_runs(df[(df['run_ID'].isin(run_IDs)) & (df['world'] == w) & (df['agent_attributes'] == a)]) for w in worlds] for a in agents] #if statement is to prevent empty lists
     scores = [statistics.mean([l for aw in a for l in aw]) if sum([len(r) for r in a]) else 0 for a in results]
     stds = [statistics.stdev([l for aw in a for l in aw]) if sum([len(r) for r in a]) > 1 else 0 for a in results]
-    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     results = [[pairwise_raw_euclidean_distance_between_blocks_across_all_runs(df[(df['run_ID'].isin(run_IDs)) & (df['world'] == w) & (df['agent_attributes'] == a)]) for w in worlds] for a in agents]
     scores = [statistics.mean([l for aw in a for l in aw]) for a in results]
     stds = [statistics.stdev([l for aw in a for l in aw]) for a in results]
-    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylabel("Mean Euclidean distance")
     plt.title("Average pairwise Euclidean distance between runs on same silhouette per agent")
@@ -276,13 +284,13 @@ def total_avg_states_evaluated_per_agent(df):
     scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
     means = [statistics.mean(r) if r != [] else 0 for r in scores]
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
-    plt.bar(np.arange(len(scores))+.2,means,align='center',yerr=stds,label="Win",color='green',width=0.2)
+    plt.bar(np.arange(len(scores))+.2,means,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
     scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
     means = [statistics.mean(r) if r != [] else 0 for r in scores]
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
-    plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+    plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.ylim(bottom=0)
     plt.ylabel("Average planning cost ")
@@ -363,13 +371,13 @@ def mean_peak_F1_per_agent_over_worlds(df):
         results = [mean_peak_score(_df[(_df['run_ID'].isin(run_IDs)) & (_df['agent_attributes']==a)],scoring_function) for a in agents]    
         scores = [score for score,std in results]
         stds = [std for score,std in results]
-        axes[i,1].bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color='green',width=0.2)
+        axes[i,1].bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
         #fail
         run_IDs = _df[_df['world_status'] == 'Fail']['run_ID'].unique()
         results = [mean_peak_score(_df[(_df['run_ID'].isin(run_IDs)) & (_df['agent_attributes']==a)],scoring_function) for a in agents]    
         scores = [score for score,std in results]
         stds = [std for score,std in results]
-        axes[i,1].bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color='orange',width=0.2)
+        axes[i,1].bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
         axes[i,1].set_xticks([])
         axes[i,1].set_ylim(0,1)
     #only show agent labels at the bottom
@@ -402,14 +410,14 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
         axes[i,1].bar(np.arange(len(scores))+0,scores,align='center',label="Full",width=0.15)
         #Unstable
         scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Unstable") for a in agents]    
-        axes[i,1].bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color='green',width=0.15)
+        axes[i,1].bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color=WIN_COLOR,width=0.15)
         #Ongoing
         scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Ongoing") for a in agents]    
         axes[i,1].bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
         if fast_fail:
             #Outside
             scores = [mean_failure_reason(_df[_df['agent_attributes']==a],"Outside") for a in agents]    
-            axes[i,1].bar(np.arange(len(scores))+.45,scores,align='center',label="Outside",color='orange',width=0.15)
+            axes[i,1].bar(np.arange(len(scores))+.45,scores,align='center',label="Outside",color=FAIL_COLOR,width=0.15)
             #Holes
             scores = [mean_failure_reason(_df[_df['agent_attributes']==a],"Holes") for a in agents]    
             axes[i,1].bar(np.arange(len(scores))+.6,scores,align='center',label="Holes",color='red',width=0.15)
