@@ -31,7 +31,7 @@ class Blockworld(World):
 
     Fast failure means ending returning failure for states in which the agent has built outside the silhouette or left holes that can't be filled. Enable this to spare the agent the misery of having to fill the map with blocks if it can't win anymore. 
 
-    `legal_action_space` returns only legal (meaning block fully in silhouette, but not necessarily stable) action rather than all possible blocks that can be placed. 
+    `legal_action_space` returns only legal (meaning block fully in silhouette, but not necessarily stable) action rather than all possible blocks that can be placed. Note that this is the default: if agents should reason about all possible block placements, use `False`.
     
     All the important functions are implemented by the State class, which represents a particular configuration of the world. The world merely manages the current state and wraps around the functions of the class State to keep compatibility with previous uses of the class.
     
@@ -39,7 +39,7 @@ class Blockworld(World):
     
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays."""
 
-    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False,legal_action_space=False):
+    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False,legal_action_space=True):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
