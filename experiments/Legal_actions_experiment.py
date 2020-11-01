@@ -2,6 +2,7 @@ if __name__=="__main__": #required for multiprocessing
     import os
     import sys
     proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    sys.path.append(proj_dir)
     utils_dir = os.path.join(proj_dir,'utils')
     sys.path.append(utils_dir)
     agent_dir = os.path.join(proj_dir,'model')
@@ -9,12 +10,11 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from BFS_Agent import BFS_Agent
-    import Construction_Paper_Agent as CPA
-    import blockworld as bw
-    import random
-    import blockworld_library as bl
-    import experiment_runner
+    from model.BFS_Agent import BFS_Agent
+    import model.Construction_Paper_Agent as CPA
+    import utils.blockworld as bw
+    import utils.blockworld_library as bl
+    import experiments.experiment_runner as experiment_runner
 
     import time
     start_time = time.time()
