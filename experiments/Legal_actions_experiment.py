@@ -29,9 +29,12 @@ if __name__=="__main__": #required for multiprocessing
         # BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=4,scoring_function=bw.F1score,scoring='Average'),
         # BFS_Agent(horizon=5,scoring_function=bw.F1score,scoring='Average'),
-        CPA.Construction_Paper_Agent(),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h)
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_v,
+            lower_agent = BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average')),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,
+            lower_agent = BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average')),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,
+            lower_agent = BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average'))
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
@@ -47,7 +50,7 @@ if __name__=="__main__": #required for multiprocessing
     # }
     worlds = {**worlds_silhouettes_legal,**worlds_silhouettes_all}#,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,1,40,verbose=False,parallelized=fraction_of_cpus,save='legal_actions_experiment')
+    results = experiment_runner.run_experiment(worlds,agents,100,40,verbose=False,parallelized=fraction_of_cpus,save='legal_actions_experiment')
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
