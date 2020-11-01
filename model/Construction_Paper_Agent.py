@@ -141,7 +141,7 @@ def random_2_4_h(self,current_built = None):
     new_silhouette,increment = _random_decomposition_h(self,current_built,2,4)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4_h'}    
 
-def random_2_4_h(self,current_built = None):
+def random_2_4_v(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a random increment between 1 and 4.
     """
     new_silhouette,increment = _random_decomposition_v(self,current_built,2,4)
