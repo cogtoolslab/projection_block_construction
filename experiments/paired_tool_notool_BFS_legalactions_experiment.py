@@ -48,14 +48,14 @@ if __name__=="__main__": #required for multiprocessing
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
-    worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=False) for i,s in silhouettes.items()}
+    worlds_silhouettes_all = {'int_struct_legal_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
     worlds_small = {
-        'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
-        'horizontal_tile_stonehenge_6_4' : bw.Blockworld(silhouette=bl.horizontal_tile(bl.stonehenge_6_4),block_library=bl.bl_stonehenge_6_4)
+        'stonehenge_6_4_legal' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4,legal_action_space=True),
+        'horizontal_tile_stonehenge_6_4_legal' : bw.Blockworld(silhouette=bl.horizontal_tile(bl.stonehenge_6_4),legal_action_space=True,block_library=bl.bl_stonehenge_6_4)
     }
     worlds = {**worlds_silhouettes_all,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='paired_tool_notool_BFS',maxtasksperprocess=100)
+    results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='paired_tool_notool_BFS_legalactions',maxtasksperprocess=100)
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
