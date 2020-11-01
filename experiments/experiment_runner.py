@@ -48,7 +48,7 @@ various agent parameters (depends on agent loaded)
 """
 
 DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
-RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
+RAM_LIMIT = 90 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True,maxtasksperprocess=1):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use."""
@@ -101,7 +101,7 @@ def _run_single_experiment(experiment):
         pass
     run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999)) #unique string representing the run
     while psutil.virtual_memory().percent > RAM_LIMIT:
-        print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds.")
+        print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
         time.sleep(1000)
     
     print('Running',agent.__str__(),'******',world.__str__())
