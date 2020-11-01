@@ -23,9 +23,11 @@ Use `experiment_runner` to run suites of experiments and save them to a data fra
 
 Requirements:
 - Python > 3.7
-- ptqdm
+- p-tqdm
 - pygame *(might not work correctly in a virtualenv)*
 - Box2D
 - numpy
 - PIL
 - matplotlib
+- pandas
+- psutil
