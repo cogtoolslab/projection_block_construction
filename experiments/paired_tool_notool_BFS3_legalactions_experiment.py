@@ -24,16 +24,16 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         #default
-        BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        BFS_Agent(only_improving_actions = True,horizon = 3),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
         #random_2_4_h
-        # BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        # BFS_Agent(only_improving_actions = True,horizon = 3),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
         #fixed_2_h
-        # BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        # BFS_Agent(only_improving_actions = True,horizon = 3),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
@@ -45,7 +45,7 @@ if __name__=="__main__": #required for multiprocessing
     }
     worlds = {**worlds_silhouettes_all,**worlds_small}
 
-    results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='paired_tool_notool_BFS3_legalactions',maxtasksperprocess=100)
+    results = experiment_runner.run_experiment(worlds,agents,100,20,verbose=False,parallelized=fraction_of_cpus,save='paired_tool_notool_BFS3_legalactions',maxtasksperprocess = 4)
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
