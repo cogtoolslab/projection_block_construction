@@ -1,5 +1,8 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
 from operator import contains
+from textwrap import wrap
+
+from matplotlib.pyplot import legend
 from analysis.utils.analysis_helper import *
 import textwrap
 import analysis.utils.trajectory as trajectory
@@ -494,3 +497,82 @@ def trajectory_per_agent_over_world(df):
     plt.show()
 
 # scatter plots
+def scatter_success_cost(df):
+    """Assumes a preprocessed df."""
+    costs = df.query('final_row == True').groupby('agent_attributes_string')['states_evaluated'].mean()
+    perfects = df.query('final_row == True').groupby('agent_attributes_string')['perfect'].mean()
+    try:
+        agents = smart_short_agent_names(perfects.keys())
+    except:
+        agents = perfects.keys()
+    for i in range(len(costs)):
+        #figure out the color
+        if "Construction_Paper_Agent" in agents[i]: 
+            color = TOOL_COLOR
+            kind = "with tool"
+        else:
+            color = NO_TOOL_COLOR
+            kind = "without tool"
+        plt.scatter(costs[i],perfects[i],color=color,label=kind)
+        axes = plt.gca()
+        axes.set_xscale('log')
+        plt.annotate(
+                    agents[i],
+                    (costs[i],perfects[i]), 
+                    xytext=(5, -5), 
+                    textcoords='offset points',
+                    ha='left',
+                    va='top',
+                    fontsize=12,
+                    wrap=True
+                )
+    #remove duplicate labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(),bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.title("Success and computational cost")
+    plt.xlabel("States evaluated")
+    plt.ylabel("Proportion of perfect reconstructions")
+    plt.show()
+
+# def scatter_success_pairs(df,agent_mappings):
+#     """Agent mapping expects tuples of (tool, no tool) 'agent_parameters_string' """
+#     for tool_agent, no_tool_agent in agent
+
+
+# order heatmap
+def heatmaps_block_index_per_agent_over_world(df):
+    def zero_to_nan(x):
+        """Helper function"""
+        x = x.astype(float)
+        x[x==0] = np.nan
+        return x
+
+    df = final_rows(df)
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    #create plot
+    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(2+2*len(agents),4+2*len(unique_world_names)))
+    fig.suptitle("Heatmap of mean block index per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        axes[i,0].set_title(textwrap.fill(world_name,width=20), fontsize=10,wrap=True)
+        #generate heatmaps
+        for j,agent in enumerate(agents):
+            bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
+            shape = bms.head(1).item().shape
+            # bms = bms.apply(zero_to_nan) #replace 0 with nan
+            heatmap = np.mean(bms)
+            axes[i,j+1].imshow(heatmap,cmap='viridis')    
+            axes[i,j+1].set_yticks([])
+            axes[i,j+1].set_xticks([])
+            tit = smart_short_agent_names(agents)[j]
+            axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
+    plt.show()
