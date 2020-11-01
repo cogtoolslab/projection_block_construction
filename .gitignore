@@ -71,3 +71,5 @@ analysis/analysis_main.py
 analysis/Analysis Playground.ipynb
 main.py
 *.pdf
+run_tools_for_bc_job
+fromssrde.txt
