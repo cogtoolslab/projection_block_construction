@@ -535,9 +535,22 @@ def scatter_success_cost(df):
     plt.ylabel("Proportion of perfect reconstructions")
     plt.show()
 
-# def scatter_success_pairs(df,agent_mappings):
-#     """Agent mapping expects tuples of (tool, no tool) 'agent_parameters_string' """
-#     for tool_agent, no_tool_agent in agent
+def scatter_success_pairs(df,agent_mappings):
+    """Agent mapping expects tuples of (tool, no tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
+    df = final_rows(df)
+    perfects = df.query('final_row == True').groupby('agent_attributes_string')['perfect'].mean()
+    plt.plot([[0,0],[1,1]],color='grey',alpha=.4)  #advantage line
+    for tool_agent, no_tool_agent, label in agent_mappings:
+        plt.scatter(perfects[no_tool_agent],perfects[tool_agent],label=label)
+    plt.xlim((0,1))
+    plt.ylim((0,1))
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.xlabel("Perfect reconstruction without tool")
+    plt.ylabel("Perfect reconstruction with tool")
+    plt.title("Rate of perfect reconstruction for agent with and without tool")
+    plt.show()
+
+
 
 
 # order heatmap
