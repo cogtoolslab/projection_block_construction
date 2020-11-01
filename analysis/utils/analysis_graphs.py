@@ -39,7 +39,7 @@ def mean_failure_reason_per_agent(df,fast_fail=False):
     plt.bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color=WIN_COLOR,width=0.15)
     #Ongoing
     scores = [mean_failure_reason(df[(df['agent_attributes']==a) & (df['world_status'].isin(['Fail','Ongoing']))],"None") for a in agents]    
-    plt.bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
+    plt.bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.15)
     if fast_fail:
         #Outside
         scores = [mean_failure_reason(df[df['agent_attributes']==a],"Outside") for a in agents]    
@@ -294,9 +294,10 @@ def total_avg_states_evaluated_per_agent(df):
     means = [statistics.mean(r) if r != [] else 0 for r in scores]
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
     plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
+    plt.yscale('log')
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
-    plt.ylim(bottom=0)
-    plt.ylabel("Average planning cost ")
+    plt.ylim(bottom=1)
+    plt.ylabel("Average planning cost (log)")
     plt.title("Average planning cost (number of states evaluated) per run")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
@@ -341,7 +342,7 @@ def mean_win_per_agent_over_worlds(df):
         # axes[i,1].set_ylabel("Proportion of runs with perfect reconstruction")
         # axes[i,1].set_title("Perfect reconstruction on "+world_name)
     #only show agent labels at the bottom
-    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
     axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.show()
@@ -384,7 +385,7 @@ def mean_peak_F1_per_agent_over_worlds(df):
         axes[i,1].set_xticks([])
         axes[i,1].set_ylim(0,1)
     #only show agent labels at the bottom
-    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
     axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
@@ -416,7 +417,7 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
         axes[i,1].bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color=WIN_COLOR,width=0.15)
         #Ongoing
         scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Ongoing") for a in agents]    
-        axes[i,1].bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.3)
+        axes[i,1].bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.15)
         if fast_fail:
             #Outside
             scores = [mean_failure_reason(_df[_df['agent_attributes']==a],"Outside") for a in agents]    
@@ -427,7 +428,7 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
         axes[i,1].set_ylim(0)
         axes[i,1].set_xticks([])
     #only show agent labels at the bottom
-    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+    axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
     axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
     plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
