@@ -19,6 +19,7 @@ class MCTS_Agent(BFS_Agent):
         self.world = world
         self.horizon = horizon
         self.random_seed = random_seed
+        self.only_improving_actions = only_improving_actions
     
     def __str__(self):
         """Yields a string representation of the agent"""
@@ -39,8 +40,10 @@ class MCTS_Agent(BFS_Agent):
             state = self.world.current_state
         root = MCTS_Agent.MCTS_Ast_node(state,self.world,random_seed=self.random_seed)
         for i in range(iterations):
-            selected_node = root.selection()
-            new_node = selected_node.expansion()
+            selected_node,_states_evaluated = root.selection()
+            # number_of_states_visited += _states_evaluated #the are evaluations of cached values
+            new_node,_states_scored = selected_node.expansion()
+            number_of_states_visited += _states_scored
             outcome,_states_scored = new_node.simulation()
             number_of_states_visited += _states_scored
             new_node.backpropagation(outcome)
@@ -128,21 +131,23 @@ class MCTS_Agent(BFS_Agent):
         def selection(self):
             """Performs the selection step of MCTS. Selects child nodes until a leaf node is found. If not a final state, it is expanded."""
             cur = self
+            states_scored = 0
             while not cur.is_leaf():
                 # children_nodes = [action.target for action in cur.actions]
                 #sample from children_nodes using UCT weighting
                 scored_children = [[action.target.UCT(),action.target] for action in cur.actions]
                 max_score = max([a[0] for a in scored_children])
+                states_scored += len(scored_children)
                 random.seed(self.random_seed)
                 cur = random.choice([a[1] for a in scored_children if a[0] == max_score])
-            return cur
+            return cur,states_scored
 
         def expansion(self):
             """Performs expansion step of MCTS. Checks if node is not final game state, and if so, creates a child node to perform expansion on."""
             if self.world.is_win(self.state) == True or self.world.is_fail(self.state) == True:
                 # We can't expand on states that have ended the game, but we still need to backpropagate them
                 # print("Expanding final state")
-                return self
+                return self,1
             #pick an edge to expand—just random sampling for now
             # pos_actions = self.state.possible_actions()
             #pick an edge to expand
@@ -150,7 +155,7 @@ class MCTS_Agent(BFS_Agent):
 
             if pos_actions == []:
                 #return self if this is a leaf node
-                return self
+                return self,1
 
             # we expand all children
             for action in pos_actions:
@@ -158,7 +163,7 @@ class MCTS_Agent(BFS_Agent):
             # and sample one child state to return
             random.seed(self.random_seed)
             child = random.sample([a.target for a in self.actions],1)[0]
-            return child
+            return child,len(pos_actions)+1
 
         def simulation(self,max=1000):
             """Performs the simulation step of MCTS by simulating a game from the current state by randomly choosing legal actions (ie. light playouts). Performs maximally max steps (set negative for infinite steps). Return True for win, False for loose and did not finish."""
