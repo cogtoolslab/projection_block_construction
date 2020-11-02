@@ -52,6 +52,24 @@ def fill_final_row(df):
         #use Boolean mask in loc
         df.loc[(df['run_ID'] == run_ID) & (df['step'] == last_step),'final_row'] = True
 
+def agent_labels(attributes,df):
+    """Just reads the agent_labels from df. First occurrence is chosen."""
+    labels = []
+    try:
+        for a in attributes:
+            a = str(a)
+            labels.append(
+                df.loc[df.agent_attributes_string == a].head(1)['agent_label'].item()
+            )
+    except KeyError:
+        fill_agent_labels(df)
+        for a in attributes:
+            a = str(a)
+            labels.append(
+                df.loc[df.agent_attributes_string == a].head(1)['agent_label'].item()
+            )
+    return labels
+
 def smart_short_agent_names(attr_dicts):
     """Takes in a list of agent attributes and returns a list of strings corresponding to agent descriptions showing only properties that differ within an agent. """
     #split names
@@ -415,7 +433,12 @@ def preprocess_df(df):
         df[column] = df[column].astype(bool)
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
     print("converted datatypes")
+    fill_agent_labels(df)
+    print("filled agent labels")
 
+def fill_agent_labels(df):
+    agent_labels = dict(zip(df['agent_attributes_string'].unique(),smart_short_agent_names(df['agent_attributes_string'].unique())))
+    df['agent_label'] = df['agent_attributes_string'].replace(agent_labels)
 
 # Sequence analysis
 

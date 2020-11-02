@@ -21,8 +21,8 @@ def mean_win_per_agent(df):
     df = final_rows(df)
     agents = df['agent_attributes'].unique()
     scores = [mean_win(df[df['agent_attributes']==a]) for a in agents]    
-    plt.bar(np.arange(len(scores)),scores,align='center',label=smart_short_agent_names(agents))
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.bar(np.arange(len(scores)),scores,align='center',label=agent_labels(agents,df))
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylim(0,1)
     plt.ylabel("Proportion of runs with perfect reconstruction")
     plt.title("Perfect reconstruction")
@@ -48,7 +48,7 @@ def mean_failure_reason_per_agent(df,fast_fail=False):
         scores = [mean_failure_reason(df[df['agent_attributes']==a],"Holes") for a in agents]    
         plt.bar(np.arange(len(scores))+.6,scores,align='center',label="Holes",color='red',width=0.15)
 
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Proportion of failed runs with failure mode")
     plt.ylim(0)
     plt.title("Reasons for failure in runs without perfect reconstruction")
@@ -75,7 +75,7 @@ def avg_steps_to_end_per_agent(df):
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Average number of steps")
     plt.ylim(0)
     plt.title("Average number of steps to end of run")
@@ -102,7 +102,7 @@ def mean_score_per_agent(df,scoring_function=bw.F1score):
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Mean "+scoring_function.__name__+" at end")
     plt.ylim(0)
     plt.title("Mean end score: "+scoring_function.__name__)
@@ -129,7 +129,7 @@ def mean_peak_score_per_agent(df,scoring_function=bw.F1score):
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Mean "+scoring_function.__name__+" at peak")
     plt.ylim(0)
     plt.title("Mean peak score: "+scoring_function.__name__)
@@ -157,7 +157,7 @@ def mean_avg_area_under_curve_to_peakF1_per_agent(df):
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
 
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Mean average F1 score")
     plt.ylim(0)
     plt.title("Mean average F1 score during run")
@@ -167,7 +167,7 @@ def mean_avg_area_under_curve_to_peakF1_per_agent(df):
 def graph_mean_F1_over_time_per_agent(df):
     #plot mean F1,std over time for chosen world and over agents in one plot (with continuation)
     agents = df['agent_attributes'].unique() 
-    agent_names = smart_short_agent_names(agents)
+    agent_names = agent_labels(agents,df)
     for a,agent in enumerate(agents): #plot per agent
         a_runs = get_runs(df[df['agent_attributes'] == agent])
         run_scores = []
@@ -199,7 +199,7 @@ def graph_mean_F1_over_time_per_agent(df):
 
 def graph_avg_blocksize_over_time_per_agent(df):
     agents = df['agent_attributes'].unique() 
-    agent_names = smart_short_agent_names(agents)
+    agent_names = agent_labels(agents,df)
     for a,agent in enumerate(agents): #plot per agent
         a_runs = get_runs(df[df['agent_attributes'] == agent])
         run_scores = []
@@ -242,7 +242,7 @@ def mean_touching_last_block_per_agent(df):
     scores = [score for score,std in results]
     stds = [std for score,std in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Proportion of block placements touching last placed block")
     plt.ylim(0,1)
     plt.title("Proportion of local placements")
@@ -269,7 +269,7 @@ def mean_pairwise_raw_euclidean_distance_between_runs(df):
     scores = [statistics.mean([l for aw in a for l in aw]) for a in results]
     stds = [statistics.stdev([l for aw in a for l in aw]) for a in results]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylabel("Mean Euclidean distance")
     plt.title("Average pairwise Euclidean distance between runs on same silhouette per agent")
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
@@ -295,7 +295,7 @@ def total_avg_states_evaluated_per_agent(df):
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
     plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
     plt.yscale('log')
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.ylim(bottom=1)
     plt.ylabel("Average planning cost (log)")
     plt.title("Average planning cost (number of states evaluated) per run")
@@ -335,16 +335,16 @@ def mean_win_per_agent_over_worlds(df):
         axes[i,0].set_yticks([])
         #from mean_win_per_agent: plot
         scores = [mean_win(_df[_df['agent_attributes']==a]) for a in agents]    
-        axes[i,1].bar(np.arange(len(scores)),scores,align='center',label=smart_short_agent_names(agents))
-        # axes[i,1].set_xticks(np.arange(len(scores)),smart_short_agent_names(agents))
+        axes[i,1].bar(np.arange(len(scores)),scores,align='center',label=agent_labels(agents,df))
+        # axes[i,1].set_xticks(np.arange(len(scores)),agent_labels(agents,df))
         axes[i,1].set_xticks([])
         axes[i,1].set_ylim(0,1)
         # axes[i,1].set_ylabel("Proportion of runs with perfect reconstruction")
         # axes[i,1].set_title("Perfect reconstruction on "+world_name)
     #only show agent labels at the bottom
     axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
-    axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    axes[len(unique_world_obj)-1,1].set_xticklabels(agent_labels(agents,df))
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.show()
 
 def mean_peak_F1_per_agent_over_worlds(df):
@@ -386,8 +386,8 @@ def mean_peak_F1_per_agent_over_worlds(df):
         axes[i,1].set_ylim(0,1)
     #only show agent labels at the bottom
     axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
-    axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    axes[len(unique_world_obj)-1,1].set_xticklabels(agent_labels(agents,df))
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
@@ -429,8 +429,8 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
         axes[i,1].set_xticks([])
     #only show agent labels at the bottom
     axes[len(unique_world_obj)-1,1].set_xticks(np.arange(len(scores)))
-    axes[len(unique_world_obj)-1,1].set_xticklabels(smart_short_agent_names(agents))
-    plt.xticks(np.arange(len(scores)),smart_short_agent_names(agents),rotation=45,ha='right')
+    axes[len(unique_world_obj)-1,1].set_xticklabels(agent_labels(agents,df))
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
@@ -460,7 +460,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
-            tit = smart_short_agent_names(agents)[j]
+            tit = agent_labels(agents,df)[j]
             axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
     plt.show()
 
@@ -493,22 +493,19 @@ def trajectory_per_agent_over_world(df):
             axes[i,j+1].imshow(img)    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
-            tit = smart_short_agent_names(agents)[j]
+            tit = agent_labels(agents,df)[j]
             axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
     plt.show()
 
 # scatter plots
 def scatter_success_cost(df):
     """Assumes a preprocessed df."""
-    costs = df.query('final_row == True').groupby('agent_attributes_string')['states_evaluated'].mean()
-    perfects = df.query('final_row == True').groupby('agent_attributes_string')['perfect'].mean()
-    try:
-        agents = smart_short_agent_names(perfects.keys())
-    except:
-        agents = perfects.keys()
+    costs = df.query('final_row == True').groupby('agent_label')['states_evaluated'].mean()
+    perfects = df.query('final_row == True').groupby('agent_label')['perfect'].mean()
+    agents = perfects.keys()
     for i in range(len(costs)):
         #figure out the color
-        if "Construction_Paper_Agent" in agents[i]: 
+        if "Construction_Paper_Agent" in df.loc[df.agent_label == agents[i]].head(1)['agent_attributes_string'].item(): 
             color = TOOL_COLOR
             kind = "with tool"
         else:
@@ -587,6 +584,6 @@ def heatmaps_block_index_per_agent_over_world(df):
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
-            tit = smart_short_agent_names(agents)[j]
+            tit = agent_labels(agents,df)[j]
             axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
     plt.show()
