@@ -24,14 +24,14 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         #default
-        Astar_Agent(only_improving_actions=True),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=a = Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
+        Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
         #random_2_4_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=a = Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=a = Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
         #fixed_2_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=a = Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=a = Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=256,only_improving_actions=True)),
         ]
 
     silhouette8 = [14,11,3,13,12,1,15,5]
