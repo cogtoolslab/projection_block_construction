@@ -510,8 +510,8 @@ def scatter_success_cost(df):
             kind = "with tool"
         else:
             color = NO_TOOL_COLOR
-            kind = "without tool"
-        plt.scatter(costs[i],perfects[i],color=color,label=kind)
+            kind = "without tool"       
+        plt.scatter(costs[i],perfects[i],color=color,label=kind,marker = get_marker(agents[i]))
         axes = plt.gca()
         axes.set_xscale('log')
         plt.annotate(
@@ -533,19 +533,94 @@ def scatter_success_cost(df):
     plt.ylabel("Proportion of perfect reconstructions")
     plt.show()
 
-def scatter_success_pairs(df,agent_mappings):
-    """Agent mapping expects tuples of (tool, no tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
+def scatter_success_pairs(df,agent_mappings=None):
+    """Agent mapping expects tuples of (no tool, tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
     df = final_rows(df)
-    perfects = df.query('final_row == True').groupby('agent_attributes_string')['perfect'].mean()
+    if agent_mappings is None: agent_mappings = generate_pairs(df)
+    perfects = df.query('final_row == True').groupby('agent_label')['perfect'].mean()
     plt.plot([[0,0],[1,1]],color='grey',alpha=.4)  #advantage line
-    for tool_agent, no_tool_agent, label in agent_mappings:
-        plt.scatter(perfects[no_tool_agent],perfects[tool_agent],label=label)
+    for no_tool_agent, tool_agent, label in agent_mappings:
+        plt.scatter(perfects[no_tool_agent],perfects[tool_agent],label=label,marker=get_marker(no_tool_agent))
+        plt.annotate(
+                tool_agent,
+                (perfects[no_tool_agent],perfects[tool_agent]), 
+                xytext=(5, -5), 
+                textcoords='offset points',
+                ha='left',
+                va='top',
+                fontsize=12,
+                wrap=True
+            )
     plt.xlim((0,1))
     plt.ylim((0,1))
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.xlabel("Perfect reconstruction without tool")
     plt.ylabel("Perfect reconstruction with tool")
     plt.title("Rate of perfect reconstruction for agent with and without tool")
+    plt.show()
+
+def scatter_cost_pairs(df,agent_mappings=None):
+    """Agent mapping expects tuples of (no tool, tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
+    df = final_rows(df)
+    if agent_mappings is None: agent_mappings = generate_pairs(df)
+    scores = df.query('final_row == True').groupby('agent_label')['states_evaluated'].mean()
+    top = max(scores)
+    #advantage line
+    plt.plot([0,top*1.1],[0,top*1.1],color='grey',alpha=.4)  
+    for no_tool_agent, tool_agent, label in agent_mappings:
+        plt.scatter(scores[no_tool_agent],scores[tool_agent],label=label,marker=get_marker(no_tool_agent))
+        plt.annotate(
+                tool_agent,
+                (scores[no_tool_agent],scores[tool_agent]), 
+                xytext=(5, -5), 
+                textcoords='offset points',
+                ha='left',
+                va='top',
+                fontsize=12,
+                wrap=True
+            )
+    #symmetric axes
+    axes = plt.gca()
+    axes.set_xscale('log')
+    axes.set_yscale('log')
+    plt.xlim((1,top*1.1))
+    plt.ylim((1,top*1.1))
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.xlabel("States evaluated without tool")
+    plt.ylabel("States evaluated with tool")
+    plt.title("Computational cost for agent with and without tool")
+    plt.show()
+
+def scatter_cost_per_step_pairs(df,agent_mappings=None):
+    """Agent mapping expects tuples of (no tool, tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
+    df = final_rows(df)
+    if agent_mappings is None: agent_mappings = generate_pairs(df)
+    scores = df.query('final_row == True').groupby('agent_label')['cost_per_step'].mean()
+    top = max(scores)
+    #advantage line
+    plt.plot([0,top*1.1],[0,top*1.1],color='grey',alpha=.4)  
+    for no_tool_agent, tool_agent, label in agent_mappings:
+        plt.scatter(scores[no_tool_agent],scores[tool_agent],label=label,marker=get_marker(no_tool_agent))
+        plt.annotate(
+                tool_agent,
+                (scores[no_tool_agent],scores[tool_agent]), 
+                xytext=(5, -5), 
+                textcoords='offset points',
+                ha='left',
+                va='top',
+                fontsize=12,
+                wrap=True
+            )
+    #symmetric axes
+    axes = plt.gca()
+    axes.set_xscale('log')
+    axes.set_yscale('log')
+    plt.xlim((1,top*1.1))
+    plt.ylim((1,top*1.1))
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.xlabel("States evaluated per step without tool")
+    plt.ylabel("States evaluated per step with tool")
+    plt.title("Computational cost for agent for one step with and without tool")
     plt.show()
 
 
