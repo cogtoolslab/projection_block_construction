@@ -29,7 +29,7 @@ if __name__=="__main__": #required for multiprocessing
         #random_2_4_h
         # BFS_Agent(only_improving_actions = True,horizon = 3),
         CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
+        # CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
         #fixed_2_h
         # BFS_Agent(only_improving_actions = True,horizon = 3),
         CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 3)),
