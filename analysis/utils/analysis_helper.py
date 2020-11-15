@@ -434,9 +434,9 @@ def preprocess_df(df):
         df[column] = df[column].astype(bool)
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
     print("converted datatypes")
+    df['cost_per_step'] = df['states_evaluated'] / df['step']
     fill_agent_labels(df)
     print("filled agent labels")
-    df['cost_per_step'] = df['states_evaluated'] / df['step']
 
 def fill_agent_labels(df):
     agent_labels = dict(zip(df['agent_attributes_string'].unique(),smart_short_agent_names(df['agent_attributes_string'].unique())))

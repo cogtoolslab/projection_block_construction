@@ -170,6 +170,8 @@ def graph_mean_F1_over_time_per_agent(df):
     agent_names = agent_labels(agents,df)
     for a,agent in enumerate(agents): #plot per agent
         a_runs = get_runs(df[df['agent_attributes'] == agent])
+        #hacky color coding for tool/no tool
+        color = TOOL_COLOR if '|' in agent_names[a] else NO_TOOL_COLOR
         run_scores = []
         for i,row in enumerate(a_runs): #for each run of the agent
             blockmaps = row['blockmap'] #get sequence of blockmaps
@@ -188,7 +190,7 @@ def graph_mean_F1_over_time_per_agent(df):
         stds = np.std(run_scores,axis=0)
         #plot
     #     plt.plot(range(len(avgs)),avgs)
-        plt.errorbar(range(len(avgs)),avgs,stds,label=agent_names[a])
+        plt.errorbar(range(len(avgs)),avgs,stds,label=agent_names[a],color=color)
         plt.xlim(0,PADDING)
         plt.ylim(0,1)
     plt.title('Mean F1 score over steps')
@@ -597,6 +599,7 @@ def scatter_cost_per_step_pairs(df,agent_mappings=None):
     if agent_mappings is None: agent_mappings = generate_pairs(df)
     scores = df.query('final_row == True').groupby('agent_label')['cost_per_step'].mean()
     top = max(scores)
+    bottom = min(scores)
     #advantage line
     plt.plot([0,top*1.1],[0,top*1.1],color='grey',alpha=.4)  
     for no_tool_agent, tool_agent, label in agent_mappings:
@@ -615,8 +618,8 @@ def scatter_cost_per_step_pairs(df,agent_mappings=None):
     axes = plt.gca()
     axes.set_xscale('log')
     axes.set_yscale('log')
-    plt.xlim((1,top*1.1))
-    plt.ylim((1,top*1.1))
+    plt.xlim((bottom,top*1.1))
+    plt.ylim((bottom,top*1.1))
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.xlabel("States evaluated per step without tool")
     plt.ylabel("States evaluated per step with tool")
