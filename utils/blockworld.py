@@ -563,7 +563,7 @@ def legal(state):
     """Returns True if the current blockmap is legal and false otherwise."""
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    if np.sum((1-target) & built) > 1:
+    if np.sum((1-target) & built) > 0:
         return False
     else:
         return True
