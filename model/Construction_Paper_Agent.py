@@ -15,7 +15,7 @@ import random
 # h/horizontal refers to horizontal construction paper
 
 def horizontal_construction_paper_holes(self,current_built = None):
-    """Returns a new target silhouette, which is a subset of the full silhouette of the world. 
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world.  `Relative` calculates the last block as the basis of where the construction paper is placed. This means it can get stuck in an infinite loop when nothing can be legally built in the proposed decomposition.
 
     The current position of the "construction paper" is inferered by comparing the what is currently built to the silhouette.
     
@@ -65,7 +65,7 @@ def horizontal_construction_paper_holes(self,current_built = None):
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'horizontal_construction_paper_holes'}
 
 def vertical_construction_paper_holes(self,current_built = None):
-    """Returns a new target silhouette, which is a subset of the full silhouette of the world. 
+    """Returns a new target silhouette, which is a subset of the full silhouette of the world.  `Relative` calculates the last block as the basis of where the construction paper is placed. This means it can get stuck in an infinite loop when nothing can be legally built in the proposed decomposition.
     Same as `horizontal_construction_paper_holes`, but the construction paper is moved from left to right. 
     We don't expect this to be successful. This is just to investigate other ways of chunking the structure.
     """
@@ -152,12 +152,12 @@ def random_2_4_v(self,current_built = None):
     """
     new_silhouette,increment = _random_decomposition_v(self,current_built,2,4)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4_v'}    
+
 def random_2_4_v(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a random increment between 1 and 4.
     """
     new_silhouette,increment = _random_decomposition_v(self,current_built,2,4)
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'random_2_4_v'}    
-
 
 def _fixed_h(self,increment,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. 
@@ -165,15 +165,19 @@ def _fixed_h(self,increment,current_built = None):
     if current_built is None: current_built = self.world.current_state.blockmap
     full_silhouette = self.world.silhouette
     current_built = self.world.current_state.blockmap
-    # get the index of the first empty row—no need to touch the area where something has been built already
-    y = 0
-    while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
+    #get last placement
+    try:
+        y = self.world._construction_paper_loc
+    except AttributeError: # we haven't placed the construction paper yet
+        y = full_silhouette.shape[0] 
     #increment y
     y = y - increment
     #limit to height of area
     y = min(y,full_silhouette.shape[0])
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
+    #save last location
+    self.world._construction_paper_loc = y
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_horizontal'}    
 
 def _fixed_v(self,increment,current_built = None):
@@ -184,9 +188,11 @@ def _fixed_v(self,increment,current_built = None):
     current_built = self.world.current_state.blockmap
     full_silhouette = np.rot90(full_silhouette,k=1)
     current_built = np.rot90(current_built,k=1)
-    # get the index of the first empty row—no need to touch the area where something has been built already
-    y = 0
-    while y < current_built.shape[0] and current_built[y].sum() == 0: y += 1
+    #get last placement
+    try:
+        y = self.world._construction_paper_loc
+    except AttributeError: # we haven't placed the construction paper yet
+        y = full_silhouette.shape[0] 
     #increment y
     y = y - increment
     #limit to height of area
@@ -194,6 +200,8 @@ def _fixed_v(self,increment,current_built = None):
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
     new_silhouette = np.rot90(new_silhouette,k=-1)
+    #save last location
+    self.world._construction_paper_loc = y
     return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_vertical'}    
 
 def fixed_1_h(self,current_built=None):
@@ -307,6 +315,11 @@ class Construction_Paper_Agent(BFS_Agent):
         if verbose: print("Decomposition done, applying action_seq:",str([str(a) for a in action_seq]),"with world state",temp_world.status()[0])
         for action in action_seq:
             self.world.apply_action(action,force=True) # we need force here since the baseblock objects are in different memory locations 
+        #we need to carry over the decomposition status to the actual world
+        try:
+            self.world.current_state._construction_paper_loc = temp_world.current_state._construction_paper_loc
+        except AttributeError:
+            pass
         return action_seq,costs,decompose_step_info #only returning cost here, not the other parameters of the lower level agent. That could be changed, but that would require allowing to pass a list to experiment_runner, and that's too complicated 
 
 # Helper functions
