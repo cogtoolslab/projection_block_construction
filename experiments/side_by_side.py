@@ -1,6 +1,3 @@
-from utils.blockworld_library import horizontal_tile
-
-
 if __name__=="__main__": #required for multiprocessing
     import os
     import sys
@@ -67,7 +64,7 @@ if __name__=="__main__": #required for multiprocessing
 
     silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
-    worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=b;.horizontal_tile(s),block_library=bl.bl_silhouette2_default,legal_action_space=False) for i,s in silhouettes.items()}
+    worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=bl.horizontal_tile(s),block_library=bl.bl_silhouette2_default,legal_action_space=False) for i,s in silhouettes.items()}
     worlds_small = {
         'stonehenge_6_4' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4),
         'horizontal_tile_stonehenge_6_4' : bw.Blockworld(silhouette=bl.horizontal_tile(bl.stonehenge_6_4),block_library=bl.bl_stonehenge_6_4)
