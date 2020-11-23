@@ -30,7 +30,6 @@ if __name__=="__main__": #required for multiprocessing
         # CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'))     
         ]
 
-    silhouette8 = [14,11,3,13,12,1,15,5]
     silhouettes = {i : bl.load_interesting_structure(i) for i in [14,11]}#silhouette8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}
     worlds_small = {

@@ -37,8 +37,7 @@ if __name__=="__main__": #required for multiprocessing
             lower_agent = BFS_Agent(horizon=2,scoring_function=bw.F1score,scoring='Average'))
         ]
 
-    silhouette8 = [14,11,3,13,12,1,15,5]
-    silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
+    silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
     worlds_silhouettes_legal = {'int_struct_legal_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
     worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=False) for i,s in silhouettes.items()}
     # worlds_small = {
