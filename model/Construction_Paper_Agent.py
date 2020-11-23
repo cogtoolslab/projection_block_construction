@@ -240,6 +240,10 @@ def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
     return self.world.silhouette,{'decomposition_function':'no_decomposition'}
 
+def half_v(self,current_built=None):
+    """Vertically decomposes the silhouette into the left and the right half"""
+    return _fixed_v(self,int(self.world.silhouette.shape[1]/2),current_built)
+
 # def crop(arr,(bl_x,bl_y),(tr_x,tr_y)):
 #     """Crops the array that is passed to it. The first tuple marks the x and y coordinates of the bottom left corner, the other the top right corner. Note that the top left corner is (0,0)."""
 #     assert(

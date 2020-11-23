@@ -100,7 +100,7 @@ t_3_3 =  np.array([
 def horizontal_tile(silhouette, reps = 2):
     """Places two silhouettes side-by-side with an empty line in the middle."""
     silhouette = np.append(silhouette,np.zeros((silhouette.shape[0],1)),axis=1)
-    return np.tile(silhouette,(1,reps))[:,:-1]
+    return np.tile(silhouette,(1,reps))[:,:]
 
 
 
