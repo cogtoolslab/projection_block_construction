@@ -86,6 +86,8 @@ class Astar_Agent(BFS_Agent):
             i+=1
             current_node = open_set.get() #get node with lowest projected cost. This removes it from the open set
             #check if that node is winning
+            if current_node is None: #empty set after all
+                break
             if self.world.is_win(current_node.state): #🎉
                 if verbose: print("Found winning state after",i)
                 return backtrack(current_node),number_of_states_evaluated
@@ -143,6 +145,8 @@ class Stochastic_Priority_Queue:
         while cur is not None and cur.priority == self.head.priority:
             elems.append(cur)
             cur = cur.next
+        if elems == []:
+            return None
         random.seed(self.random_seed) #fix random seed
         ret_elem = random.choice(elems)
         #take out
@@ -181,7 +185,7 @@ class Stochastic_Priority_Queue:
         new_elem.prev = cur
         self.size += 1
 
-    def empty(self):
+    def   empty(self):
         return self.size <= 0
 
     def qsize(self):

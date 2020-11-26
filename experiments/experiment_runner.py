@@ -68,7 +68,6 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
         P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
         results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
         P.close()
-        P.join()
     else:
         results_mapped =list(map(_run_single_experiment,experiments))
 
