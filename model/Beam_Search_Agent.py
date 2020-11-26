@@ -116,6 +116,8 @@ class Beam_Search_Agent(BFS_Agent):
 def backtrack(state):
     """Helper function. Takes a state and returns the sequence of action that got us there in the correct order by stepping through parent states."""
     action_sequence = []
+    if state is None: #if we don't even have a single state
+        return []
     while state.parent_action is not None: #only the root state will have no parent action
         action_sequence.append(state.parent_action)
         state = state.parent_action.source
