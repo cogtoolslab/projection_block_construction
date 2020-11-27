@@ -62,7 +62,7 @@ def horizontal_construction_paper_holes(self,current_built = None):
     end_y = y
     new_silhouette = copy.deepcopy(full_silhouette)
     new_silhouette[0:y,:] = 0
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'horizontal_construction_paper_holes'}
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_base_function':'horizontal_construction_paper_holes'}
 
 def vertical_construction_paper_holes(self,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world.  `Relative` calculates the last block as the basis of where the construction paper is placed. This means it can get stuck in an infinite loop when nothing can be legally built in the proposed decomposition.
@@ -90,7 +90,7 @@ def vertical_construction_paper_holes(self,current_built = None):
     new_silhouette[0:y,:] = 0
     #rotate back
     new_silhouette = np.rot90(new_silhouette,k=-1)
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_function':'vertical_construction_paper_holes'}
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':abs(start_y-end_y),'decomposition_base_function':'vertical_construction_paper_holes'}
 
 def _random_decomposition_h(self,current_built=None,lower=1,upper=5):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a random increment given. Call this from wrapper functions."""
@@ -178,7 +178,7 @@ def _fixed_h(self,increment,current_built = None):
     new_silhouette[0:y,:] = 0
     #save last location
     self.world._construction_paper_loc = y
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_horizontal'}    
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_base_function':'fixed_horizontal'}    
 
 def _fixed_v(self,increment,current_built = None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper vertically upwards by a fixed increment. 
@@ -202,7 +202,7 @@ def _fixed_v(self,increment,current_built = None):
     new_silhouette = np.rot90(new_silhouette,k=-1)
     #save last location
     self.world._construction_paper_loc = y
-    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_function':'fixed_vertical'}    
+    return new_silhouette,{'decomposed_silhouette':new_silhouette, 'decomposition_increment':increment,'decomposition_base_function':'fixed_vertical'}    
 
 def fixed_1_h(self,current_built=None):
     """Returns a new target silhouette, which is a subset of the full silhouette of the world. Moves the construction paper horizontally upwards by a fixed increment. """
@@ -238,7 +238,7 @@ def fixed_4_v(self,current_built=None):
 
 def no_decomposition(self,current_built=None):
     """Returns the full silhouette. Provides the baseline of using no decomposition altogether."""
-    return self.world.silhouette,{'decomposition_function':'no_decomposition'}
+    return self.world.silhouette,{'decomposition_base_function':'no_decomposition'}
 
 def half_v(self,current_built=None):
     """Vertically decomposes the silhouette into the left and the right half"""
