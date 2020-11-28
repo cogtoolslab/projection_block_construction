@@ -36,7 +36,7 @@ import json
 import re
 import ast
 
-import cv2
+# import cv2
 
 from PIL import Image, ImageOps, ImageDraw, ImageFont 
 
@@ -94,7 +94,7 @@ def agentdf_to_dfic(df):
 # - [ ] Include passing the silhouette, not the name
 import blockworld_library as bl
 silhouette8 = [14,11,3,13,12,1,15,5]
-silhouettes = {i : bl.load_interesting_structure(i) for i in silhouette8}
+silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
 worlds_silhouettes = {'int_struct_'+str(i) : s for i,s in silhouettes.items()}
 worlds_small = {
     'stonehenge_6_4' : bl.stonehenge_6_4,

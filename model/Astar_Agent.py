@@ -185,7 +185,7 @@ class Stochastic_Priority_Queue:
         new_elem.prev = cur
         self.size += 1
 
-    def   empty(self):
+    def  empty(self):
         return self.size <= 0
 
     def qsize(self):
