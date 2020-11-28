@@ -86,14 +86,17 @@ def smart_short_agent_names(attr_dicts):
         last = type_attr_dicts[0]
         for type_attr_dict in type_attr_dicts: #for each set of attributes go over and compare with the last
             for key in type_attr_dict.keys():
-                if last[key] != type_attr_dict[key]: change_map[type][key] = True
+                try:
+                    if last[key] != type_attr_dict[key]: change_map[type][key] = True
+                except KeyError:
+                    change_map[type][key] = True
             last = type_attr_dict
     #construct output list
     out_names = []
     for attr_dict in attr_dicts:
         type = attr_dict['agent_type']
         #generate descriptors
-        descriptor = [key + ':' + str(attr_dict[key]) for key,include in change_map[type].items() if include]
+        descriptor = [key + ':' + str(attr_dict[key]) for key,include in change_map[type].items() if key in attr_dict.keys() and include]
         #produce string
         out_names.append(type + ' ' + ' '.join(descriptor)) #always print type
     return out_names
@@ -434,7 +437,7 @@ def preprocess_df(df):
         df[column] = df[column].astype(bool)
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
     print("converted datatypes")
-    df['cost_per_step'] = df['states_evaluated'] / df['step']
+    # df['cost_per_step'] = df['states_evaluated'] / df['step'] #this is wrong, use something like this instead: np.nansum(run['states_evaluated'])/run.tail(1)['step'].item() 
     fill_agent_labels(df)
     print("filled agent labels")
 
