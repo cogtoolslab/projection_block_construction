@@ -8,7 +8,7 @@ import textwrap
 import analysis.utils.trajectory as trajectory
 
 #Color constants for easy theming
-TOOL_COLOR = 'red'
+TOOL_COLOR = 'coral'
 NO_TOOL_COLOR = 'purple'
 ALL_COLOR = 'blue' #not currently used
 WIN_COLOR = 'green'
@@ -262,8 +262,8 @@ def mean_pairwise_raw_euclidean_distance_between_runs(df):
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
     results = [[pairwise_raw_euclidean_distance_between_blocks_across_all_runs(df[(df['run_ID'].isin(run_IDs)) & (df['world'] == w) & (df['agent_attributes'] == a)]) for w in worlds] for a in agents] #if statement is to prevent empty lists
-    scores = [statistics.mean([l for aw in a for l in aw]) if sum([len(r) for r in a]) else 0 for a in results]
-    stds = [statistics.stdev([l for aw in a for l in aw]) if sum([len(r) for r in a]) > 1 else 0 for a in results]
+    scores = [statistics.mean([l for aw in a for l in aw]) if np.nansum([len(r) for r in a]) else 0 for a in results]
+    stds = [statistics.stdev([l for aw in a for l in aw]) if np.nansum([len(r) for r in a]) > 1 else 0 for a in results]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
@@ -280,19 +280,19 @@ def mean_pairwise_raw_euclidean_distance_between_runs(df):
 def total_avg_states_evaluated_per_agent(df):
     agents = df['agent_attributes'].unique()
     #all
-    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ df['agent_attributes'] == a ])] for a in agents]
+    scores = [[np.nansum(run['states_evaluated']) for run in get_runs(df[ df['agent_attributes'] == a ])] for a in agents]
     means = [statistics.mean(r) for r in scores]
     stds = [statistics.stdev(r) for r in scores]
     plt.bar(np.arange(len(scores))+0,means,align='center',yerr=stds,label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
+    scores = [[np.nansum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
     means = [statistics.mean(r) if r != [] else 0 for r in scores]
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
     plt.bar(np.arange(len(scores))+.2,means,align='center',yerr=stds,label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    scores = [[sum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
+    scores = [[np.nansum(run['states_evaluated']) for run in get_runs(df[ (df['agent_attributes'] == a ) & (df['run_ID'].isin(run_IDs))])] for a in agents]
     means = [statistics.mean(r) if r != [] else 0 for r in scores]
     stds = [statistics.stdev(r) if r != [] else 0 for r in scores]
     plt.bar(np.arange(len(scores))+.4,means,align='center',yerr=stds,label="Fail",color=FAIL_COLOR,width=0.2)
@@ -458,7 +458,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
             shape = bms.head(1).item().shape
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
-            heatmap = np.sum(bms)
+            heatmap = np.np.nansum(bms)
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
