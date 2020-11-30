@@ -311,9 +311,9 @@ def illustrate_worlds(df):
     unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
     plt.figure(figsize=(20,20))  
     for i,(name,world_obj) in enumerate(list(unique_world_obj.items())):
-        plt.subplot(math.sqrt(len(unique_world_obj)),math.sqrt(len(unique_world_obj))+1,i+1)
+        plt.subplot(round(math.sqrt(len(unique_world_obj))),round(math.sqrt(len(unique_world_obj)))+1,i+1)
         plt.imshow(world_obj.silhouette)
-        plt.title(name)
+        # plt.title(name)
         plt.xticks([])
         plt.yticks([])
     plt.show()
@@ -458,7 +458,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
             shape = bms.head(1).item().shape
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
-            heatmap = np.np.nansum(bms)
+            heatmap = np.nansum(bms)
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
