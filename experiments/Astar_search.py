@@ -33,7 +33,7 @@ if __name__=="__main__": #required for multiprocessing
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**4,only_improving_actions=True)),
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**4,only_improving_actions=True)),
         #med
-        Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True),
+        # Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True),
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True)),
         #random_2_4_h
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True)),
@@ -42,7 +42,7 @@ if __name__=="__main__": #required for multiprocessing
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True)),
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**8,only_improving_actions=True)),
         #hi
-        Astar_Agent(heuristic=bw.F1score,max_steps=2**16,only_improving_actions=True),
+        Astar_Agent(heuristic=bw.F1score,max_steps=2**20,only_improving_actions=True),
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**16,only_improving_actions=True)),
         #random_2_4_h
         #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1score,max_steps=2**16,only_improving_actions=True)),
