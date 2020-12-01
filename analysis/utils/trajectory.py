@@ -96,6 +96,7 @@ import blockworld_library as bl
 silhouette8 = [14,11,3,13,12,1,15,5]
 silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
 worlds_silhouettes = {'int_struct_'+str(i) : s for i,s in silhouettes.items()}
+worlds_silhouettes_legal = {'int_struct_legal_'+str(i) : s for i,s in silhouettes.items()}
 worlds_small = {
     'stonehenge_6_4' : bl.stonehenge_6_4,
     'stonehenge_3_3' : bl.stonehenge_3_3,
@@ -104,7 +105,7 @@ worlds_small = {
     'side_by_side' : bl.side_by_side,
     'horizontal_tile_stonehenge_6_4' : bl.horizontal_tile(bl.stonehenge_6_4)
 }
-target_maps = {**worlds_silhouettes,**worlds_small}
+target_maps = {**worlds_silhouettes,**worlds_silhouettes_legal,**worlds_small}
 
 # target_maps = {}
 # main_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

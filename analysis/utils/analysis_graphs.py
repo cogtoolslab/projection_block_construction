@@ -458,7 +458,7 @@ def heatmaps_at_peak_per_agent_over_world(df):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
             shape = bms.head(1).item().shape
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
-            heatmap = np.nansum(bms)
+            heatmap = np.sum(bms)
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
             axes[i,j+1].set_yticks([])
             axes[i,j+1].set_xticks([])
