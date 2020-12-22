@@ -16,6 +16,9 @@ from os.path import isfile, join
 #the selection of interesting structures used in McCarthy 2020
 SILHOUETTE8 = [4,5,6,8,9,11,12,16]
 
+#all 16 premade structures
+SILHOUETTE16 = list(range(1,17))
+
 """A couple of premade silhouettes."""
 
 def load_silhouette_from_Json(path,dimensions=(13,18)):
