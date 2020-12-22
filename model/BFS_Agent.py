@@ -11,21 +11,25 @@ class BFS_Agent:
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable.
 
     `only_improving_actions` means that the agent only takes actions if the action improves F1 score. Note that the agent returns an empty action if no actions can be taken—this will lead to infinite loops with simple while loops!
+
+    Dense stability means that the agent only considers stable states. 
     
     All agent should return a dictionary after acting along with the chosen actions. That dictionary can be empty, but can also contain other information to be logged."""
 
-    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', only_improving_actions = False, sparse=False,scoring_function=blockworld.silhouette_score,random_seed=None):
+    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', only_improving_actions = False, sparse=False, first_solution = True,scoring_function=blockworld.silhouette_score,dense_stability=True,random_seed=None):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
+        self.first_solution = first_solution
         self.scoring = scoring
         self.scoring_function = scoring_function
+        self.dense_stability = dense_stability
         self.random_seed = random_seed
         self.only_improving_actions = only_improving_actions
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+'first_solution: '+str(self.first_solution)+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed)
 
     def set_world(self,world):
         self.world = world
@@ -36,12 +40,14 @@ class BFS_Agent:
             'agent_type':self.__class__.__name__,
             'scoring_function':self.scoring_function.__name__,
             'horizon':self.horizon,
+            'first_solution':self.first_solution,
             'scoring_type':self.scoring,
             'random_seed':self.random_seed
             }
 
     def build_ast(self,state=None,horizon=None,verbose=False):
         """Builds ast from given state to a certain horizon. Returns root of tree."""
+        number_of_states_evaluated = 0
         def fill_node(node):
             possible_actions = node.state.possible_actions()
             for action in possible_actions:     
@@ -54,20 +60,31 @@ class BFS_Agent:
             state = self.world.current_state
         root = Ast_node(state) #make root of tree
         current_nodes = [root]
+        self.score_node(root,self.sparse,self.dense_stability)
         #breadth first compile the tree of possible actions exhaustively
         for i in range(horizon): #this just idles when no children are to be found
             children_nodes = []
             for node in current_nodes:
-                fill_node(node)
-                children_nodes += [action.target for action in node.actions]
+                fill_node(node) #add children etc
+                #score the child nodes
+                for action in node.actions:
+                    self.score_node(action.target,self.sparse,self.dense_stability) #score the node
+                    number_of_states_evaluated+=1
+                if self.first_solution and self.world.is_win(node.state):
+                    #we have found a winning node, so we return the sequence of action to get there
+                    if verbose: print("Found winning node at depth of AST",i+1)
+                    return root, get_path(node),number_of_states_evaluated
+                children_nodes += [action.target for action in node.actions if node.stability is not False] #this will only consider nodes that aren't known unstable. When not using dense_stability, we consider all children
             current_nodes = children_nodes
             if verbose:
                 print("Depth of AST:",i+1,",found",len(current_nodes),"nodes")
-        return root
+        return root,None, number_of_states_evaluated
 
     def score_node(self,node,sparse=False,dense_stability=True):
         if dense_stability:
             node.stability = self.world.stability(node.state) 
+        else:
+             node.stability = None
         if sparse:
             #only return stability and score for final states
             if self.world.is_win(node.state):
@@ -106,17 +123,6 @@ class BFS_Agent:
 
     def generate_action_sequences(self,ast_root = None,horizon = None,include_subsets = True,verbose=False):
         """Generate all possible sequences of actions for the given horizon. """
-        def get_path(leaf):
-            """Gets the path from leaf to root in order root -> leaf""" 
-            if leaf.parent_action is None: # if we're already at the root, just return empty list (otherwise we'll return [[]])
-                return []
-            action_sequence = []
-            current_node = leaf
-            while current_node.parent_action is not None: #while we're not at the root node
-                action_sequence += [current_node.parent_action]
-                current_node = current_node.parent_action.source
-            action_sequence.reverse() #reverse the order
-            return [action_sequence]
 
         if horizon is None:
             horizon = self.horizon
@@ -204,24 +210,28 @@ class BFS_Agent:
         if self.world.status()[0] != 'Ongoing':
             print("Can't act with world in status",self.world.status())
             return
-        #make ast
-        ast = self.build_ast(horizon=planning_horizon,verbose=verbose)  
-        #score it
-        number_of_states_evaluated = self.score_ast(ast)
-        #generate action sequences
-        act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=True,verbose=verbose)
-        if act_seqs == []: #if we can't act. Should be covered by world fail state above.
-            print("No possible actions")
-            return
-        #score action sequences
-        self.score_action_sequences(act_seqs,scoring)
-        #choose an action sequence
-        chosen_seq = self.select_action_seq(act_seqs)
-        if verbose:
-            Ast_node.print_tree(ast)
-            for act_seq in act_seqs:
-                act_seq.print_actseq()
-            print("Chosen action sequence:",[[str(b) for b in a.action] for a in chosen_seq.actions], "with score: ",chosen_seq.score)
+        #make ast and score the nodes in it
+        ast,win_seq,number_of_states_evaluated = self.build_ast(horizon=planning_horizon,verbose=verbose)  
+        if self.first_solution and win_seq is not None:
+            # we have stopped building the AST because we found a solution
+            chosen_seq = BFS_Agent.Action_sequence(win_seq[0])
+            #we want to take the entire sequence at once, so we overwrite steps to act
+            steps = len(chosen_seq.actions)
+        else:
+            #generate action sequences
+            act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=True,verbose=verbose)
+            if act_seqs == []: #if we can't act. Should be covered by world fail state above.
+                print("No possible actions")
+                return
+            #score action sequences
+            self.score_action_sequences(act_seqs,scoring)
+            #choose an action sequence
+            chosen_seq = self.select_action_seq(act_seqs)
+            if verbose:
+                Ast_node.print_tree(ast)
+                for act_seq in act_seqs:
+                    act_seq.print_actseq()
+                print("Chosen action sequence:",[[str(b) for b in a.action] for a in chosen_seq.actions], "with score: ",chosen_seq.score)
         #take the steps
         for step in range(min([steps,len(chosen_seq.actions)])): #If the chosen sequence is shorter than the steps, only go so far
             if self.only_improving_actions:
@@ -284,3 +294,15 @@ class Ast_edge():
         #could initialize the parent action of the target here—but that would break trees that converge on states again
         if target is None:
             Warning("Node has empty target")
+
+def get_path(leaf):
+    """Gets the path from leaf to root in order root -> leaf""" 
+    if leaf.parent_action is None: # if we're already at the root, just return empty list (otherwise we'll return [[]])
+        return []
+    action_sequence = []
+    current_node = leaf
+    while current_node.parent_action is not None: #while we're not at the root node
+        action_sequence += [current_node.parent_action]
+        current_node = current_node.parent_action.source
+    action_sequence.reverse() #reverse the order
+    return [action_sequence]
