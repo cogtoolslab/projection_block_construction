@@ -117,10 +117,10 @@ class Blockworld(World):
             #TODO implement importing from file
             raise Warning("Use other function in file to import from file")
 
-    def set_silhouette(self,silhouette):
-        """Sets new silhouette (as bitmap) and flushes the current states cache"""
+    def set_silhouette(self,silhouette,is_full=False):
+        """Sets new silhouette (as bitmap) and flushes the current states cache. Doesn't overwrite full silhuouette by default"""
         self.silhouette = silhouette
-        self.full_silhouette = silhouette
+        if is_full: self.full_silhouette = silhouette
         self.current_state.clear()
 
     """Simple functions inherited from the class World"""
