@@ -209,7 +209,7 @@ class BFS_Agent:
         #check if we even can act
         if self.world.status()[0] != 'Ongoing':
             print("Can't act with world in status",self.world.status())
-            return
+            return [],{'states_evaluated':0} 
         #make ast and score the nodes in it
         ast,win_seq,number_of_states_evaluated = self.build_ast(horizon=planning_horizon,verbose=verbose)  
         if self.first_solution and win_seq is not None:
@@ -222,7 +222,7 @@ class BFS_Agent:
             act_seqs = self.generate_action_sequences(ast,horizon=planning_horizon,include_subsets=True,verbose=verbose)
             if act_seqs == []: #if we can't act. Should be covered by world fail state above.
                 print("No possible actions")
-                return
+                return [],{'states_evaluated':number_of_states_evaluated} 
             #score action sequences
             self.score_action_sequences(act_seqs,scoring)
             #choose an action sequence

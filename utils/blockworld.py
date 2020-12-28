@@ -53,6 +53,8 @@ class Blockworld(World):
         self.block_library = block_library 
         #load the target silhouette as numpy array
         self.silhouette = self.load_silhouette(silhouette) 
+        #save the full silhouette in case we have to modify the actual silhouette in the case of subgoal planning
+        self.full_silhouette = np.copy(self.silhouette)
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
         self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette or left a hole
         self.legal_action_space = legal_action_space #only return legal actions?
@@ -115,6 +117,11 @@ class Blockworld(World):
             #TODO implement importing from file
             raise Warning("Use other function in file to import from file")
 
+    def set_silhouette(self,silhouette):
+        """Sets new silhouette (as bitmap) and flushes the current states cache"""
+        self.silhouette = silhouette
+        self.full_silhouette = silhouette
+        self.current_state.clear()
 
     """Simple functions inherited from the class World"""
     def apply_action(self,action,force=False):
@@ -203,13 +210,16 @@ class Blockworld(World):
 
         def clear(self):
             """Clears the various cached values of the state and updates the blockmap."""
-            caches = [self._F1score,self._stable,self._cached_hash]
-            for cache in caches:
-                try:
-                    del(cache)
-                except:
-                    pass
-            self._update_map_with_blocks(self.blocks)
+            self._stable = None
+            try:
+                del(self._F1score)
+            except:
+                pass
+            try:
+                del(self._cached_hash)
+            except:
+                pass
+            # self._update_map_with_blocks(self.blocks)
 
         def order_invariant_blockmap(self):
             """Returns an np.array of the blockmap that ignores the order in which the blocks were placed, ie outputs the same blockmap for all the states that have the same kinds of blocks in the same locations, but not the same order in which these blocks have been placed.
