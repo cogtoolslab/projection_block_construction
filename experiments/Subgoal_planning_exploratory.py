@@ -10,7 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
+    from model.Subgoal_Planning_Agent import *
     from model.utils.decomposition_functions import *
     from model.BFS_Agent import BFS_Agent
     import utils.blockworld as bw
@@ -26,22 +26,29 @@ if __name__=="__main__": #required for multiprocessing
         Subgoal_Planning_Agent(
                 lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
                 lookahead = l,
-                include_subsequences=True,
-                r_weight = 10,
+                include_subsequences=False,
+                r_weight = w,
                 S_treshold=1,
-                S_iterations=1)
-                for l in [1,2,4,12]
+                S_iterations=2)
+                for l in [1,2,3,8] for w in [1,10,100,1000]
+        ] + [
+        BFS_Agent(horizon=1,only_improving_actions=True)
+        ] + [
+        Full_Subgoal_Planning_Agent(
+            lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
+            include_subsequences=False,
+            r_weight = w,
+            S_treshold=1,
+            S_iterations=2)
+            for w in [1,10,100,1000]
+        ]
         ]
 
-    silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
-    worlds_silhouettes_all = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
-    worlds_small = {
-        'stonehenge_6_4_legal' : bw.Blockworld(silhouette=bl.stonehenge_6_4,block_library=bl.bl_stonehenge_6_4,legal_action_space=True),
-        'horizontal_tile_stonehenge_6_4_legal' : bw.Blockworld(silhouette=bl.horizontal_tile(bl.stonehenge_6_4),legal_action_space=True,block_library=bl.bl_stonehenge_6_4)
-    }
-    worlds = {**worlds_silhouettes_all,**worlds_small}
+    silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE16}
+    worlds = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
+    
 
-    results = experiment_runner.run_experiment(worlds,agents,1,20,verbose=False,parallelized=fraction_of_cpus,save=os.path.basename(__file__),maxtasksperprocess = 1)
+    results = experiment_runner.run_experiment(worlds,agents,10,20,verbose=False,parallelized=fraction_of_cpus,save=os.path.basename(__file__),maxtasksperprocess = 1)
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
