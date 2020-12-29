@@ -14,11 +14,11 @@ class Decomposition_Function:
         """Returns all possible decompositions as a dictionary with format {'decomposition': bitmap, 'name': name}"""
         pass
 
-    def get_sequences(self,state=None,length=1,filter_for_length=False):
+    def get_sequences(self,state=None,length=1,filter_for_length=True):
         """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep"""
         subgoals = self.get_decompositions(state=state)
         sequences = [[s] for s in subgoals]
-        next_sequences = sequences #stores the sequences of the current length
+        next_sequences = sequences.copy() #stores the sequences of the current length
         for l in range(length-1):
             current_sequences = next_sequences
             next_sequences = []
