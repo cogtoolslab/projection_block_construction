@@ -217,5 +217,6 @@ class Full_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
                          random_seed = None):
         super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, r_weight=r_weight, S_treshold=S_treshold, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
 
-    def act(self, steps, verbose):
+    def act(self, verbose=False):
+        """Plans and acts entire sequence"""
         return super().act(steps=MAX_NUMBER_OF_SUBGOALS, verbose=verbose)
