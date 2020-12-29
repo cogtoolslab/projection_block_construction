@@ -36,12 +36,10 @@ if __name__=="__main__": #required for multiprocessing
         ] + [
         Full_Subgoal_Planning_Agent(
             lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
-            include_subsequences=False,
             r_weight = w,
             S_treshold=1,
             S_iterations=2)
             for w in [1,10,100,1000]
-        ]
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE16}
