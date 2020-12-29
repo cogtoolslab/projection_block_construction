@@ -42,6 +42,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 except AttributeError: # no world has been passed, will need to be updated using decomposer.set_silhouette
                     decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(None) 
             self.decomposer = decomposer
+            self._cached_subgoal_evaluations = {} #sets up cache for  subgoal evaluations
 
     def __str__(self):
             """Yields a string representation of the agent"""
@@ -63,6 +64,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
     def set_world(self, world):
         super().set_world(world)
         self.decomposer.set_silhouette(world.full_silhouette)
+        self._cached_subgoal_evaluations = {} #clear cache
 
     def act(self,steps=1,verbose=False):
         """Finds subgoal plan, then builds the first subgoal. Steps here refers to subgoals (ie. 2 steps is acting the first two planned subgoals). Pass -1 to steps to execute the entire subgoal plan."""
@@ -169,6 +171,13 @@ class Subgoal_Planning_Agent(BFS_Agent):
         """The cost of solving for a certain subgoal given the current block construction"""
         if prior_world is None:
             prior_world = self.world
+        # generate key for cache
+        key = decomposition * 2 - (prior_world.current_state.blockmap > 0)
+        key = key.tostring() #make hashable
+        if key in self._cached_subgoal_evaluations:
+            # print("Cache hit for",key)
+            cached_eval = self._cached_subgoal_evaluations[key]
+            return cached_eval['S'],cached_eval['C'],cached_eval['winning_world'],1 #returning 1 as lookup cost, not the cost it tool to calculate the subgoal originally
         current_world = copy.deepcopy(prior_world)
         costs = 0
         wins = 0
@@ -188,6 +197,9 @@ class Subgoal_Planning_Agent(BFS_Agent):
             #break early to save performance in case of fail
             if fast_fail and temp_world.status()[0] == 'Fail':
                 return 0,None,None,costs
+        #store cached evaluation
+        cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world}
+        self._cached_subgoal_evaluations[key] = cached_eval
         return wins/iterations,costs/iterations,winning_world,costs
 
 
