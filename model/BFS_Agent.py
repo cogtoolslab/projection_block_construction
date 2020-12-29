@@ -16,7 +16,7 @@ class BFS_Agent:
     
     All agent should return a dictionary after acting along with the chosen actions. That dictionary can be empty, but can also contain other information to be logged."""
 
-    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', only_improving_actions = False, sparse=False, first_solution = True,scoring_function=blockworld.silhouette_score,dense_stability=True,random_seed=None):
+    def __init__(self, world=None, horizon = 2, scoring = 'Final_state', only_improving_actions = False, sparse=False, first_solution = True,scoring_function=blockworld.F1_stability_score,dense_stability=True,random_seed=None):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
