@@ -13,6 +13,7 @@ import copy
 import numpy as np
 
 BAD_SCORE = -9999
+MAX_NUMBER_OF_SUBGOALS = 64
 
 class Subgoal_Planning_Agent(BFS_Agent):
     """Implements n subgoal lookahead planning"""
@@ -203,3 +204,18 @@ class Subgoal_Planning_Agent(BFS_Agent):
         return wins/iterations,costs/iterations,winning_world,costs
 
 
+class Full_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
+    """Same as subgoal planning agent, only that we act the entire sequence of subgoals after planning and plan the entire sequence."""
+
+    def __init__(self,
+                        world=None,
+                         decomposer = None,
+                         r_weight = 1000,
+                         S_treshold=0.8,
+                         S_iterations=1,
+                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         random_seed = None):
+        super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, r_weight=r_weight, S_treshold=S_treshold, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
+
+    def act(self, steps, verbose):
+        return super().act(steps=MAX_NUMBER_OF_SUBGOALS, verbose=verbose)
