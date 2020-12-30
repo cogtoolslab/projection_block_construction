@@ -23,7 +23,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                          decomposer = None,
                          lookahead = 1,
                          include_subsequences=True,
-                         r_weight = 1000,
+                         c_weight = 1000,
                          S_treshold=0.8,
                          S_iterations=1,
                          lower_agent = BFS_Agent(only_improving_actions=True),
@@ -32,7 +32,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
             self.world = world
             self.lookahead = lookahead
             self.include_subsequences = include_subsequences # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
-            self.r_weight = r_weight
+            self.c_weight = c_weight
             self.S_threshold = S_treshold #ignore subgoals that are done in less than this proportion
             self.S_iterations = S_iterations #how often should we run the simulation to determine S?
             self.lower_agent = lower_agent
@@ -56,7 +56,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
             'lookeahead':self.lookahead,
             'decomposition_function':self.decomposer.__class__.__name__,
             'include_subsequences':self.include_subsequences,
-            'r_weight':self.r_weight,
+            'c_weight':self.c_weight,
             'S_threshold':self.S_threshold,
             'S_iterations':self.S_iterations,
             'random_seed':self.random_seed
@@ -128,7 +128,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                     subgoal_score = BAD_SCORE
                 else:
                     # compute regular score
-                    subgoal_score = self.r_weight * subgoal['R'] - subgoal['C']
+                    subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
                 score += subgoal_score
         except KeyError:
             # The sequence could not be scored. This happens if we don't get a prior solution for some step of the sequence. 
@@ -210,12 +210,12 @@ class Full_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
     def __init__(self,
                         world=None,
                          decomposer = None,
-                         r_weight = 1000,
+                         c_weight = 1000,
                          S_treshold=0.8,
                          S_iterations=1,
                          lower_agent = BFS_Agent(only_improving_actions=True),
                          random_seed = None):
-        super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, r_weight=r_weight, S_treshold=S_treshold, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
+        super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, c_weight=c_weight, S_treshold=S_treshold, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
 
     def act(self, verbose=False):
         """Plans and acts entire sequence"""
