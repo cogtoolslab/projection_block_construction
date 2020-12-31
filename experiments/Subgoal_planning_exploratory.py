@@ -27,16 +27,16 @@ if __name__=="__main__": #required for multiprocessing
                 lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
                 lookahead = l,
                 include_subsequences=False,
-                r_weight = w,
+                c_weight = 1/w,
                 S_treshold=1,
-                S_iterations=2)
+                S_iterations=1)
                 for l in [1,2,3,8] for w in [1,10,100,1000]
         ] + [
         BFS_Agent(horizon=1,only_improving_actions=True)
         ] + [
         Full_Subgoal_Planning_Agent(
             lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
-            r_weight = w,
+            c_weight = 1/w,
             S_treshold=1,
             S_iterations=2)
             for w in [1,10,100,1000]
