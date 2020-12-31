@@ -91,7 +91,8 @@ class Subgoal_Planning_Agent(BFS_Agent):
             self.world.set_silhouette(self.world.full_silhouette) # restore full silhouette to the world we're acting with
         return lower_level_actions,{'states_evaluated':lower_level_cost,
                                 'sg_planning_cost':sg_planning_cost,
-                                '_subgoal_sequence':sequence}
+                                '_subgoal_sequence':sequence,
+                                'decomposed_silhouette': current_subgoal}
 
     def plan_subgoals(self,verbose=False):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within."""
@@ -119,20 +120,20 @@ class Subgoal_Planning_Agent(BFS_Agent):
         return choice(top_sequences)
 
     def score_sequence(self,sequence):
-        """Compute the value of a single sequence with precomputed S,R,C"""
+        """Compute the value of a single sequence with precomputed S,R,C. Assigns BAD_SCORE. If no solution can be found, the one with highest total reward is chosen."""
         score = 0
         try:
             for subgoal in sequence:
-                if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] == 0: 
+                if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] <= 0: 
                     # we have a case where the subgoal computation was aborted early or we should ignore the subgoal because the success rate is too low or the reward is zero (subgoal already done or empty)
-                    subgoal_score = BAD_SCORE
+                    subgoal_score = BAD_SCORE + subgoal['R']
                 else:
                     # compute regular score
                     subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
                 score += subgoal_score
         except KeyError:
             # The sequence could not be scored. This happens if we don't get a prior solution for some step of the sequence. 
-            return BAD_SCORE
+            return BAD_SCORE + subgoal['R'] #should be fine because R is always scored geometrically
         return score
   
     def score_subgoals_in_sequence(self,sequences,verbose=False):
@@ -197,6 +198,10 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 winning_world = copy.deepcopy(temp_world)
             #break early to save performance in case of fail
             if fast_fail and temp_world.status()[0] == 'Fail':
+                 #store cached evaluation
+                 #NOTE that this will lead to a state being "blacklisted" if it fails once
+                cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world}
+                self._cached_subgoal_evaluations[key] = cached_eval
                 return 0,None,None,costs
         #store cached evaluation
         cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world}

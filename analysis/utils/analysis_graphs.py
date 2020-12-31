@@ -313,7 +313,7 @@ def illustrate_worlds(df):
     for i,(name,world_obj) in enumerate(list(unique_world_obj.items())):
         plt.subplot(round(math.sqrt(len(unique_world_obj))),round(math.sqrt(len(unique_world_obj)))+1,i+1)
         plt.imshow(world_obj.silhouette)
-        # plt.title(name)
+        plt.title(name)
         plt.xticks([])
         plt.yticks([])
     plt.show()
@@ -401,7 +401,7 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
     unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
     #create plot
     plt.rcParams.update({'font.size': 22})
-    fig, axes = plt.subplots(len(unique_world_names),2,figsize=(10,20))
+    fig, axes = plt.subplots(len(unique_world_names),2,figsize=(20,20))
     fig.suptitle("Perfect reconstruction per agent over silhouettes")
     for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
         _df = df[df['world'] == world_name]
@@ -418,7 +418,7 @@ def mean_failure_reason_per_agent_over_worlds(df,fast_fail=False):
         scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Unstable") for a in agents]    
         axes[i,1].bar(np.arange(len(scores))+.15,scores,align='center',label="Unstable",color=WIN_COLOR,width=0.15)
         #Ongoing
-        scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"Ongoing") for a in agents]    
+        scores = [mean_failure_reason(_df[(_df['agent_attributes']==a) & (_df['world_status'].isin(['Fail','Ongoing']))],"None") for a in agents]    
         axes[i,1].bar(np.arange(len(scores))+.3,scores,align='center',label="Did not finish",color='yellow',width=0.15)
         if fast_fail:
             #Outside
@@ -445,6 +445,36 @@ def heatmaps_at_peak_per_agent_over_world(df):
     #create plot
     fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(2+2*len(agents),4+2*len(unique_world_names)))
     fig.suptitle("Heatmap at peak F1 per agent over silhouettes")
+    for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
+        _df = df[df['world'] == world_name]
+        # illustrate world
+        axes[i,0].imshow(world_obj.silhouette)
+        # axes[i,0].set_title(world_name)
+        axes[i,0].set_xticks([])
+        axes[i,0].set_yticks([])
+        axes[i,0].set_title(textwrap.fill(world_name,width=20), fontsize=10,wrap=True)
+        #generate heatmaps
+        for j,agent in enumerate(agents):
+            bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
+            shape = bms.head(1).item().shape
+            bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
+            heatmap = np.sum(bms)
+            axes[i,j+1].imshow(heatmap,cmap='viridis')    
+            axes[i,j+1].set_yticks([])
+            axes[i,j+1].set_xticks([])
+            tit = agent_labels(agents,df)[j]
+            axes[i,j+1].set_title(textwrap.fill(tit,width=20), fontsize=10,wrap=True)
+    plt.show()
+
+def heatmaps_per_agent_over_world(df):
+    df = final_rows(df)
+    agents = df['agent_attributes'].unique()
+    unique_world_names = df['world'].unique()
+    unique_world_obj = {w:df[df['world'] == w].head(1)['_world'].item() for w in unique_world_names}
+    unique_world_obj = {key: value for key, value in sorted(unique_world_obj.items(), key=lambda item: item[0])}
+    #create plot
+    fig, axes = plt.subplots(len(unique_world_names),len(agents)+1,figsize=(2+2*len(agents),4+2*len(unique_world_names)))
+    fig.suptitle("Heatmap at end per agent over silhouettes")
     for i, (world_name,world_obj) in enumerate(list(unique_world_obj.items())):
         _df = df[df['world'] == world_name]
         # illustrate world
@@ -506,14 +536,15 @@ def scatter_success_cost(df):
     perfects = df.query('final_row == True').groupby('agent_label')['perfect'].mean()
     agents = perfects.keys()
     for i in range(len(costs)):
-        #figure out the color
-        if "Construction_Paper_Agent" in df.loc[df.agent_label == agents[i]].head(1)['agent_attributes_string'].item(): 
-            color = TOOL_COLOR
-            kind = "with tool"
-        else:
-            color = NO_TOOL_COLOR
-            kind = "without tool"       
-        plt.scatter(costs[i],perfects[i],color=color,label=kind,marker = get_marker(agents[i]))
+        # #figure out the color
+        # if "Construction_Paper_Agent" in df.loc[df.agent_label == agents[i]].head(1)['agent_attributes_string'].item(): 
+        #     color = TOOL_COLOR
+        #     kind = "with tool"
+        # else:
+        #     color = NO_TOOL_COLOR
+        #     kind = "without tool"       
+        # plt.scatter(costs[i],perfects[i],color=color,label=kind,marker = get_marker(agents[i]))
+        plt.scatter(costs[i],perfects[i],label=agents[i],marker = get_marker(agents[i]))
         axes = plt.gca()
         axes.set_xscale('log')
         plt.annotate(
