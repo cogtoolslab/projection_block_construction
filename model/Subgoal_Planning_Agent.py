@@ -68,7 +68,9 @@ class Subgoal_Planning_Agent(BFS_Agent):
         self._cached_subgoal_evaluations = {} #clear cache
 
     def act(self,steps=1,verbose=False):
-        """Finds subgoal plan, then builds the first subgoal. Steps here refers to subgoals (ie. 2 steps is acting the first two planned subgoals). Pass -1 to steps to execute the entire subgoal plan."""
+        """Finds subgoal plan, then builds the first subgoal. Steps here refers to subgoals (ie. 2 steps is acting the first two planned subgoals). Pass -1 to steps to execute the entire subgoal plan.
+        
+        NOTE: only the latest decomposed silhouette is saved by experiment runner: the plan needs to be extracted from the saved subgoal sequence."""
         if self.random_seed is None: self.random_seed = randint(0,99999)
         # get best sequence of subgoals
         sequence,sg_planning_cost = self.plan_subgoals(verbose=verbose)
@@ -92,7 +94,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         return lower_level_actions,{'states_evaluated':lower_level_cost,
                                 'sg_planning_cost':sg_planning_cost,
                                 '_subgoal_sequence':sequence,
-                                'decomposed_silhouette': current_subgoal}
+                                'decomposed_silhouette': current_subgoal['decomposition']}
 
     def plan_subgoals(self,verbose=False):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within."""
