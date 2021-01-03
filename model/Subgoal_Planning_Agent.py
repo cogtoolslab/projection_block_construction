@@ -128,7 +128,11 @@ class Subgoal_Planning_Agent(BFS_Agent):
             for subgoal in sequence:
                 if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] <= 0: 
                     # we have a case where the subgoal computation was aborted early or we should ignore the subgoal because the success rate is too low or the reward is zero (subgoal already done or empty)
-                    subgoal_score = BAD_SCORE + subgoal['R']
+                    try:
+                        subgoal_score = BAD_SCORE + subgoal['R'] - subgoal['C'] * self.c_weight
+                    except:
+                        #missing C
+                        subgoal_score = BAD_SCORE + subgoal['R']
                 else:
                     # compute regular score
                     subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
@@ -171,7 +175,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         """Gets the unscaled reward of a subgoal: the area of a figure that we can fill out by completing the subgoal in number of cells beyond what is already filled out."""
         return np.sum((decomposition * self.world.full_silhouette) - (prior_blockmap > 0))
 
-    def success_and_cost_of_subgoal(self,decomposition,prior_world = None, iterations=1,max_steps = 20,fast_fail = True):
+    def success_and_cost_of_subgoal(self,decomposition,prior_world = None, iterations=1,max_steps = 20,fast_fail = False):
         """The cost of solving for a certain subgoal given the current block construction"""
         if prior_world is None:
             prior_world = self.world
