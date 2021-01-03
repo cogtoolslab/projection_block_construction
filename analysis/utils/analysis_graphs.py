@@ -531,8 +531,8 @@ def trajectory_per_agent_over_world(df):
 
 # scatter plots
 def scatter_success_cost(df):
-    """Assumes a preprocessed df."""
-    costs = df.query('final_row == True').groupby('agent_label')['states_evaluated'].mean()
+    """Assumes a preprocessed df. Computes cost per step."""
+    costs = df.query('final_row == True').groupby('agent_label')['avg_cost_per_step_for_run'].mean()
     perfects = df.query('final_row == True').groupby('agent_label')['perfect'].mean()
     agents = perfects.keys()
     for i in range(len(costs)):
@@ -561,7 +561,7 @@ def scatter_success_cost(df):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys(),bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
-    plt.title("Success and computational cost")
+    plt.title("Success and computational cost per step")
     plt.xlabel("States evaluated")
     plt.ylabel("Proportion of perfect reconstructions")
     plt.show()
@@ -596,7 +596,7 @@ def scatter_cost_pairs(df,agent_mappings=None):
     """Agent mapping expects tuples of (no tool, tool, label) 'agent_parameters_string'. These can be drawn out of the perfects series using debug inspection. """
     df = final_rows(df)
     if agent_mappings is None: agent_mappings = generate_pairs(df)
-    scores = df.query('final_row == True').groupby('agent_label')['states_evaluated'].mean()
+    scores = df.query('final_row == True').groupby('agent_label')['avg_cost_per_step_for_run'].mean()
     top = max(scores)
     #advantage line
     plt.plot([0,top*1.1],[0,top*1.1],color='grey',alpha=.4)  
