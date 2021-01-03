@@ -74,3 +74,5 @@ main.py
 run_tools_for_bc_job
 fromssrde.txt
 *.cyberducksegment
+tools_bc
+tools_bc/*
