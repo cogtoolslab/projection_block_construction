@@ -74,5 +74,7 @@ def build_animation(slice,title=None):
     #delete temp images
     for file in files:
         os.remove(file)
+    #close figures
+    plt.close('all')
     print("created "+title+".gif")
 
