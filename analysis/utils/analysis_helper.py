@@ -436,10 +436,14 @@ def preprocess_df(df):
             print("didnt convert to float:",column)
     for column in ['perfect','final_row']:
         df[column] = df[column].astype(bool)
+    for column in ['decomposed_silhouette']:
+        df[column] = df[column].astype(object)
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
     print("converted datatypes")
     fill_average_cost_per_step(df)
     print("filled average cost per step for run")
+    fill_decomposed_silhouettes_for_full_planner(df)
+    print("filled decomposed silhouettes for full planner")
     fill_agent_labels(df)
     print("filled agent labels")
 
@@ -453,6 +457,22 @@ def fill_average_cost_per_step(df):
 def fill_agent_labels(df):
     agent_labels = dict(zip(df['agent_attributes_string'].unique(),smart_short_agent_names(df['agent_attributes_string'].unique())))
     df['agent_label'] = df['agent_attributes_string'].replace(agent_labels)
+
+def fill_decomposed_silhouettes_for_full_planner(df):
+    """Only applicable for the full subgoal planning agent, since that one doesn't fill the decomposed silhouettes for technical reasons"""
+    for run_ID in df[df['agent_type'] == 'Full_Subgoal_Planning_Agent']['run_ID'].unique():        #get sequence of decompositions
+        run_df = df.loc[df['run_ID'] == run_ID]
+        seq = run_df.query("final_row == True")['_subgoal_sequence'].item()[0]
+        decomps = [sg['decomposition'] for sg in seq]
+        sg_counter = 0
+        for step in range(len(run_df)):
+            #check if we've built past the current subgoal
+            built = run_df[run_df['step'] == step]['blockmap'].item()
+            if np.any(((decomps[sg_counter]>0)*1. - (built>0)*1.) == -1):
+                #we have built past the current subgoal
+                index = df.loc[(df['run_ID'] == run_ID) & (df['step'] == step)].index.item() #there's got to be a better way
+                df.at[index,'decomposed_silhouette'] = decomps[sg_counter]
+                sg_counter = min(len(decomps)-1, sg_counter + 1)
 
 # Sequence analysis
 
