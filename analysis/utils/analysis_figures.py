@@ -1,5 +1,6 @@
 """Contains code for generating figures and more complicated visualizations"""
 
+from utils import world
 from analysis.utils.analysis_graphs import *
 import imageio
 
@@ -30,6 +31,8 @@ def build_animation(slice,title=None):
     plan_counter = 0
     frame = 0 
     for i,row in slice.iterrows():
+        # get world
+        world = row['_world'].silhouette
         try:
             read_silhouette = row['decomposed_silhouette']
         except KeyError:
@@ -40,7 +43,10 @@ def build_animation(slice,title=None):
             ds_counter += 1
             ds_counter = min(ds_counter,len(decomposed_silhouettes)-1)
             silhouette = decomposed_silhouettes[ds_counter]
-        read_plan = row['_subgoal_sequence']
+        try:
+            read_plan = row['_subgoal_sequence']
+        except KeyError:
+            read_plan = np.nan #fallback for below
         if type(read_plan) is float: #if we have a nan, get the right silhouette
             plan = plans[plan_counter]
         else:
@@ -53,18 +59,21 @@ def build_animation(slice,title=None):
         if title != 'anim':
             plt.title(title)
         plt.pcolor(row['blockmap'][::-1], cmap='hot_r',vmin=0,vmax=20,linewidth=0,edgecolor='none')
+        #we print the target silhouette as very transparent overlay 🌍
+        plt.pcolor(world[::-1],cmap='binary',alpha=.4,linewidth=2,facecolor='none',edgecolor='black',capstyle='round',joinstyle='round',linestyle=':')
         if silhouette is not None:
             if len(silhouette) == 1:
                 silhouette = silhouette[0]
-            #we print the target silhouette as transparent overlay
+            #we print the subgoal as transparent overlay. No subgoal will just overlay the complete silhouette twice
             plt.pcolor(silhouette[::-1],cmap='binary',alpha=.8,linewidth=2,facecolor='none',edgecolor='black',capstyle='round',joinstyle='round',linestyle=':')
         if plan is not None:
             plt.hlines(plan,0,8,linestyles='--',colors='blue',linewidth=4)
         if type(row['world_failure_reason']) is not float and row['world_failure_reason'] != "None":
-            plt.text(x=3,y=4,s=row['world_failure_reason'],fontdict=    {
+            plt.text(4,4,s=row['world_failure_reason'],fontdict=    {
                     'weight' : 'bold',
-                    'size'   : 44
-                    })
+                    'size'   : 32
+                    },
+                    horizontalalignment='center',     verticalalignment='center')
         frame += 1
         plt.savefig("_"+"title"+str(frame)+".png")
     #load the files we created

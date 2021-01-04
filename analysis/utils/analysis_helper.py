@@ -444,6 +444,8 @@ def preprocess_df(df):
     print("filled average cost per step for run")
     fill_decomposed_silhouettes_for_full_planner(df)
     print("filled decomposed silhouettes for full planner")
+    fix_decomposed_silhouettes(df)
+    print("fixed wrongly saved decomposed silhouettes")
     fill_agent_labels(df)
     print("filled agent labels")
 
@@ -473,6 +475,22 @@ def fill_decomposed_silhouettes_for_full_planner(df):
                 index = df.loc[(df['run_ID'] == run_ID) & (df['step'] == step)].index.item() #there's got to be a better way
                 df.at[index,'decomposed_silhouette'] = decomps[sg_counter]
                 sg_counter = min(len(decomps)-1, sg_counter + 1)
+
+def fix_decomposed_silhouettes(df):
+    """Sometimes the cell for decomposed silhouette contains a dict—no idea why"""
+    def _unwrap_decomp_dict(decomp):
+        if type(decomp) is np.ndarray or type(decomp) is float:
+            return decomp
+        if type(decomp) is dict:
+            return decomp['decomposition']
+        if type(decomp[0]) is dict:
+            return decomp[0]['decomposition']
+        return decomp
+    
+    df['decomposed_silhouette'] = df['decomposed_silhouette'].map(_unwrap_decomp_dict)
+
+
+
 
 # Sequence analysis
 
