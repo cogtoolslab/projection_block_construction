@@ -124,23 +124,20 @@ class Subgoal_Planning_Agent(BFS_Agent):
     def score_sequence(self,sequence):
         """Compute the value of a single sequence with precomputed S,R,C. Assigns BAD_SCORE. If no solution can be found, the one with highest total reward is chosen."""
         score = 0
-        try:
-            for subgoal in sequence:
-                if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] <= 0: 
-                    # we have a case where the subgoal computation was aborted early or we should ignore the subgoal because the success rate is too low or the reward is zero (subgoal already done or empty)
-                    try:
-                        subgoal_score = BAD_SCORE + subgoal['R'] - subgoal['C'] * self.c_weight
-                    except:
-                        #missing C
-                        subgoal_score = BAD_SCORE + subgoal['R']
-                else:
-                    # compute regular score
-                    subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
-                score += subgoal_score
-        except KeyError:
-            # The sequence could not be scored. This happens if we don't get a prior solution for some step of the sequence. 
-            return BAD_SCORE + subgoal['R'] #should be fine because R is always scored geometrically
-        return score
+        penalized = False
+        for subgoal in sequence:
+            if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] <= 0: 
+                # we have a case where the subgoal computation was aborted early or we should ignore the subgoal because the success rate is too low or the reward is zero (subgoal already done or empty)
+                penalized = True
+            try: 
+                # compute regular score
+                subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
+            except: 
+                    #missing C—happens only in the case of fast_fail
+                subgoal_score = subgoal['R']
+                penalized = True
+            score += subgoal_score
+        return score + (BAD_SCORE * penalized)
   
     def score_subgoals_in_sequence(self,sequences,verbose=False):
         """Add C,R,S to the subgoals in the sequences"""
