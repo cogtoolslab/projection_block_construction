@@ -180,7 +180,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         if prior_world is None:
             prior_world = self.world
         # generate key for cache
-        key = decomposition * 2 - (prior_world.current_state.blockmap > 0)
+        key = decomposition * 100 - (prior_world.current_state.order_invariant_blockmap() > 0)
         key = key.tostring() #make hashable
         if key in self._cached_subgoal_evaluations:
             # print("Cache hit for",key)
