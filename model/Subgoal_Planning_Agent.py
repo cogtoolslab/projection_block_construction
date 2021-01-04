@@ -151,7 +151,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 sg_counter += 1 # for verbose printing
                 #get reward and cost and success of that particular subgoal and store the resulting world
                 R = self.reward_of_subgoal(subgoal['decomposition'],prior_world.current_state.blockmap) 
-                S,C,prior_world,total_cost = self.success_and_cost_of_subgoal(subgoal['decomposition'],prior_world)
+                S,C,prior_world,total_cost,stuck = self.success_and_cost_of_subgoal(subgoal['decomposition'],prior_world)
                 number_of_states_evaluated += total_cost
                 if verbose: 
                     print("For sequence",seq_counter,'/',len(sequences),
@@ -160,7 +160,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                     subgoal['name'],
                     "with C:"+str(C)," R:"+str(R)," S:"+str(S))
                 #store in the subgoal
-                subgoal['R'] = R
+                subgoal['R'] = R + stuck * BAD_SCORE
                 subgoal['C'] = C
                 subgoal['S'] = S
                 #if we can't solve it to have a base for the next one, we break
@@ -182,11 +182,12 @@ class Subgoal_Planning_Agent(BFS_Agent):
         if key in self._cached_subgoal_evaluations:
             # print("Cache hit for",key)
             cached_eval = self._cached_subgoal_evaluations[key]
-            return cached_eval['S'],cached_eval['C'],cached_eval['winning_world'],1 #returning 1 as lookup cost, not the cost it tool to calculate the subgoal originally
+            return cached_eval['S'],cached_eval['C'],cached_eval['winning_world'],1,cached_eval['stuck'] #returning 1 as lookup cost, not the cost it tool to calculate the subgoal originally
         current_world = copy.deepcopy(prior_world)
         costs = 0
         wins = 0
         winning_world = None
+        stuck = 0 # have we taken no actions in all iterations?
         for i in range(iterations):
             temp_world = copy.deepcopy(current_world)
             temp_world.set_silhouette(decomposition)
@@ -196,20 +197,23 @@ class Subgoal_Planning_Agent(BFS_Agent):
             while temp_world.status()[0] == 'Ongoing' and steps < max_steps:
                 _,info = self.lower_agent.act()
                 costs += info['states_evaluated']
+                steps += 1
             wins += temp_world.status()[0] == 'Win'
+            if steps == 0: #we have no steps, which means that the subgoal will lead to infinite costs
+                stuck += 1
             if temp_world.status()[0] == 'Win':
                 winning_world = copy.deepcopy(temp_world)
             #break early to save performance in case of fail
             if fast_fail and temp_world.status()[0] == 'Fail':
                  #store cached evaluation
                  #NOTE that this will lead to a state being "blacklisted" if it fails once
-                cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world}
+                cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world,'stuck':stuck == i}
                 self._cached_subgoal_evaluations[key] = cached_eval
-                return 0,None,None,costs
+                return 0,None,None,costs,stuck == iterations
         #store cached evaluation
-        cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world}
+        cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':winning_world,'stuck':stuck == iterations}
         self._cached_subgoal_evaluations[key] = cached_eval
-        return wins/iterations,costs/iterations,winning_world,costs
+        return wins/iterations,costs/iterations,winning_world,costs/iterations,stuck == iterations
 
 
 class Full_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
