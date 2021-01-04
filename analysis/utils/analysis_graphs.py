@@ -478,6 +478,10 @@ def heatmaps_at_peak_per_agent_over_world(df):
         #generate heatmaps
         for j,agent in enumerate(agents):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
+            if len(bms) == 0: 
+                axes[i,j+1].set_yticks([])
+                axes[i,j+1].set_xticks([])
+                continue
             shape = bms.head(1).item().shape
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
             heatmap = np.sum(bms)
@@ -508,6 +512,10 @@ def heatmaps_per_agent_over_world(df):
         #generate heatmaps
         for j,agent in enumerate(agents):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
+            if len(bms) == 0: 
+                axes[i,j+1].set_yticks([])
+                axes[i,j+1].set_xticks([])
+                continue
             shape = bms.head(1).item().shape
             bms = bms.apply(lambda x: (x > np.zeros(shape))*1.) #make bitmap
             heatmap = np.sum(bms)
@@ -709,7 +717,10 @@ def heatmaps_block_index_per_agent_over_world(df):
         #generate heatmaps
         for j,agent in enumerate(agents):
             bms = df[(df['agent_attributes'] == agent) & (df['world'] == world_name)]['blockmap'] #get the correct bms
-            shape = bms.head(1).item().shape
+            if len(bms) == 0: 
+                axes[i,j+1].set_yticks([])
+                axes[i,j+1].set_xticks([])
+                continue
             # bms = bms.apply(zero_to_nan) #replace 0 with nan
             heatmap = np.mean(bms)
             axes[i,j+1].imshow(heatmap,cmap='viridis')    
