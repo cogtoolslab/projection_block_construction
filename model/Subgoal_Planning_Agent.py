@@ -151,7 +151,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 sg_counter += 1 # for verbose printing
                 #get reward and cost and success of that particular subgoal and store the resulting world
                 R = self.reward_of_subgoal(subgoal['decomposition'],prior_world.current_state.blockmap) 
-                S,C,prior_world,total_cost,stuck = self.success_and_cost_of_subgoal(subgoal['decomposition'],prior_world)
+                S,C,prior_world,total_cost,stuck = self.success_and_cost_of_subgoal(subgoal['decomposition'],prior_world,iterations=self.S_iterations)
                 number_of_states_evaluated += total_cost
                 if verbose: 
                     print("For sequence",seq_counter,'/',len(sequences),
