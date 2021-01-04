@@ -136,6 +136,28 @@ def mean_peak_score_per_agent(df,scoring_function=bw.F1score):
     plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
     plt.show()
 
+def mean_num_subgoals_per_agent(df):
+    agents = df['agent_attributes'].unique()
+    #all
+    scores = [sum(~df[df['agent_attributes']==a]['decomposed_silhouette'].isna()) / len(df[df['agent_attributes']==a]['run_ID'].unique()) for a in agents]
+    plt.bar(np.arange(len(scores))+0,scores,align='center',label="All",width=0.2)
+    #win
+    run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
+    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) for a in agents]
+    plt.bar(np.arange(len(scores))+.2,scores,align='center',label="Win",color=WIN_COLOR,width=0.2)
+    #fail
+    run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
+    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) for a in agents]
+    plt.bar(np.arange(len(scores))+.4,scores,align='center',label="Fail",color=FAIL_COLOR,width=0.2)
+
+    plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')
+    plt.ylabel("Mean number of actual subgoals used")
+    plt.ylim(0)
+    plt.title("Mean number of subgoals per run")
+    plt.legend(bbox_to_anchor=(1.04,0), loc="lower left", borderaxespad=0)
+    plt.show()
+
+
 def mean_avg_area_under_curve_to_peakF1_per_agent(df):
     agents = df['agent_attributes'].unique()
     scoring_function = bw.F1score
