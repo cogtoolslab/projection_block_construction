@@ -4,7 +4,7 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.Subgoal_Planning_Agent import *
+from model.Sample_Subgoal_Planning_Agent import *
 
 class Lax_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
     """Plans every subgoal as good as it can and uses that as basis for the next one no matter if it's complete. Reward is how much we were actually able to build"""
