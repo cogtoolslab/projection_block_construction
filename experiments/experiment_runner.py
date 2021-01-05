@@ -1,4 +1,5 @@
 # set up directories
+from analysis.utils.analysis_helper import preprocess_df
 import os
 import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -72,6 +73,8 @@ def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,pa
         results_mapped =list(map(_run_single_experiment,experiments))
 
     results = pd.concat(results_mapped).reset_index(drop = True)
+
+    preprocess_df(results) #automatically fill in code relevant to analysis
 
     if save is not False:
         #check if results directory exists
