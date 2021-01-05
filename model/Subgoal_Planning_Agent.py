@@ -14,8 +14,8 @@ import numpy as np
 BAD_SCORE = -9999
 MAX_NUMBER_OF_SUBGOALS = 64
 
-class Subgoal_Planning_Agent(BFS_Agent):
-    """Implements n subgoal lookahead planning"""
+class Sample_Subgoal_Planning_Agent(BFS_Agent):
+    """Implements n subgoal lookahead planning. Works by sampling the lower level agent and using that to score sequences of actions. """
 
     def __init__(self,
                          world=None,
@@ -215,7 +215,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         return wins/iterations,costs/iterations,winning_world,costs/iterations,stuck == iterations
 
 
-class Full_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
+class Full_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
     """Same as subgoal planning agent, only that we act the entire sequence of subgoals after planning and plan the entire sequence."""
 
     def __init__(self,
