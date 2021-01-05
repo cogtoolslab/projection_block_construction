@@ -88,3 +88,19 @@ class Lax_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
         cached_eval = {'S':wins/iterations,'C':costs/iterations,'winning_world':post_world,'stuck':stuck == iterations}
         self._cached_subgoal_evaluations[key] = cached_eval
         return wins/iterations,costs/iterations,post_world,costs/iterations,stuck == iterations
+
+class Full_Lax_Subgoal_Planning_Agent(Lax_Subgoal_Planning_Agent):
+    """Same as subgoal planning agent, only that we act the entire sequence of subgoals after planning and plan the entire sequence."""
+
+    def __init__(self,
+                        world=None,
+                         decomposer = None,
+                         c_weight = 1000,
+                         S_iterations=1,
+                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         random_seed = None):
+        super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, c_weight=c_weight, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
+
+    def act(self, verbose=False):
+        """Plans and acts entire sequence"""
+        return super().act(steps=MAX_NUMBER_OF_SUBGOALS, verbose=verbose)
