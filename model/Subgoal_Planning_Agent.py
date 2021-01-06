@@ -52,12 +52,12 @@ class Subgoal_Planning_Agent(BFS_Agent):
         """Returns dictionary of agent parameters."""
         return {**{
             'agent_type':self.__class__.__name__,
-            'lookeahead':self.sequence_length,
+            'sequence_length':self.sequence_length,
             'decomposition_function':self.decomposer.__class__.__name__,
             'include_subsequences':self.include_subsequences,
             'c_weight':self.c_weight,
-            'S_threshold':self.S_threshold,
-            'S_iterations':self.S_iterations,
+            'max_cost':self.max_cost,
+            'step_size':self.step_size,
             'random_seed':self.random_seed
             }, **{"lower level: "+key:value for key,value in self.lower_agent.get_parameters().items()}}
     
