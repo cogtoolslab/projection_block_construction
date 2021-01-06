@@ -479,6 +479,8 @@ def fill_decomposed_silhouettes_for_full_planner(df):
 def fix_decomposed_silhouettes(df):
     """Sometimes the cell for decomposed silhouette contains a dict—no idea why"""
     def _unwrap_decomp_dict(decomp):
+        if decomp is None:
+            return None
         if type(decomp) is np.ndarray or type(decomp) is float:
             return decomp
         if type(decomp) is dict:
