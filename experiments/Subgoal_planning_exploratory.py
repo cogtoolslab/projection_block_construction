@@ -20,33 +20,28 @@ if __name__=="__main__": #required for multiprocessing
     import time
     start_time = time.time()
 
-    fraction_of_cpus = .8
+    print("Running experiment....")
+
+    fraction_of_cpus = False
 
     agents = [
         Subgoal_Planning_Agent(
                 lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
-                lookahead = l,
-                include_subsequences=False,
-                c_weight = 1/w,
-                S_treshold=1,
-                S_iterations=1)
-                for l in [1,2,3,8] for w in [1,10,100,1000]
+                sequence_length = l,
+                include_subsequences=True,
+                c_weight = w,
+                max_cost = 10**4
+                )
+                for l in [1,2,3,8] for w in [0.001]
         ] + [
         BFS_Agent(horizon=1,only_improving_actions=True)
-        ] + [
-        Full_Subgoal_Planning_Agent(
-            lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
-            c_weight = 1/w,
-            S_treshold=1,
-            S_iterations=2)
-            for w in [1,10,100,1000]
         ]
 
-    silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE16}
+    silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE16[10:14]} #SELECTION
     worlds = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default,legal_action_space=True) for i,s in silhouettes.items()}
     
 
-    results = experiment_runner.run_experiment(worlds,agents,10,20,verbose=False,parallelized=fraction_of_cpus,save=os.path.basename(__file__),maxtasksperprocess = 1)
+    results = experiment_runner.run_experiment(worlds,agents,10,20,verbose=False,parallelized=fraction_of_cpus,save="subgoal planning exploratory",maxtasksperprocess = 1)
     print(results[['agent','world','world_status']])
 
     print("Done in %s seconds" % (time.time() - start_time))
