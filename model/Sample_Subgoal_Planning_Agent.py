@@ -14,6 +14,11 @@ import numpy as np
 BAD_SCORE = -9999
 MAX_NUMBER_OF_SUBGOALS = 64
 
+"""
+NOTE
+The corresponding code in decomposition_functions has changed and this will need to be adapted to work
+"""
+
 class Sample_Subgoal_Planning_Agent(BFS_Agent):
     """Implements n subgoal lookahead planning. Works by sampling the lower level agent and using that to score sequences of actions. """
 
