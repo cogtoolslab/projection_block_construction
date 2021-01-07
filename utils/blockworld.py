@@ -39,7 +39,7 @@ class Blockworld(World):
     
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays."""
 
-    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False,legal_action_space=True):
+    def __init__(self,dimension = None,silhouette=None,block_library = None,fast_failure=False,legal_action_space=True,physics=True):
         self.dimension = dimension
         #Defines dimensions of possible blocks. 
         if block_library is None: #the default block library is the one from the silhouette 2 study
@@ -58,6 +58,7 @@ class Blockworld(World):
         self.current_state = Blockworld.State(self,[]) #generate a new state with no blocks in it
         self.fast_failure = fast_failure #set world state to fail if the agent has built outside the silhouette or left a hole
         self.legal_action_space = legal_action_space #only return legal actions?
+        self.physics = physics #turn physics on or off?
 
     def __str__(self):
         """String representation of the world"""
@@ -77,10 +78,11 @@ class Blockworld(World):
         if not force: 
             if action not in self.current_state.possible_actions(legal=False): raise Exception("Action not possible") 
         #determine y coordinates of block
-        y = 0
-        while y < self.dimension[0] and np.sum(state.blockmap[y,range(x, x + baseblock.width)]) ==  0: #find the lowest free row in the tower 
-            y+= 1
-        y = y-1 #because y marks the first full row
+        #find the lowest free row in the tower 
+        try:
+            y = int(np.where(state.blockmap[:,x:x+baseblock.width].any(axis=1))[0][0]) - 1
+        except IndexError:
+            y = self.dimension[0]-1
         #create new block
         new_block = Block(baseblock,x,y)
         #create new state
