@@ -72,7 +72,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         NOTE: only the latest decomposed silhouette is saved by experiment runner: the plan needs to be extracted from the saved subgoal sequence."""
         if self.random_seed is None: self.random_seed = randint(0,99999)
         # get best sequence of subgoals
-        sequence = self.plan_subgoals(verbose=verbose)
+        sequence,all_sequences = self.plan_subgoals(verbose=verbose)
         if steps is None:
             if self.step_size <= 0:
                 steps = len(sequence) + self.step_size
@@ -94,16 +94,18 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 actions.append(action)
                 solution_cost += sg.solution_cost
                 last_silhouette = sg.target
+        all_sequences_cost = sum([s.sequence_cost() for s in all_sequences])
         return actions,{
                                 'solution_cost':solution_cost,
                                 'sequence_cost':sequence.sequence_cost(),
-                                'all_sequences_cost':'XXX XXX XXX', #TODO implement
-                                '_subgoal_sequence':sequence,
+                                'all_sequences_cost':all_sequences_cost, 
+                                '_all_subgoal_sequences':all_sequences,
+                                '_chosen_subgoal_sequence':sequence,
                                 'decomposed_silhouette': last_silhouette
                                 }
 
     def plan_subgoals(self,verbose=False):
-        """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within."""
+        """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within. Returns chosen sequence and the set of all sequences"""
         self.decomposer.set_silhouette(self.world.full_silhouette) #make sure that the decomposer has the right silhouette
         sequences = self.decomposer.get_sequences(state = self.world.current_state,length=self.sequence_length,filter_for_length=not self.include_subsequences)
         if verbose: 
@@ -113,7 +115,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences,verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
-        return self.choose_sequence(sequences,verbose=verbose) #return the sequence of subgoals with the highest score
+        return self.choose_sequence(sequences,verbose=verbose),sequences #return the sequence of subgoals with the highest score
     
     def choose_sequence(self, sequences,verbose=False):
         """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$ including weighing by lambda"""
@@ -195,7 +197,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 subgoal.actions = actions
                 subgoal.C = costs
                 subgoal.solution_cost = costs
-                subgoal.planning_costs = total_costs
+                subgoal.planning_cost = total_costs
                 subgoal.iterations = i
                 self._cached_subgoal_evaluations[key] = subgoal #TODO copy or reference?
                 return subgoal
