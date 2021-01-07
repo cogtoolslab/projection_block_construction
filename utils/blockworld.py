@@ -271,6 +271,9 @@ class Blockworld(World):
 
         def stability(self,visual_display=False):
             """Runs physics engine to determine stability. Returns true or false, but could be adapted for noisy simulations. Caches it's value."""
+            if self.world.physics is False:
+                #turning off physics means everything is stable
+                return True
             if self._stable is not None:
                 #return cached value
                 return self._stable
