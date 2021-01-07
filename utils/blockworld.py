@@ -78,7 +78,7 @@ class Blockworld(World):
             if action not in self.current_state.possible_actions(legal=False): raise Exception("Action not possible") 
         #determine y coordinates of block
         y = 0
-        while y < self.dimension[0] and state.blockmap[y,range(x, x + baseblock.width)].sum() ==  0: #find the lowest free row in the tower 
+        while y < self.dimension[0] and np.sum(state.blockmap[y,range(x, x + baseblock.width)]) ==  0: #find the lowest free row in the tower 
             y+= 1
         y = y-1 #because y marks the first full row
         #create new block
@@ -281,11 +281,9 @@ class Blockworld(World):
                 return self.legal_actions()
             possible_actions = []
             for base_block in self.world.block_library:
-                for x in range(self.world_width): #starting coordinate is bottom left
-                    #check whether it overlaps the left boundary
-                    if x + base_block.width <= self.world_width:
-                         #and whether it overlaps the top boundary by simply looking if the block at the top is free
-                        if self.blockmap[0 : base_block.height, x : x+base_block.width] .sum() == 0:
+                for x in range(self.world_width-base_block.width+1): #starting coordinate is bottom left. The block can't possible overlap the right side.
+                    #and whether it overlaps the top boundary by simply looking if the block at the top is free
+                    if np.sum(self.blockmap[0 : base_block.height, x : x+base_block.width]) == 0:
                             possible_actions.append((base_block,x))
             return possible_actions
         
