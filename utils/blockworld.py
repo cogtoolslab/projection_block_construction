@@ -196,6 +196,8 @@ class Blockworld(World):
             self._update_map_with_blocks(blocks) #read the blocks into the blockmap
             self._stable = None
             self._cached_hash = None #Cached hash value. It's only filled once we actually generate a hash and invalidates when the blockmap is updated. ⚠️ It is NOT updated when the blockmap/block list is touched manually! ⚠️
+            self._legal_actions = None #Cached actions. It's only filled once we actually generate a hash and invalidates when the blockmap is updated. ⚠️ It is NOT updated when the blockmap/block list is touched manually! ⚠️
+            self._possible_actions = None #Cached actions. It's only filled once we actually generate a hash and invalidates when the blockmap is updated. ⚠️ It is NOT updated when the blockmap/block list is touched manually! ⚠️
         
         def __eq__(self,other):
             """The order of the blocks does not matter, as they have their location attached. So the sorted list should be equal between two states which consist of the same blocks no matter the order in which they were placed"""
@@ -211,6 +213,8 @@ class Blockworld(World):
         def clear(self):
             """Clears the various cached values of the state and updates the blockmap."""
             self._stable = None
+            self._legal_actions = None
+            self._possible_actions = None
             try:
                 del(self._F1score)
             except:
@@ -279,17 +283,23 @@ class Blockworld(World):
                 legal = self.world.legal_action_space
             if legal: #return legal actions instead
                 return self.legal_actions()
+            if self._possible_actions is not None:
+                return self._possible_actions
             possible_actions = []
             for base_block in self.world.block_library:
                 for x in range(self.world_width-base_block.width+1): #starting coordinate is bottom left. The block can't possible overlap the right side.
                     #and whether it overlaps the top boundary by simply looking if the block at the top is free
                     if np.sum(self.blockmap[0 : base_block.height, x : x+base_block.width]) == 0:
                             possible_actions.append((base_block,x))
+            self._possible_actions = possible_actions
             return possible_actions
         
         def legal_actions(self):
             """Returns the subset of possible actions where the placed block is fully within the silhouette. Returns [] if the current state is already non-legal."""
-            return [a for a in self.possible_actions(legal=False) if legal(self.transition(a))] #need legal false here to prevent infinite recursion
+            if self._legal_actions is not None:
+                return self._legal_actions
+            legal_actions = [a for a in self.possible_actions(legal=False) if legal(self.transition(a))] #need legal false here to prevent infinite recursion
+            return legal_actions
 
         def visual_display(self,blocking=False,silhouette=None):
             """Shows the state in a pretty way. Silhouette is shown as dotted outline."""
