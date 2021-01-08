@@ -57,9 +57,13 @@ class Subgoal_sequence:
             for sg in self.subgoals])
         return score
 
-    def sequence_cost(self):
+    def planning_cost(self):
         """Planning cost of the entire sequence"""
         return sum([sg.planning_cost if sg.planning_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
+    
+    def solution_cost(self):
+        """Planning cost of the entire sequence"""
+        return sum([sg.solution_cost if sg.solution_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
 
     def __len__(self):
         return len(self.subgoals)

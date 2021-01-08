@@ -87,6 +87,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         cur_i = 0
         actions = []
         solution_cost = 0
+        partial_planning_cost = 0
         last_silhouette = None
         for sg in sequence:
             if cur_i == steps: break #stop after the nth subgoal
@@ -97,16 +98,19 @@ class Subgoal_Planning_Agent(BFS_Agent):
             for action in sg.actions:
                 self.world.apply_action(action,force=True) #applying the actions to the world — we need force here because the reference of the baseblock objects aren't the same
                 actions.append(action)
-                solution_cost += sg.solution_cost
-                last_silhouette = sg.target
-        all_sequences_cost = sum([s.sequence_cost() for s in all_sequences])
+            solution_cost += sg.solution_cost
+            partial_planning_cost += sg.planning_cost
+            last_silhouette = sg.target
+        all_sequences_cost = sum([s.planning_cost() for s in all_sequences])
         return actions,{
+                                'partial_solution_cost':solution_cost, #solutions cost of steps acted
                                 'solution_cost':solution_cost,
-                                'sequence_cost':sequence.sequence_cost(),
-                                'all_sequences_cost':all_sequences_cost, 
+                                'partial_planning_cost':partial_planning_cost, #planning cost of steps acted
+                                'planning_cost':sequence.planning_cost(),
+                                'all_sequences_planning_cost':all_sequences_cost, 
+                                'decomposed_silhouette': last_silhouette,
                                 '_all_subgoal_sequences':all_sequences,
-                                '_chosen_subgoal_sequence':sequence,
-                                'decomposed_silhouette': last_silhouette
+                                '_chosen_subgoal_sequence':sequence
                                 }
 
     def plan_subgoals(self,verbose=False):
