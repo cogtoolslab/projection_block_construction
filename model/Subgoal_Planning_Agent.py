@@ -15,13 +15,18 @@ UNSOLVABLE_PENALTY = 999999999999
 MAX_STEPS = 20
 
 class Subgoal_Planning_Agent(BFS_Agent):
-    """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out.. """
+    """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out. 
+    
+        Three costs:
+        * solution cost: how expensive was it to find the path of winning actions in the case that it actually found a solution across the sequence of subgoals
+        * planning cost: how expensive was it to plan the sequence of subgoals including the failed attempts
+        * all sequences planning cost: how expensive was planning over all sequences that were considered, not just the winning one?"""
 
     def __init__(self,
                          world=None,
                          decomposer = None,
                          sequence_length = 1, #consider sequences up to this length
-                         step_size = 1, #how many subgoals to act. Negative to act from end of plan
+                         step_size = 1, #how many subgoals to act. Negative or zero to act from end of plan
                          include_subsequences=True,
                          c_weight = 1/1000,
                          max_cost=10**3, #maximum cost before we give up trying to solve a subgoal
@@ -179,6 +184,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 #we can't do anything in this world
                 break
             self.lower_agent.world = temp_world
+            self.lower_agent.random_seed = self.random_seed + i #fix random seed to ensure that we don't needlessly repeat ourselves
             steps = 0
             costs = 0
             actions = []
