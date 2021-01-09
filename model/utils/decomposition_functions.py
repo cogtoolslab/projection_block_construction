@@ -46,7 +46,10 @@ class Subgoal_sequence:
     def actions(self):
         actions = []
         for sg in self.subgoals:
-            actions += sg.actions
+            try:
+                actions += sg.actions
+            except: #we don't have any actions (if its unsolvable,...)
+                pass
         return actions
 
     def V(self,c_weight=1):
