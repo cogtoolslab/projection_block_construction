@@ -4,7 +4,7 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from random import choice
+from random import choice, randint
 import utils.blockworld as blockworld
 from model.BFS_Agent import *
 import model.utils.decomposition_functions
@@ -41,6 +41,8 @@ class Subgoal_Planning_Agent(BFS_Agent):
             self.max_cost = max_cost
             self.lower_agent = lower_agent
             self.random_seed = random_seed
+            if self.random_seed is None:
+                self.random_seed = self.random_seed = randint(0,99999)
             if decomposer is None:
                 try:
                     decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(self.world.full_silhouette)
