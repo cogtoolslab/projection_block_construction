@@ -142,6 +142,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
     def fill_subgoals_in_sequence(self,sequences,verbose=False):
         seq_counter = 0 # for verbose printing
         for sequence in sequences:
+            if verbose: print("Solving sequence:",str(sequence.names()),"\t",seq_counter,'/',len(sequences))
             seq_counter += 1 # for verbose printing
             sg_counter = 0 # for verbose printing
             current_world = self.world
@@ -151,7 +152,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 subgoal.prior_world = copy.deepcopy(current_world)
                 self.solve_subgoal(subgoal,verbose=verbose)
                 if verbose: 
-                    print("For sequence",seq_counter,'/',len(sequences),
+                    print("For sequence",seq_counter,'/',len(sequences),str(sequence.names()),
                     "scored subgoal",
                     sg_counter,'/',len(sequence),"named",
                     subgoal.name,
