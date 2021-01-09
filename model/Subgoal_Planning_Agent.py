@@ -104,8 +104,8 @@ class Subgoal_Planning_Agent(BFS_Agent):
         all_sequences_cost = sum([s.planning_cost() for s in all_sequences])
         return actions,{
                                 'partial_solution_cost':solution_cost, #solutions cost of steps acted
-                                'solution_cost':solution_cost,
-                                'partial_planning_cost':partial_planning_cost, #planning cost of steps acted
+                                'solution_cost':sequence.solution_cost(),
+                                'partial_planning_cost':partial_planning_cost, #planning cost of steps
                                 'planning_cost':sequence.planning_cost(),
                                 'all_sequences_planning_cost':all_sequences_cost, 
                                 'decomposed_silhouette': last_silhouette,
