@@ -77,7 +77,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         NOTE: only the latest decomposed silhouette is saved by experiment runner: the plan needs to be extracted from the saved subgoal sequence."""
         if self.random_seed is None: self.random_seed = randint(0,99999)
         # get best sequence of subgoals
-        sequence,all_sequences = self.plan_subgoals(verbose=verbose)
+        sequence,all_sequences,solved_sequences = self.plan_subgoals(verbose=verbose)
         if steps is None:
             if self.step_size <= 0:
                 steps = len(sequence) + self.step_size
@@ -124,7 +124,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences,verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
-        return self.choose_sequence(sequences,verbose=verbose),sequences #return the sequence of subgoals with the highest score
+        return self.choose_sequence(sequences,verbose=verbose),sequences,[s for s  in sequences if s.complete()]#return the sequence of subgoals with the highest score, all sequences
     
     def choose_sequence(self, sequences,verbose=False):
         """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$ including weighing by lambda"""

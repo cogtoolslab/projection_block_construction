@@ -67,6 +67,10 @@ class Subgoal_sequence:
     def solution_cost(self):
         """Planning cost of the entire sequence"""
         return sum([sg.solution_cost if sg.solution_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
+    
+    def complete(self):
+        """Do we have a solution for all goals in the sequence?"""
+        return np.all([s.actions is not None and s.actions != []  for s in self.subgoals])
 
     def __len__(self):
         return len(self.subgoals)

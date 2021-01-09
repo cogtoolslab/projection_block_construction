@@ -21,10 +21,6 @@ import tqdm
 Generates all sequences of subgoals and saves them. Requires subgoal planner.
 """
 
-# DF_COLS = ['run_ID','agent','world','_agent','_world'
-# 'all_sequences_planning_cost',
-# '_all_subgoal_sequences',
-# '_chosen_subgoal_sequence']
 RAM_LIMIT = 90 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(worlds,agents,per_exp=100,steps=40,verbose=False,save=True,parallelized=True,maxtasksperprocess=1):
@@ -92,9 +88,8 @@ def _run_single_experiment(experiment):
 
     #run subgoal planning
     start_time = time.perf_counter()
-    chosen_seq, all_sequences = agent.plan_subgoals(verbose=verbose)
+    chosen_seq, all_sequences,solved_sequences = agent.plan_subgoals(verbose=verbose)
  
-    print("Done with",agent.__str__(),'******',world_label,"in", str(round(time.perf_counter() - start_time)),"seconds")
 
     r['run_ID'] = [run_ID]
     r['agent'] = [agent_parameters['agent_type']]
@@ -102,6 +97,9 @@ def _run_single_experiment(experiment):
     r['world'] = [world_label]
     r['_world'] = [world]
     r['_all_sequences'] = [all_sequences]
+    r['n_all_sequences'] = [len(all_sequences)]
+    r['_solved_sequences'] = [solved_sequences]
+    r['n_solved_sequences'] = [len(solved_sequences)]
     r['_chosen_subgoal_sequence'] = [chosen_seq]
     r['all_sequences_planning_cost'] = [sum([s.planning_cost() for s in all_sequences])]
     r['_agent'] = [agent]
@@ -109,6 +107,8 @@ def _run_single_experiment(experiment):
     for key,value in agent_parameters.items():
         r[key] = [value]
     r['execution_time'] = [time.perf_counter() - start_time]
+    
+    print("Done with",agent.__str__(),'******',world_label,"in", str(round(time.perf_counter() - start_time)),"seconds. Found",str(len(solved_sequences)),"solutions to",str(len(all_sequences)),"sequences.")
 
     #return
     return  r
