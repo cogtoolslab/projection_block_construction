@@ -6,19 +6,17 @@ import numpy as np
 
 class Subgoal:
     """Stores a subgoal"""
-    def __init__(self,prior_world,target,name=None,actions=None,C=None,past_world=None,solution_cost=None,planning_cost=None):
-        self.prior_world = copy.deepcopy(prior_world)
+    def __init__(self,source,target,name=None,actions=None,C=None,prior_world=None,past_world=None,solution_cost=None,planning_cost=None):
+        self.source = source
         self.target = copy.deepcopy(target)
         self.name = name
         self.actions = actions
         self.C = C
+        self.prior_world = copy.deepcopy(prior_world)
         self.past_world = copy.deepcopy(past_world)
         self.solution_cost = solution_cost
         self.planning_cost = planning_cost
-    try:
-        self.R = self.R()
-    except:
-        pass
+
 
     def key(self):
         key = self.target * 100 - (self.prior_world.current_state.order_invariant_blockmap() > 0)
@@ -31,13 +29,21 @@ class Subgoal:
             return 0 #if we can't solve it (or haven't yet), we return a reward of 0
 
 class Subgoal_sequence:
-    """Stores a sequence"""
-    def __init__(self,sequence,prior_world):
+    """Stores a sequence."""
+    def __init__(self,sequence,prior_world=None):
         """Generate sequence from dict input from decomposition function"""
         self.subgoals = []
         self.score = None
+        self.prior_world = copy.deepcopy(prior_world)
+        last_source = None
         for d in sequence:
-            subgoal = Subgoal(prior_world=prior_world,target=d['decomposition'],name = d['name'])
+            try:
+                #assuming we get a sequence from the decomposition function
+                subgoal = Subgoal(source=last_source,target=d['decomposition'],name = d['name'])
+                last_source = d['decomposition']
+            except TypeError:
+                #if not, then we've gotten a Subgoal object
+                subgoal = d
             self.subgoals.append(subgoal)
 
     def names(self):
@@ -70,6 +76,11 @@ class Subgoal_sequence:
             if sg.C is not None else
                 sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
             for sg in self.subgoals])
+        return score
+    
+    def R(self):
+        """Cumulative reward of subgoals"""
+        score = sum([sg.R() for sg in self.subgoals])
         return score
 
     def __len__(self):
