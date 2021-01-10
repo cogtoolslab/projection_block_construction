@@ -212,7 +212,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                 subgoal.solution_cost = costs
                 subgoal.planning_cost = total_costs
                 subgoal.iterations = i
-                self._cached_subgoal_evaluations[key] = subgoal #TODO copy or reference?
+                self._cached_subgoal_evaluations[key] = subgoal
                 return subgoal
         # if we've made it here, we've failed to find a solution
         #store cached evaluation
@@ -220,5 +220,5 @@ class Subgoal_Planning_Agent(BFS_Agent):
         subgoal.C = UNSOLVABLE_PENALTY
         subgoal.planning_costs = total_costs
         subgoal.iterations = i
-        self._cached_subgoal_evaluations[key] = subgoal #TODO copy or reference?
+        self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
