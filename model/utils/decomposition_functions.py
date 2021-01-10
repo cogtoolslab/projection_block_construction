@@ -52,14 +52,6 @@ class Subgoal_sequence:
                 pass
         return actions
 
-    def V(self,c_weight=1):
-        """Adds up the cost and rewards of the subgoals"""
-        score = sum([sg.R() - sg.C * c_weight 
-            if sg.C is not None else
-                sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
-            for sg in self.subgoals])
-        return score
-
     def planning_cost(self):
         """Planning cost of the entire sequence"""
         return sum([sg.planning_cost if sg.planning_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
@@ -71,6 +63,14 @@ class Subgoal_sequence:
     def complete(self):
         """Do we have a solution for all goals in the sequence?"""
         return np.all([s.actions is not None and s.actions != []  for s in self.subgoals])
+
+    def V(self,c_weight=1):
+        """Adds up the cost and rewards of the subgoals"""
+        score = sum([sg.R() - sg.C * c_weight 
+            if sg.C is not None else
+                sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
+            for sg in self.subgoals])
+        return score
 
     def __len__(self):
         return len(self.subgoals)
