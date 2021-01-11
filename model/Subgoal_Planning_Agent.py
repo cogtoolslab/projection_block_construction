@@ -218,7 +218,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
         #store cached evaluation
         subgoal.solution_cost = UNSOLVABLE_PENALTY
         subgoal.C = UNSOLVABLE_PENALTY
-        subgoal.planning_costs = total_costs
+        subgoal.planning_cost = total_costs
         subgoal.iterations = i
         self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
