@@ -88,7 +88,7 @@ def _run_single_experiment(experiment):
 
     print('Running',agent.__str__(),'******',world.__str__())
     agent_parameters = agent.get_parameters()
-    agent_parameters_w_o_random_seed = {key:value for key,value in agent_parameters.items() if key != 'random_seed'}    
+    agent_parameters_w_o_random_seed = {key:value for key,value in agent_parameters.items() if  'random_seed' not in key}    
     agent_parameters_w_o_random_seed = agent_para_dict(agent_parameters_w_o_random_seed)
     
     #create dataframe
