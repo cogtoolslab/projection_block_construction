@@ -74,7 +74,7 @@ class Subgoal_sequence:
         """Adds up the cost and rewards of the subgoals"""
         score = sum([sg.R() - sg.C * c_weight 
             if sg.C is not None else
-                sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
+                0 #sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
             for sg in self.subgoals])
         return score
     
