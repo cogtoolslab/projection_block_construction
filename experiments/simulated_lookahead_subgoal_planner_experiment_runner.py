@@ -56,6 +56,17 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
             results.to_pickle(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+".pkl"))
             print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+".pkl")
 
+        #lets also save it as a csv without embedded objects
+        columns = [col for col in results.columns if col[0] != '_']
+        results_wo_objects = results[columns]
+        #save the results to a file.
+        if type(save) is str:
+            results_wo_objects.to_csv(os.path.join(df_dir,save+".csv"))
+            print("Saved to",os.path.join(df_dir,save+".csv"))
+        else:
+            results_wo_objects.to_csv(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+".csv"))
+            print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+".csv")
+
     return results
 
 def _run_single_experiment(experiment):
