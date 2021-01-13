@@ -11,7 +11,8 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
      step_size = 1,
     include_subsequences=True,
     c_weight = 1/1000,
-    random_seed = None):
+    random_seed = None,
+    note = ""):
         self.all_sequences = all_sequences
         self.parent_agent = parent_agent #the full decomposition agent we draw from
         try:
@@ -26,6 +27,7 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
         self.random_seed = random_seed
         if self.random_seed is None:
             self.random_seed = self.random_seed = randint(0,99999)
+        self.note = note #just a label to keep track of the agent
     
     def set_parent_agent(self,parent_agent):
         self.parent_agent = parent_agent #the full decomposition agent we draw from
