@@ -26,13 +26,15 @@ class Simulated_No_Subgoal_Planning_Agent(Simulated_Lookahead_Subgoal_Planning_A
         try:
             return {**{
             'agent_type':self.__class__.__name__,
-            'random_seed':self.random_seed
+            'random_seed':self.random_seed,
+            'note':self.note
             }, **{"parent: "+key:value for key,value in self.parent_agent.get_parameters().items()}}
         except AttributeError:
             #no parent yet
              return {
             'agent_type':self.__class__.__name__,
-            'random_seed':self.random_seed
+            'random_seed':self.random_seed,
+            'note':self.note
             }
 
     def generate_sequences(self,state=None):
