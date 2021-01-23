@@ -550,7 +550,7 @@ def recall(state):
 
 def weighted_precision_recall(state,precision_weight=1):
     """Simply the weighted average of precision and recall. GIve a higher weigth to precision discourage building outside the structure."""
-    return (precision * precision_weight + recall)/(precision_weight+1)
+    return (precision(state) * precision_weight + recall(state))/(precision_weight+1)
 
 def filled_inside(state):
     """Returns the number of cells built in inside the silhouette"""
@@ -620,3 +620,7 @@ def silhouette_hole_stability_score(state):
 def sparse(state):
     """Returns 1 if the silhouette is perfectly built & stable and 0 otherwise."""
     return float(state.world.is_win(state))
+
+def cells_left(state):
+    """The number of cells not yet filled out in the silhouette"""
+    return np.sum(((state.world.silhouette > 0) - (state.blockmap > 0))> 0)
