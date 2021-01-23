@@ -25,7 +25,7 @@ Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe wit
 DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 90 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
-def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=True,maxtasksperprocess=1,chunk_experiments_size=100):
+def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=True,maxtasksperprocess=1,chunk_experiments_size=2048):
     """Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found."""
     #we want human readable labels for the dataframe
     if type(agents) is dict:
