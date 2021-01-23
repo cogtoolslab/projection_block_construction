@@ -421,6 +421,9 @@ def display_state(series):
 
 # preprocess the dataframe
 def preprocess_df(df):
+    if len(df) == 0:
+        print("Cant\'t preprocess empty dataframe")    
+        return
     fill_F1(df)
     print("filled F1")
     fill_final_row(df)

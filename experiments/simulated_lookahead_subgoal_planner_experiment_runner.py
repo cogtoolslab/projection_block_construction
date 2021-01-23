@@ -25,49 +25,57 @@ Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe wit
 DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
 RAM_LIMIT = 90 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
-def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=True,maxtasksperprocess=1):
+def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=True,maxtasksperprocess=1,chunk_experiments_size=100):
     """Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found."""
     #we want human readable labels for the dataframe
     if type(agents) is dict:
         #if agents is dict flatten it and rely on informative agent __str__
         agents = [a for a in agents.values()]
     experiments = [(copy.deepcopy(a),row,steps,i) for i in range(per_exp) for a in agents for row in parent_df.iterrows()]    
-    # lets run the experiments
-    if parallelized is not False:
-        P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-        results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
-        P.close()
-    else:
-        results_mapped =list(map(_run_single_experiment,experiments))
-
-    results = pd.concat(results_mapped).reset_index(drop = True)
-
-    preprocess_df(results) #automatically fill in code relevant to analysis
-
-    if save is not False:
-        #check if results directory exists
-        if not os.path.isdir(df_dir):
-            os.makedirs(df_dir)
-        #save the results to a file.
-        if type(save) is str:
-            results.to_pickle(os.path.join(df_dir,save+".pkl"))
-            print("Saved to",os.path.join(df_dir,save+".pkl"))
+    # if we have many experiments, then the dataframe can get too large for memory. Let's break it down and save them in smaller increments. 
+    chunked_experiments = []
+    index = 0
+    while index <= len(experiments):
+        chunked_experiments.append(experiments[index:index+chunk_experiments_size])
+        index = index+chunk_experiments_size
+    print("Chunked experiments into",len(chunked_experiments),"chunks")
+    for chunk_i,experiments in enumerate(chunked_experiments):
+        chunk_i+=1 #since we don't count from 0
+        print("Running experiment block",chunk_i,"of",len(chunked_experiments))
+        # lets run the experiments
+        if parallelized is not False:
+            P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
+            results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
+            P.close()
         else:
-            results.to_pickle(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+".pkl"))
-            print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+".pkl")
+            results_mapped =list(map(_run_single_experiment,experiments))
 
-        #lets also save it as a csv without embedded objects
-        columns = [col for col in results.columns if col[0] != '_']
-        results_wo_objects = results[columns]
-        #save the results to a file.
-        if type(save) is str:
-            results_wo_objects.to_csv(os.path.join(df_dir,save+".csv"))
-            print("Saved to",os.path.join(df_dir,save+".csv"))
-        else:
-            results_wo_objects.to_csv(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+".csv"))
-            print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+".csv")
+        results = pd.concat(results_mapped).reset_index(drop = True)
 
-    return results
+        preprocess_df(results) #automatically fill in code relevant to analysis
+
+        if save is not False:
+            #check if results directory exists
+            if not os.path.isdir(df_dir):
+                os.makedirs(df_dir)
+            #save the results to a file.
+            if type(save) is str:
+                results.to_pickle(os.path.join(df_dir,save+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".pkl"))
+                print("Saved to",os.path.join(df_dir,save+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".pkl"))
+            else:
+                results.to_pickle(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".pkl"))
+                print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".pkl")
+
+            #lets also save it as a csv without embedded objects
+            columns = [col for col in results.columns if col[0] != '_']
+            results_wo_objects = results[columns]
+            #save the results to a file.
+            if type(save) is str:
+                results_wo_objects.to_csv(os.path.join(df_dir,save+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv"))
+                print("Saved to",os.path.join(df_dir,save+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv"))
+            else:
+                results_wo_objects.to_csv(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv"))
+                print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv")
 
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
@@ -97,7 +105,7 @@ def _run_single_experiment(experiment):
     world.current_state.blockmap = world.current_state._get_new_map_from_blocks([])
     agent.all_sequences = row['_all_sequences']
 
-    print('Running',agent.__str__(),'******',world.__str__())
+    # print('Running',agent.__str__(),'******',world.__str__())
     agent_parameters = agent.get_parameters()
     agent_parameters_w_o_random_seed = {key:value for key,value in agent_parameters.items() if  'random_seed' not in key}    
     agent_parameters_w_o_random_seed = agent_para_dict(agent_parameters_w_o_random_seed)
@@ -171,6 +179,6 @@ def _run_single_experiment(experiment):
         if chosen_actions == []: break
 
     #after we stop acting
-    print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - run_start_time)),str(world_status))
+    # print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - run_start_time)),str(world_status))
     #truncate df and return
     return  r[r['run_ID'].notnull()]
