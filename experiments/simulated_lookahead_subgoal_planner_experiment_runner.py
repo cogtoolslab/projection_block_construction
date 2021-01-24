@@ -50,9 +50,14 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         else:
             results_mapped =list(map(_run_single_experiment,experiments))
 
-        results = pd.concat(results_mapped).reset_index(drop = True)
+        try:
+            results = pd.concat(results_mapped).reset_index(drop = True)
+        except ValueError:
+            #nothing to concatenate
+            print("Got empty results")
+        else:
+            preprocess_df(results) #automatically fill in code relevant to analysis
 
-        preprocess_df(results) #automatically fill in code relevant to analysis
 
         if save is not False:
             #check if results directory exists
