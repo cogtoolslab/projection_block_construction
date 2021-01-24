@@ -37,16 +37,42 @@ class Simulated_No_Subgoal_Planning_Agent(Simulated_Lookahead_Subgoal_Planning_A
             'note':self.note
             }
 
-    def generate_sequences(self,state=None):
-        """Generates list of sequences to try, then generates them from all_sequences by splicing larger sequences as needed"""
+    def act(self,state=None):
+        """Simulates acting. Returns chosen sequence and the other sequences as well. This will update the blockmap in the current world state, but not the rest of the state! Cached values and the block list won't work."""
         if state is None:
             state = self.world.current_state
-        #generate sequences
-        target_sequences = self.parent_agent.decomposer.get_sequences(state = state,length=1,filter_for_length=True)
-        #get the full decomposition—we assume that it is the last one generated
-        sequences = [target_sequences[-1]]
-        return sequences
+        #choose sequence
+        chosen_seq = self.choose_sequence(self.all_sequences)
+       #execute actions
+        # finally plan and build all subgoals in order
+        cur_i = 0
+        actions = []
+        solution_cost = 0
+        partial_planning_cost = 0
+        last_silhouette = None
+        for sg in chosen_seq:
+            if cur_i == self.step_size: break #stop after the nth subgoal
+            if sg.actions is None: # no actions could be found
+                # raise Warning("No actions could be found for subgoal "+str(sg.name))
+                # print("No actions could be found for subgoal "+str(sg.name))
+                continue
+            for action in sg.actions:
+                self.world.apply_action(action,force=True) #applying the actions to the world — we need force here because the reference of the baseblock objects aren't the same
+                actions.append(action)
+            cur_i += 1
+            solution_cost += sg.solution_cost
+            partial_planning_cost += sg.planning_cost
+            last_silhouette = sg.target
+        return actions,{
+                                'partial_solution_cost':solution_cost, #solutions cost of steps acted
+                                 'solution_cost':chosen_seq.solution_cost(),
+                                'partial_planning_cost':partial_planning_cost, #planning cost of steps
+                                'planning_cost':chosen_seq.planning_cost(),
+                                'decomposed_silhouette': last_silhouette,
+                                '_chosen_subgoal_sequence':chosen_seq}
+  
 
     def choose_sequence(self, sequences):
-        return sequences[0]
+        max_name = max(sequences[-1].names()) #get the complete decomposition name. Assumes they're ordered.
+        return [seq for seq in sequences if seq.names() == [max_name]][0] #return the sequence that matches the complete decomp and is 1
 

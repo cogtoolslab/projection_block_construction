@@ -133,6 +133,8 @@ def _run_single_experiment(experiment):
         except SystemError as e:
             print("Error while acting:",e)
             print(traceback.format_exc())
+        if chosen_actions == []:#If we cannot find any actions, we still record the facts of the run
+            chosen_actions = [None] 
         duration = time.perf_counter() - start_time 
         #unroll the chosen actions to get step-by-step entries in the dataframe
         planning_step_blockmaps = get_blockmaps(world.current_state.blockmap) # the blockmap for every step
@@ -149,11 +151,12 @@ def _run_single_experiment(experiment):
             r.at[i,'world'] = world_label
             r.at[i,'step'] = i
             r.at[i,'planning_step'] = planning_step
-            r.at[i,'action'] = str([str(e) for e in action]) #human readable action
-            r.at[i,'_action'] = action #action as object
-            r.at[i,'action_x'] = action[1]
-            r.at[i,'action_block_width'] = action[0].width
-            r.at[i,'action_block_height'] = action[0].height
+            if action is not None:
+                r.at[i,'action'] = str([str(e) for e in action]) #human readable action
+                r.at[i,'_action'] = action #action as object
+                r.at[i,'action_x'] = action[1]
+                r.at[i,'action_block_width'] = action[0].width
+                r.at[i,'action_block_height'] = action[0].height
             r.at[i,'blocks'] = [block.__str__() for block in world.current_state.blocks[:i+1]]  #human readable blocks
             r.at[i,'_blocks'] = world.current_state.blocks[:i+1]
             r.at[i,'blockmap'] = planning_step_blockmaps[i]
@@ -181,7 +184,7 @@ def _run_single_experiment(experiment):
                 r.at[i-1,key] = [value]
         # if we've observed no action being taken, we stop execution. We're not changing the world, so we might as well save the CPU cycles. 
         # Take this out if we have a non-deterministic agent that sometimes chooses no actions.
-        if chosen_actions == []: break
+        if chosen_actions == [] or chosen_actions == [None]: break
 
     #after we stop acting
     # print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - run_start_time)),str(world_status))
