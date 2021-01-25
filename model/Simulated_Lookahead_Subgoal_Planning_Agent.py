@@ -102,6 +102,7 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
         # finally plan and build all subgoals in order
         cur_i = 0
         actions = []
+        names = []
         solution_cost = 0
         partial_planning_cost = 0
         last_silhouette = None
@@ -114,6 +115,7 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
             for action in sg.actions:
                 self.world.apply_action(action,force=True) #applying the actions to the world — we need force here because the reference of the baseblock objects aren't the same
                 actions.append(action)
+            names.append(sg.name)
             cur_i += 1
             solution_cost += sg.solution_cost
             partial_planning_cost += sg.planning_cost
@@ -126,6 +128,8 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
                                 'planning_cost':chosen_seq.planning_cost(),
                                 'all_sequences_planning_cost':all_sequences_cost, 
                                 'decomposed_silhouette': last_silhouette,
+                                'chosen_sequence_names':chosen_seq.names(),
+                                'partial_chosen_sequence_names':names,
                                 '_all_subgoal_sequences':all_sequences,
                                 '_chosen_subgoal_sequence':chosen_seq}
                             
