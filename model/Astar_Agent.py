@@ -29,7 +29,7 @@ class Astar_Agent(BFS_Agent):
     This is a simplified implementation that doesn't take into account that the same state can be reached in multiple ways. However, because we defined the cost function as number of steps, every state can only be reached in the same number of steps (since taking more steps means placing more blocks, and different sizes of blocks lead to potentially different stability), and therefore there cannot be a better path to a node in open set, just an equivalently good one. 
     """
 
-    def __init__(self,world = None,heuristic=blockworld.F1_stability_score,max_steps=10**6, only_improving_actions = False, dense_stability = True, random_seed=None):
+    def __init__(self,world = None,heuristic=blockworld.recall,max_steps=10**6, only_improving_actions = False, dense_stability = False, random_seed=None):
         self.world = world
         self.heuristic = heuristic
         self.max_steps = max_steps
