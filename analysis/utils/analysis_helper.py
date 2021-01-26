@@ -420,37 +420,37 @@ def display_state(series):
     w.current_state.visual_display()
 
 # preprocess the dataframe
-def preprocess_df(df):
+def preprocess_df(df,verbose=False):
     if len(df) == 0:
         print("Cant\'t preprocess empty dataframe")    
         return
     fill_F1(df)
-    print("filled F1")
+    if verbose: print("filled F1")
     fill_final_row(df)
-    print("filled final row")
+    if verbose: print("filled final row")
     add_increment_sequence(df)
-    print("added increment sequence")
+    if verbose: print("added increment sequence")
     df['perfect'] = df['F1'] == 1
-    print("marked perfect")
+    if verbose: print("marked perfect")
     for column in df.columns:
         try:
             df[column] = df[column].astype(float)
         except:
-            print("didnt convert to float:",column)
+            if verbose: print("didnt convert to float:",column)
     for column in ['perfect','final_row']:
         df[column] = df[column].astype(bool)
     for column in ['decomposed_silhouette']:
         df[column] = df[column].astype(object)
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
-    print("converted datatypes")
+    if verbose: print("converted datatypes")
     fill_average_cost_per_step(df)
-    print("filled average cost per step for run")
+    if verbose: print("filled average cost per step for run")
     fill_decomposed_silhouettes_for_full_planner(df)
-    print("filled decomposed silhouettes for full planner")
+    if verbose: print("filled decomposed silhouettes for full planner")
     fix_decomposed_silhouettes(df)
-    print("fixed wrongly saved decomposed silhouettes")
+    if verbose: print("fixed wrongly saved decomposed silhouettes")
     fill_agent_labels(df)
-    print("filled agent labels")
+    if verbose: print("filled agent labels")
 
 def fill_average_cost_per_step(df):
     for run_ID in df['run_ID'].unique():
