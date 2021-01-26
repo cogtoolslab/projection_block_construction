@@ -32,6 +32,8 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         #if agents is dict flatten it and rely on informative agent __str__
         agents = [a for a in agents.values()]
     experiments = [(copy.deepcopy(a),row,steps,i) for i in range(per_exp) for a in agents for row in parent_df.iterrows()]    
+    experiments = [[*exp,j] for j,exp in enumerate(experiments)] #add unique label per experiment
+    print("Created",len(experiments),"experiments")
     # if we have many experiments, then the dataframe can get too large for memory. Let's break it down and save them in smaller increments. 
     chunked_experiments = []
     index = 0
@@ -44,9 +46,11 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         print("Running experiment block",chunk_i,"of",len(chunked_experiments))
         # lets run the experiments
         if parallelized is not False:
-            P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-            results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
+            P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a number of task is performed—slow for short runs, but fixes memory leak (hopefully)
+            # results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
+            results_mapped = P.map(_run_single_experiment,experiments)
             P.close()
+            P.join() #should run the garbage collector and prevent memory leaks
         else:
             results_mapped =list(map(_run_single_experiment,experiments))
 
@@ -85,7 +89,7 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
     # to prevent memory overflows only run if enough free memory exists.
-    agent,row,steps,run_nr = experiment
+    agent,row,steps,run_nr,unique_nr = experiment
     if type(row) is tuple:
         #unpack row if needed
         row = row[1]
@@ -96,7 +100,7 @@ def _run_single_experiment(experiment):
             agent.random_seed = random.randint(0,99999)
     except AttributeError:
         pass
-    run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999)) #unique string representing the run
+    run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999))+'|'+str(unique_nr) #unique string representing the run
     while psutil.virtual_memory().percent > RAM_LIMIT:
         print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
         time.sleep(1000)
