@@ -11,7 +11,7 @@ import model.utils.decomposition_functions
 import copy
 import numpy as np
 
-BAD_SCORE = -9999
+BAD_SCORE = -10**20
 MAX_NUMBER_OF_SUBGOALS = 64
 
 """
