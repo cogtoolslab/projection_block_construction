@@ -69,8 +69,8 @@ def _run_single_experiment(experiment):
     world = world_dict[1]
     #if the agent has no random seed assigned yet, assign one now only for this run
     try:
-        if agent.random_seed is None:
-            agent.random_seed = random.randint(0,99999)
+        # if agent.random_seed is None:
+        agent.random_seed = random.randint(0,99999) #overwrite in any case
     except AttributeError:
         pass
     run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999)) #unique string representing the run
