@@ -439,8 +439,12 @@ def preprocess_df(df,verbose=False):
             if verbose: print("didnt convert to float:",column)
     for column in ['perfect','final_row']:
         df[column] = df[column].astype(bool)
-    for column in ['decomposed_silhouette']:
-        df[column] = df[column].astype(object)
+    try:
+        for column in ['decomposed_silhouette']:
+            df[column] = df[column].astype(object)
+    except:
+        #if we don't have a subgoal planner
+        pass
     df['agent_attributes_string'] = df['agent_attributes'].astype(str)
     if verbose: print("converted datatypes")
     fill_average_cost_per_step(df)
