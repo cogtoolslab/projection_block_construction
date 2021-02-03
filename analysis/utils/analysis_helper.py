@@ -451,8 +451,12 @@ def preprocess_df(df,verbose=False):
     if verbose: print("filled average cost per step for run")
     fill_decomposed_silhouettes_for_full_planner(df)
     if verbose: print("filled decomposed silhouettes for full planner")
-    fix_decomposed_silhouettes(df)
-    if verbose: print("fixed wrongly saved decomposed silhouettes")
+    try:
+        fix_decomposed_silhouettes(df)
+        if verbose: print("fixed wrongly saved decomposed silhouettes")
+    except:
+        #no subgoal planner in dataset
+        if verbose: print("did NOT fix wrongly saved decomposed silhouettes")
     fill_agent_labels(df)
     if verbose: print("filled agent labels")
 
