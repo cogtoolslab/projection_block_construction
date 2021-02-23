@@ -17,7 +17,7 @@ class FringeNode:
     cost: int
     node: Any=field(compare=False)
 
-class Astar_Agent(BFS_Lookahead_Agent):
+class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
     """An agent implementing the A* algorithm. The algorithm uses a fixed cost (so it tries to find the shortest path to the goal) and a given scoring function as heuristic to distance to goal. The heuristic should include stability.
     An upper limit can be set to prevent endless in difficult problems. -1 for potentially endless search.
 

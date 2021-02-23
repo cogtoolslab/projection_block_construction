@@ -10,7 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from model.Astar_Agent import Astar_Agent
+    from model.Astar_Lookahead_Agent import Astar_Lookahead_Agent
     import model.Construction_Paper_Agent as CPA
     import utils.blockworld as bw
     import utils.blockworld_library as bl
@@ -24,32 +24,32 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         #lo
-        Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
+        Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
         random_2_4_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
-        #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
+        #CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
         fixed_2_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**4,only_improving_actions=True)),
         #med
-        Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
+        Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
         random_2_4_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
         fixed_2_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**8,only_improving_actions=True)),
         #hi
-        Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
+        Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
         random_2_4_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_v,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
         fixed_2_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_4_h,lower_agent=Astar_Lookahead_Agent(heuristic=bw.F1_stability_score,max_steps=2**12,only_improving_actions=True)),
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
