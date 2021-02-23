@@ -9,7 +9,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from Beam_Search_Agent import Beam_Search_Agent
+    from Beam_Search_Lookahead_Agent import Beam_Search_Lookahead_Agent
     import blockworld as bw
     import random
     import blockworld_library as bl
@@ -20,7 +20,7 @@ if __name__=="__main__": #required for multiprocessing
     #16 for nightingale
     fraction_of_cpus = 1
 
-    agents = [Beam_Search_Agent(beam_width=w,max_depth=40) for w in [1,2,4,8,32,128,512,1024]]
+    agents = [Beam_Search_Lookahead_Agent(beam_width=w,max_depth=40) for w in [1,2,4,8,32,128,512,1024]]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
     worlds_silhouettes = {'int_struct_'+str(i) : bw.Blockworld(silhouette=s,block_library=bl.bl_silhouette2_default) for i,s in silhouettes.items()}

@@ -11,7 +11,7 @@ if __name__=="__main__": #required for multiprocessing
     sys.path.append(agent_util_dir)
 
     from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
-    from model.Beam_Search_Agent import Beam_Search_Agent
+    from model.Beam_Search_Lookahead_Agent import Beam_Search_Lookahead_Agent
     import model.Construction_Paper_Agent as CPA
     import utils.blockworld as bw
     import utils.blockworld_library as bl
@@ -25,20 +25,20 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         #default
-        Beam_Search_Agent(beam_width=8),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Agent(beam_width=8)),
-        Beam_Search_Agent(beam_width=64),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Agent(beam_width=64)),
-        Beam_Search_Agent(beam_width=256),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Agent(beam_width=256)),
+        Beam_Search_Lookahead_Agent(beam_width=8),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=8)),
+        Beam_Search_Lookahead_Agent(beam_width=64),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=64)),
+        Beam_Search_Lookahead_Agent(beam_width=256),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=256)),
         #random_2_4_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Agent(beam_width=8)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Agent(beam_width=64)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Agent(beam_width=256)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=8)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=64)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=256)),
         #fixed_2_h
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Agent(beam_width=8)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Agent(beam_width=64)),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Agent(beam_width=256)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=8)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=64)),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=Beam_Search_Lookahead_Agent(beam_width=256)),
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
