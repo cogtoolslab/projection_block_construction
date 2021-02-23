@@ -25,17 +25,16 @@ class Astar_Agent(BFS_Agent):
     The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. Penalties get represented as really large distances. 
     """
 
-    def __init__(self,world = None,heuristic=blockworld.recall, only_improving_actions = False, random_seed=None,shuffle=False):
+    def __init__(self,world = None,heuristic=blockworld.recall, only_improving_actions = False, random_seed=None):
         self.world = world
         self.heuristic = heuristic
         self.only_improving_actions = only_improving_actions
         self.random_seed = random_seed
-        self.shuffle = shuffle
         if self.random_seed is None: self.random_seed = random.randint(0,99999)
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' shuffle'+str(self.shuffle)+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' random seed: '+str(self.random_seed)
     
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
@@ -43,7 +42,6 @@ class Astar_Agent(BFS_Agent):
             'agent_type':self.__class__.__name__,
             'heuristic':self.heuristic.__name__,
             'random_seed':self.random_seed,
-            'shuffle':self.shuffle,
             }    
 
     def act(self,steps = None, verbose = False):
@@ -80,17 +78,18 @@ class Astar_Agent(BFS_Agent):
             i+=1
             #perform A* expansions
             node = open_set.get() #get node with lowest projected cost. This removes it from the open set
+            if node is None:
+                #empty means that the open set is empty
+                break
             #check if that node is winning
             states_evaluated += 1
+            print(node.state.blockmap)
             if node.state.is_win():
                 #found winning node
                 if verbose: print("Found winning state after",states_evaluated)
                 return node.actions,states_evaluated
             #if node is not winning, add it's children to open set
             actions = node.state.possible_actions() #get possible actions
-            if self.shuffle: # to introduce randomness into the agents behavior, change the order in which the children are added
-                random.seed(self.random_seed) #fix random seed
-                random.shuffle(actions)
             for action in node.state.possible_actions():
                 child = node.state.transition(action)
                 open_set.put(FringeNode(self.f(child),Node(child,node.actions+[action])))
@@ -120,11 +119,12 @@ class Astar_Agent(BFS_Agent):
 class Stochastic_Priority_Queue:
     """Implements a priority queue that randomly returns one of the elements which has the highest value as opposed to the one that was entered first (which Pythons priority queue does). Implemented as linked list. Follows Pythons priority_queue interface. Expect FringeNodes to be passed."""
 
-    def __init__(self,random_seed=None):
+    def __init__(self,random_seed=None,highest_first=False):
         self.random_seed = random_seed
         if self.random_seed is None: self.random_seed = random.randint(0,99999)
         self.head = None #first element of the list
         self.size = 0
+        self.highest_first = highest_first
 
     def get(self):
         "Return the content of one of the elements that has lowest priority randomly"
@@ -155,6 +155,8 @@ class Stochastic_Priority_Queue:
         return ret_elem.content
 
     def put(self,elem):
+        #if we actually want the highest value first, invert the cost
+        if self.highest_first: elem.cost = elem.cost * -1
         new_elem = _queue_element(elem.node,elem.cost,None,None)
         #search from top to find insertion place
         cur = self.head
@@ -168,7 +170,7 @@ class Stochastic_Priority_Queue:
             self.head = new_elem
             self.size += 1
             return
-        while cur.priority < new_elem.priority and cur.next is not None:
+        while cur.priority < new_elem.priority and cur.next is not None: #this could be binary search
             cur = cur.next
         #insert after cur
         new_elem.next = cur.next
