@@ -281,6 +281,12 @@ class Blockworld(World):
             self._stable =  display_world.test_world_stability(bwworld,RENDER=visual_display)  == 'stable'
             return self._stable
 
+        def is_win(self):
+            return self.world.is_win(state=self)
+        
+        def is_fail(self):
+            return self.world.is_fail(state=self)
+
         def possible_actions(self,legal=None):
             """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
             Format of action is (BaseBlock from block_library, x location of lower left)."""
