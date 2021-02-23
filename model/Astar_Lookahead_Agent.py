@@ -5,7 +5,7 @@ sys.path.insert(0,proj_dir)
 
 from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent, Ast_node, Ast_edge
 from model.Beam_Search_Lookahead_Agent import backtrack
-from model.Astar_Agent import Stochastic_Priority_Queue, _queue_element
+from model.Astar_Agent import Stochastic_Priority_Queue
 import utils.blockworld as blockworld
 import random
 from dataclasses import dataclass, field
