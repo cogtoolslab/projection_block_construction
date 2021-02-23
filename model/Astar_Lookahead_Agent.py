@@ -5,6 +5,7 @@ sys.path.insert(0,proj_dir)
 
 from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent, Ast_node, Ast_edge
 from model.Beam_Search_Lookahead_Agent import backtrack
+from model.Astar_Agent import Stochastic_Priority_Queue, _queue_element
 import utils.blockworld as blockworld
 import random
 from dataclasses import dataclass, field
@@ -128,78 +129,3 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
         heur = self.heuristic(node.state)
         out = -(heur-1) * self._silhouette_size / self._avg_block_size
         return max(0,out) #return 0 if the cost to goal is less than 0 (which doesn't make sense)
-
-class Stochastic_Priority_Queue:
-    """Implements a priority queue that randomly returns one of the elements which has the highest value as opposed to the one that was entered first (which Pythons priority queue does). Implemented as linked list. Follows Pythons priority_queue interface. Expect FringeNodes to be passed."""
-
-    def __init__(self,random_seed=None):
-        self.random_seed = random_seed
-        if self.random_seed is None: self.random_seed = random.randint(0,99999)
-        self.head = None #first element of the list
-        self.size = 0
-
-    def get(self):
-        "Return the content of one of the elements that has lowest priority randomly"
-        #find all elements with the lowest cost
-        elems = []
-        cur = self.head
-        # if cur is None: #empty queue
-        #     return None
-        while cur is not None and cur.priority == self.head.priority:
-            elems.append(cur)
-            cur = cur.next
-        if elems == []:
-            return None
-        random.seed(self.random_seed) #fix random seed
-        ret_elem = random.choice(elems)
-        #take out
-        try:
-            ret_elem.prev.next = ret_elem.next
-        except AttributeError:
-            #update head since the selected on is the head
-            self.head = ret_elem.next
-            pass
-        try:
-            ret_elem.next.prev = ret_elem.prev
-        except AttributeError:
-            pass
-        self.size = self.size - 1 
-        return ret_elem.content
-
-    def put(self,elem):
-        new_elem = _queue_element(elem.node,elem.cost,None,None)
-        #search from top to find insertion place
-        cur = self.head
-        if cur is None: #empty list:
-            self.head = new_elem
-            self.size += 1
-            return
-        if cur.priority > new_elem.priority: #if we're replacing the node
-            cur.prev = new_elem
-            new_elem.next = cur
-            self.head = new_elem
-            self.size += 1
-            return
-        while cur.priority < new_elem.priority and cur.next is not None:
-            cur = cur.next
-        #insert after cur
-        new_elem.next = cur.next
-        cur.next = new_elem
-        new_elem.prev = cur
-        self.size += 1
-
-    def  empty(self):
-        return self.size <= 0
-
-    def qsize(self):
-        return self.size
-
-
-class _queue_element:
-    """A single element in the stochastic priority queue. Prev and next are references to other _queue_elements"""
-
-    def __init__(self,content,priority,prev,next):
-        self.content = content
-        self.priority = priority
-        self.prev = prev
-        self.next = next
