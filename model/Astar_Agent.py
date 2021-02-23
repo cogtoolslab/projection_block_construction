@@ -3,7 +3,7 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import BFS_Agent, Ast_node, Ast_edge
+from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent, Ast_node, Ast_edge
 from model.Beam_Search_Agent import backtrack
 import utils.blockworld as blockworld
 import random
@@ -17,7 +17,7 @@ class FringeNode:
     cost: int
     node: Any=field(compare=False)
 
-class Astar_Agent(BFS_Agent):
+class Astar_Agent(BFS_Lookahead_Agent):
     """An agent implementing the A* algorithm. The algorithm uses a fixed cost (so it tries to find the shortest path to the goal) and a given scoring function as heuristic to distance to goal. The heuristic should include stability.
     An upper limit can be set to prevent endless in difficult problems. -1 for potentially endless search.
 

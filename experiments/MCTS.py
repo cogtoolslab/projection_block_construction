@@ -9,7 +9,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from BFS_Agent import BFS_Agent
+    from BFS_Lookahead_Agent import BFS_Lookahead_Agent
     from MCTS_Agent import MCTS_Agent
     import blockworld as bw
     import random

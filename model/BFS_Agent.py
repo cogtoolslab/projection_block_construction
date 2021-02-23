@@ -7,8 +7,8 @@ from random import randint,seed
 from itertools import repeat
 import utils.blockworld as blockworld
 
-class BFS_Agent:
-    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable.
+class BFS_Lookahead_Agent:
+    """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable. Performs lookahead BFS search.
 
     `only_improving_actions` means that the agent only takes actions if the action improves F1 score. Note that the agent returns an empty action if no actions can be taken—this will lead to infinite loops with simple while loops!
 
@@ -141,7 +141,7 @@ class BFS_Agent:
                     action_sequences += get_path(node)
                 children_nodes += [action.target for action in node.actions]
             current_nodes = children_nodes
-        return [BFS_Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
+        return [BFS_Lookahead_Agent.Action_sequence(act_seq,None) for act_seq in action_sequences]
 
     def score_action_sequences(self,action_sequences,method = 'Final_state',verbose=False):
         """Adds scores to the action sequences. Possible scoring: Final state, Sum, Average, Fixed. Operates in place."""
@@ -214,7 +214,7 @@ class BFS_Agent:
         ast,win_seq,number_of_states_evaluated = self.build_ast(horizon=planning_horizon,verbose=verbose)  
         if self.first_solution and win_seq is not None:
             # we have stopped building the AST because we found a solution
-            chosen_seq = BFS_Agent.Action_sequence(win_seq[0])
+            chosen_seq = BFS_Lookahead_Agent.Action_sequence(win_seq[0])
             #we want to take the entire sequence at once, so we overwrite steps to act
             steps = len(chosen_seq.actions)
         else:

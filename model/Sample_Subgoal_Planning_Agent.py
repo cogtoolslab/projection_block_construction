@@ -6,7 +6,7 @@ sys.path.insert(0,proj_dir)
 
 from random import choice
 import utils.blockworld as blockworld
-from model.BFS_Agent import *
+from model.BFS_Lookahead_Agent import *
 import model.utils.decomposition_functions
 import copy
 import numpy as np
@@ -19,7 +19,7 @@ NOTE
 The corresponding code in decomposition_functions has changed and this will need to be adapted to work
 """
 
-class Sample_Subgoal_Planning_Agent(BFS_Agent):
+class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     """Implements n subgoal lookahead planning. Works by sampling the lower level agent and using that to score sequences of actions. """
 
     def __init__(self,
@@ -30,7 +30,7 @@ class Sample_Subgoal_Planning_Agent(BFS_Agent):
                          c_weight = 1000,
                          S_treshold=0.8,
                          S_iterations=1,
-                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
                          random_seed = None
                          ):
             self.world = world
@@ -229,7 +229,7 @@ class Full_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
                          c_weight = 1000,
                          S_treshold=0.8,
                          S_iterations=1,
-                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
                          random_seed = None):
         super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, c_weight=c_weight, S_treshold=S_treshold, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
 

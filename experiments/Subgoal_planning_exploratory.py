@@ -12,7 +12,7 @@ if __name__=="__main__": #required for multiprocessing
 
     from model.Subgoal_Planning_Agent import *
     from model.utils.decomposition_functions import *
-    from model.BFS_Agent import BFS_Agent
+    from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
     import utils.blockworld as bw
     import utils.blockworld_library as bl
     import experiments.experiment_runner as experiment_runner
@@ -26,7 +26,7 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         Subgoal_Planning_Agent(
-                lower_agent=BFS_Agent(horizon=1,only_improving_actions=True),
+                lower_agent=BFS_Lookahead_Agent(horizon=1,only_improving_actions=True),
                 sequence_length = l,
                 include_subsequences=True,
                 c_weight = w,
@@ -34,7 +34,7 @@ if __name__=="__main__": #required for multiprocessing
                 )
                 for l in [1,2,3,8] for w in [0.001]
         ] + [
-        BFS_Agent(horizon=1,only_improving_actions=True)
+        BFS_Lookahead_Agent(horizon=1,only_improving_actions=True)
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE16[10:14]} #SELECTION

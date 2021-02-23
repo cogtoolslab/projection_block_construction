@@ -10,7 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     sys.path.append(agent_util_dir)   
 
     import Construction_Paper_Agent as CPA
-    from BFS_Agent import BFS_Agent
+    from BFS_Lookahead_Agent import BFS_Lookahead_Agent
     import blockworld as bw
     import random
     import blockworld_library as bl
@@ -23,8 +23,8 @@ if __name__=="__main__": #required for multiprocessing
     fraction_of_cpus = 1
 
     agents = [
-        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=1, scoring_function=bw.F1score,scoring='Average')),     
-        CPA.Construction_Paper_Agent(lower_agent=BFS_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'))     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Lookahead_Agent(horizon=1, scoring_function=bw.F1score,scoring='Average')),     
+        CPA.Construction_Paper_Agent(lower_agent=BFS_Lookahead_Agent(horizon=3,scoring_function=bw.F1score,scoring='Average'))     
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}

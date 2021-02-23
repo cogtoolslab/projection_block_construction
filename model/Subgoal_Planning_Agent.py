@@ -6,7 +6,7 @@ sys.path.insert(0,proj_dir)
 
 from random import choice, randint
 import utils.blockworld as blockworld
-from model.BFS_Agent import *
+from model.BFS_Lookahead_Agent import *
 import model.utils.decomposition_functions
 import copy
 import numpy as np
@@ -14,7 +14,7 @@ import numpy as np
 UNSOLVABLE_PENALTY = 999999999999
 MAX_STEPS = 20
 
-class Subgoal_Planning_Agent(BFS_Agent):
+class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out. 
     
         Three costs:
@@ -30,7 +30,7 @@ class Subgoal_Planning_Agent(BFS_Agent):
                          include_subsequences=True,
                          c_weight = 1/1000,
                          max_cost=10**3, #maximum cost before we give up trying to solve a subgoal
-                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
                          random_seed = None
                          ):
             self.world = world

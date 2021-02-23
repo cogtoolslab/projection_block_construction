@@ -3,9 +3,9 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import BFS_Agent
+from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
 
-class Toy_Agent(BFS_Agent):
+class Toy_Agent(BFS_Lookahead_Agent):
     """This class keeps the code for the original toy agent around that operates on sequences of action, not a tree structure. Mostly for documentation purposes."""
     def __init__(self, world, horizon = 2):
         self.world = world

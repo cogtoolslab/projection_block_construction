@@ -10,7 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from model.BFS_Agent import BFS_Agent
+    from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
     from model.Beam_Search_Agent import Beam_Search_Agent
     import model.Construction_Paper_Agent as CPA
     import utils.blockworld as bw

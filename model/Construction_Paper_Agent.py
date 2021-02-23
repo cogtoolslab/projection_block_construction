@@ -3,7 +3,7 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import *
+from model.BFS_Lookahead_Agent import *
 import numpy as np
 import copy
 import random
@@ -251,7 +251,7 @@ def half_v(self,current_built=None):
 #     )
 
 # Agent
-class Construction_Paper_Agent(BFS_Agent):
+class Construction_Paper_Agent(BFS_Lookahead_Agent):
     """Implements the construction paper proposal for a projection based agent.
 
     TODO 
@@ -261,7 +261,7 @@ class Construction_Paper_Agent(BFS_Agent):
     Different decomposition functions can be passed to the agent.
     """
 
-    def __init__(self, world=None, lower_agent = BFS_Agent(only_improving_actions=True), decomposition_function = horizontal_construction_paper_holes):
+    def __init__(self, world=None, lower_agent = BFS_Lookahead_Agent(only_improving_actions=True), decomposition_function = horizontal_construction_paper_holes):
             self.world = world
             self.lower_agent = lower_agent
             self.decompose = decomposition_function

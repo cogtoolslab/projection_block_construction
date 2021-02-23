@@ -143,11 +143,11 @@ def mean_num_subgoals_per_agent(df):
     plt.bar(np.arange(len(scores))+0,scores,align='center',label="All",width=0.2)
     #win
     run_IDs = df[df['world_status'] == 'Win']['run_ID'].unique()
-    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) for a in agents]
+    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) if len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) != 0 else 0 for a in agents]
     plt.bar(np.arange(len(scores))+.2,scores,align='center',label="Win",color=WIN_COLOR,width=0.2)
     #fail
     run_IDs = df[df['world_status'] == 'Fail']['run_ID'].unique()
-    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) for a in agents]
+    scores = [sum(~df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['decomposed_silhouette'].isna()) / len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) if len(df[(df['agent_attributes']==a) & (df['run_ID'].isin(run_IDs))]['run_ID'].unique()) != 0 else 0 for a in agents]
     plt.bar(np.arange(len(scores))+.4,scores,align='center',label="Fail",color=FAIL_COLOR,width=0.2)
 
     plt.xticks(np.arange(len(scores)),agent_labels(agents,df),rotation=45,ha='right')

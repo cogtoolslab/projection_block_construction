@@ -3,12 +3,12 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import BFS_Agent
+from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
 import utils.blockworld as blockworld
 from random import random,choice,seed,randint
 from model.utils.Q_table import Q_table,state_key,action_key
 
-class Naive_Q_Agent(BFS_Agent):
+class Naive_Q_Agent(BFS_Lookahead_Agent):
     """This class implements naive Q learning. 
     Uses a state space over order-invariant blockmaps and action space over baseblocks times possible start locations.
     Then simply updates the Q values of those state action pairs with the same formula. 

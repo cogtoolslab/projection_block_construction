@@ -28,7 +28,7 @@ class Subgoal:
         except AttributeError:
             return 0 #if we can't solve it (or haven't yet), we return a reward of 0
 
-class Subgoal_sequence:
+class Subgoalsequence:
     """Stores a sequence."""
     def __init__(self,sequence,prior_world=None):
         """Generate sequence from dict input from decomposition function"""

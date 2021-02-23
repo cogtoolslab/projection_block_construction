@@ -10,7 +10,7 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from model.BFS_Agent import BFS_Agent
+    from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
     import model.Construction_Paper_Agent as CPA
     import utils.blockworld as bw
     import utils.blockworld_library as bl
@@ -24,26 +24,26 @@ if __name__=="__main__": #required for multiprocessing
 
     agents = [
         #default
-        BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
-        BFS_Agent(only_improving_actions = True,horizon = 1),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1)),
-        BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
+        BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1)),
+        BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_1_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2)),
         #random_2_4_h
-        # BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
-        # BFS_Agent(only_improving_actions = True,horizon = 1),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1)),
-        # BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.random_2_4_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2)),
         #fixed_2_h
-        # BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
-        # BFS_Agent(only_improving_actions = True,horizon = 1),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 1)),
-        # BFS_Agent(only_improving_actions = True,horizon = 2),
-        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Agent(only_improving_actions = True,horizon = 2)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1, scoring_function=bw.random_scoring)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 1)),
+        # BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2),
+        CPA.Construction_Paper_Agent(decomposition_function=CPA.fixed_2_h,lower_agent=BFS_Lookahead_Agent(only_improving_actions = True,horizon = 2)),
         ]
 
     silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}

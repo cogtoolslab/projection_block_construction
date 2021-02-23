@@ -16,7 +16,7 @@ class Lax_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
                          include_subsequences = False,
                          c_weight = 1000,
                          S_iterations=1,
-                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
                          random_seed = None):
         super().__init__(world=world, decomposer=decomposer, lookahead=lookahead, include_subsequences=include_subsequences, c_weight=c_weight, S_treshold=0, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
         if S_iterations != 1: print("S_iterations larger than 1 are not implemented yet—only last result will be passed on")
@@ -97,7 +97,7 @@ class Full_Lax_Sample_Subgoal_Planning_Agent(Lax_Sample_Subgoal_Planning_Agent):
                          decomposer = None,
                          c_weight = 1000,
                          S_iterations=1,
-                         lower_agent = BFS_Agent(only_improving_actions=True),
+                         lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
                          random_seed = None):
         super().__init__(world=world, decomposer=decomposer, lookahead=MAX_NUMBER_OF_SUBGOALS, include_subsequences=False, c_weight=c_weight, S_iterations=S_iterations, lower_agent=lower_agent, random_seed=random_seed)
 

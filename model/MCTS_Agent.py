@@ -3,13 +3,13 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import BFS_Agent, Ast_edge, Ast_node
+from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent, Ast_edge, Ast_node
 import utils.blockworld as blockworld
 import random
 import copy
 import math
 
-class MCTS_Agent(BFS_Agent):
+class MCTS_Agent(BFS_Lookahead_Agent):
     """This agent derives from the brute tree search agent and implements Monte Carlo Tree Search.
     
     Planning cost is each state visited during light rollout."""

@@ -3,10 +3,10 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.BFS_Agent import BFS_Agent, Ast_node, Ast_edge
+from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent, Ast_node, Ast_edge
 import utils.blockworld as blockworld
  
-class Beam_Search_Agent(BFS_Agent):
+class Beam_Search_Agent(BFS_Lookahead_Agent):
     """An agent using beam search—the agent expands only a certain number of promising nodes at each step and performs breadth first search over the resulting smaller tree. 
     https://en.wikipedia.org/wiki/Beam_search
     https://stackoverflow.com/questions/22273119/what-does-the-beam-size-represent-in-the-beam-search-algorithm
