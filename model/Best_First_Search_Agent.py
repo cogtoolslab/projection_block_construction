@@ -11,12 +11,6 @@ from dataclasses import dataclass, field
 from typing import Any
 from statistics import mean
 
-#class for the priority queue
-@dataclass(order=True)
-class FringeNode:
-    cost: int
-    node: Any=field(compare=False)
-
 class Best_First_Search_Agent(Astar_Agent):
     """An agent implementing best first search. 
         Choose heuristic so that higher value means better state (ie F1 score).
