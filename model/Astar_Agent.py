@@ -53,7 +53,7 @@ class Astar_Agent(BFS_Agent):
             return
         #preload values needed for heuristic
         self._silhouette_size = self.world.silhouette.sum() #the number of cells in the silhouette
-        self._min_block_size = min([block.width * block.height for block in self.world.block_library])
+        self._max_block_size = max([block.width * block.height for block in self.world.block_library])
         if steps is not None: print("Limited number of steps selected. This is not lookahead, are you sure?")
         #run A* search
         actions, states_evaluated = self.search(self.world.current_state, verbose)
@@ -94,7 +94,8 @@ class Astar_Agent(BFS_Agent):
             for action in node.state.possible_actions():
                 child = node.state.transition(action)
                 open_set.put(FringeNode(self.f(child),Node(child,node.actions+[action])))
-            if verbose and i%10000 == 0: print(i,"iterations, got open set of size",open_set.qsize(),"with cost",states_evaluated)
+            # if verbose: print("added",len(actions),"new states at",i) #DEBUG
+            if verbose and i%1000 == 0: print(i,"iterations, got open set of size",open_set.qsize(),"with cost",states_evaluated)
         if verbose: print("Evaluated all states and found nothing after",states_evaluated)
         return [],states_evaluated
 
@@ -114,7 +115,7 @@ class Astar_Agent(BFS_Agent):
         The heuristic should be admissible: it should be a lower bound to the actual cost of reaching the goal. The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. 
         """
         heur = self.heuristic(state)
-        out = -(heur-1) * self._silhouette_size / self._min_block_size
+        out = -(heur-1) * self._silhouette_size / self._max_block_size
         return max(0,out) #return 0 if the cost to goal is less than 0 (which doesn't make sense)
 
 class Stochastic_Priority_Queue:
