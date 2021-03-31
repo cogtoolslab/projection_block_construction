@@ -28,7 +28,7 @@ class Subgoal:
         except AttributeError:
             return 0 #if we can't solve it (or haven't yet), we return a reward of 0
 
-class Subgoalsequence:
+class Subgoal_sequence:
     """Stores a sequence."""
     def __init__(self,sequence,prior_world=None):
         """Generate sequence from dict input from decomposition function"""
@@ -47,7 +47,7 @@ class Subgoalsequence:
             self.subgoals.append(subgoal)
 
     def names(self):
-        return [sg.name for sg in self.subgoals]
+        return tuple([sg.name for sg in self.subgoals])
     
     def actions(self):
         actions = []

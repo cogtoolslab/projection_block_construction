@@ -78,3 +78,4 @@ tools_bc
 tools_bc/*
 *.out
 *.csv
+.ipynb_checkpoints
