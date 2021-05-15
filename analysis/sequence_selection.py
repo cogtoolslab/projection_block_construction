@@ -76,31 +76,6 @@ def extract_best_and_worst_sequence(sequence_scores: OrderedDict):
         worst_name, worst_score = list(sequence_permutations.items())[-1]
         return best_name, worst_name, best_score, worst_score
 
-def extract_most_divergent_pair_sequence(sequence_scores: OrderedDict):
-    """Find the sequence such that the distance between best and worst sequence is maximized"""
-    pair_scores = {}
-    for first_name,first_score in sequence_scores.items():
-        second_names = permutations(first_name)
-        sequence_permutations = {p_name:sequence_scores[p_name] for p_name in second_names if p_name in sequence_scores.keys()} 
-        #sort permutations
-        sequence_permutations = OrderedDict(sorted(sequence_permutations.items(), key=lambda pair: pair[1]))
-        if len(sequence_permutations) == 0:
-            # no permutations could be solved
-            continue
-        #we have found a sequence and permutated worst sequence
-        worst_name, worst_score = list(sequence_permutations.items())[-1]
-        pair_scores[tuple([first_name,worst_name])] = worst_score - first_score
-    #sort pair_scores
-    pair_scores = OrderedDict(sorted(pair_scores.items(), key = lambda pair: pair[1], reverse=True))
-    #extract most divergent pair
-    try:
-        best_name, worst_name = list(pair_scores.items())[0][0]
-        delta = list(pair_scores.items())[0][1]
-    except IndexError:
-        # didn't find any pairs
-        return None        
-    return best_name, worst_name, delta
-
 
 def get_best_and_worst_sequence(list_of_list_of_sequences: List[list]):
     """Find the best sequence and the worst sequence that is a permutation of the best sequence. If no permutation of the best sequence is possible, the next best sequence that has a solvable permutation is chosen. Pass a list of lists.
@@ -109,10 +84,4 @@ def get_best_and_worst_sequence(list_of_list_of_sequences: List[list]):
     """
     scored_sequences = get_scored_sequences(list_of_list_of_sequences)
     return extract_best_and_worst_sequence(scored_sequences)
-
-def get_most_divergent_pair_sequence(list_of_list_of_sequences: List[list]):
-    """Finds the sequence where the best and worst sequence diverge the most.
-
-    Call this function from notebook."""
-    scored_sequences = get_scored_sequences(list_of_list_of_sequences)
-    return extract_most_divergent_pair_sequence(scored_sequences)    
+    
