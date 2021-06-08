@@ -85,8 +85,8 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         lower_level_actions = []
         self.lower_agent.world = self.world
         while cur_i < len(sequence) and cur_i != steps: 
-            current_subgoal = sequence[cur_i]
-            self.world.set_silhouette(current_subgoal['decomposition'])
+            current_subgoal = sequence.subgoals[cur_i]
+            self.world.set_silhouette(current_subgoal.target)
             self.world.current_state.clear() #clear caches
             while self.world.status()[0] == "Ongoing":
                 actions, info = self.lower_agent.act()
@@ -98,7 +98,7 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         return lower_level_actions,{'states_evaluated':lower_level_cost,
                                 'sg_planning_cost':sg_planning_cost,
                                 '_subgoal_sequence':sequence,
-                                'decomposed_silhouette': current_subgoal['decomposition']}
+                                'decomposed_silhouette': current_subgoal.target}
 
     def plan_subgoals(self,verbose=False):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within."""
@@ -107,7 +107,7 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         if verbose: 
             print("Got",len(sequences),"sequences:")
             for sequence in sequences:
-                print([g['name'] for g in sequence])
+                print([g.name for g in sequence])
         # we need to score each in sequence (as it depends on the state before)
         number_of_states_evaluated = self.score_subgoals_in_sequence(sequences,verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
@@ -118,7 +118,7 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         scores = [None]*len(sequences)
         for i in range(len(sequences)):
             scores[i] = self.score_sequence(sequences[i])
-            if verbose: print("Scoring sequence",i+1,"of",len(sequences),"->",[g['name'] for g in sequences[i]],"score:",scores[i])
+            if verbose: print("Scoring sequence",i+1,"of",len(sequences),"->",[g.name for g in sequences[i]],"score:",scores[i])
         if verbose: print("Chose sequence:\n",sequences[scores.index(max(scores))])
         top_indices = [i for i in range(len(scores)) if scores[i] == max(scores)]
         top_sequences = [sequences[i] for i in top_indices]
@@ -130,15 +130,15 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         score = 0
         penalized = False
         for subgoal in sequence:
-            if subgoal['C'] is None or subgoal['S'] is None or subgoal['S'] < self.S_threshold or subgoal['R'] <= 0: 
+            if subgoal.C is None or subgoal.S is None or subgoal.S < self.S_threshold or subgoal.R <= 0: 
                 # we have a case where the subgoal computation was aborted early or we should ignore the subgoal because the success rate is too low or the reward is zero (subgoal already done or empty)
                 penalized = True
             try: 
                 # compute regular score
-                subgoal_score =  subgoal['R'] - subgoal['C'] * self.c_weight
+                subgoal_score =  subgoal.R - subgoal.C * self.c_weight
             except: 
                     #missing C—happens only in the case of fast_fail
-                subgoal_score = subgoal['R']
+                subgoal_score = subgoal.R
                 penalized = True
             score += subgoal_score
         return score + (BAD_SCORE * penalized)
@@ -154,19 +154,19 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for subgoal in sequence:
                 sg_counter += 1 # for verbose printing
                 #get reward and cost and success of that particular subgoal and store the resulting world
-                R = self.reward_of_subgoal(subgoal['decomposition'],prior_world.current_state.blockmap) 
-                S,C,winning_world,total_cost,stuck = self.success_and_cost_of_subgoal(subgoal['decomposition'],prior_world,iterations=self.S_iterations)
+                R = self.reward_of_subgoal(subgoal.target,prior_world.current_state.blockmap) 
+                S,C,winning_world,total_cost,stuck = self.success_and_cost_of_subgoal(subgoal.target,prior_world,iterations=self.S_iterations)
                 number_of_states_evaluated += total_cost
                 if verbose: 
                     print("For sequence",seq_counter,'/',len(sequences),
                     "scored subgoal",
                     sg_counter,'/',len(sequence),"named",
-                    subgoal['name'],
+                    subgoal.name,
                     "with C:"+str(C)," R:"+str(R)," S:"+str(S))
                 #store in the subgoal
-                subgoal['R'] = R + stuck * BAD_SCORE
-                subgoal['C'] = C
-                subgoal['S'] = S
+                subgoal.R = R + stuck * BAD_SCORE
+                subgoal.C = C
+                subgoal.S = S
                 #if we can't solve it to have a base for the next one, we break
                 if winning_world is None:
                     break
