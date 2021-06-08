@@ -4,14 +4,14 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.Sample_Subgoal_Planning_Agent import *
+from model.Resource_Rational_Subgoal_Planning_Agent import *
 import utils.blockworld as bw
 import utils.blockworld_library as bl
 
 import pandas as pd
 
 
-a = Sample_Subgoal_Planning_Agent(
+a = Resource_Rational_Subgoal_Planning_Agent(
                 lower_agent=BFS_Lookahead_Agent(horizon=2,only_improving_actions=True),
                 lookahead = 8,
                 include_subsequences=True,

@@ -4,9 +4,9 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.Sample_Subgoal_Planning_Agent import *
+from model.Resource_Rational_Subgoal_Planning_Agent import *
 
-class Lax_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
+class Lax_Resource_Rational_Subgoal_Planning_Agent(Resource_Rational_Subgoal_Planning_Agent):
     """Plans every subgoal as good as it can and uses that as basis for the next one no matter if it's complete. Reward is how much we were actually able to build"""
 
     def __init__(self,
@@ -89,7 +89,7 @@ class Lax_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
         self._cached_subgoal_evaluations[key] = cached_eval
         return wins/iterations,costs/iterations,post_world,costs/iterations,stuck == iterations
 
-class Full_Lax_Sample_Subgoal_Planning_Agent(Lax_Sample_Subgoal_Planning_Agent):
+class Full_Lax_Sample_Subgoal_Planning_Agent(Lax_Resource_Rational_Subgoal_Planning_Agent):
     """Same as subgoal planning agent, only that we act the entire sequence of subgoals after planning and plan the entire sequence."""
 
     def __init__(self,

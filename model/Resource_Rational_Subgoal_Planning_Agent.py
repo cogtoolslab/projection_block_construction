@@ -19,7 +19,7 @@ NOTE
 The corresponding code in decomposition_functions has changed and this will need to be adapted to work
 """
 
-class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
+class Resource_Rational_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     """Implements n subgoal lookahead planning. Works by sampling the lower level agent and using that to score sequences of actions. """
 
     def __init__(self,
@@ -220,7 +220,7 @@ class Sample_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         return wins/iterations,costs/iterations,winning_world,costs/iterations,stuck == iterations
 
 
-class Full_Sample_Subgoal_Planning_Agent(Sample_Subgoal_Planning_Agent):
+class Full_Sample_Subgoal_Planning_Agent(Resource_Rational_Subgoal_Planning_Agent):
     """Same as subgoal planning agent, only that we act the entire sequence of subgoals after planning and plan the entire sequence."""
 
     def __init__(self,
