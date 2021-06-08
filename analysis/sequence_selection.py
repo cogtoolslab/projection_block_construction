@@ -74,7 +74,7 @@ def extract_best_and_worst_sequence(sequence_scores: OrderedDict):
             continue
         #we have found a sequence and permutated worst sequence
         worst_name, worst_score = list(sequence_permutations.items())[-1]
-        return best_name, worst_name, best_score, worst_score
+        return best_name, worst_name, worst_score - best_score
 
 def extract_most_divergent_pair_sequence(sequence_scores: OrderedDict):
     """Find the sequence such that the distance between best and worst sequence is maximized"""
