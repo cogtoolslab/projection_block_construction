@@ -1,9 +1,9 @@
 # Tools for block construction
 Aim of the project is to investigate how people and artificial agents use tools to intervene on the world to make planning easier.
 
-The block tower reconstrution task is based on [Will McCarthy’s block construction experiments](https://github.com/cogtoolslab/block_construction). 
-Find writeups [here](https://github.com/cogtoolslab/tools_block_construction_LaTeX).
-See the published cogsci 2021 paper [here](XXXXX).
+The block tower reconstrution task is based on the one described in [McCarthy, Kirsh, & Fan (2020)](https://cogtoolslab.github.io/pdf/mccarthy_cogsci_2020.pdf) and adapted from the corresponding [`block_construction` repo](https://github.com/cogtoolslab/block_construction).
+
+To read our CogSci 2021 paper, please click [here](XXXXX).
 
 ## Simple action level planning agents
 
