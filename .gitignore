@@ -80,3 +80,4 @@ tools_bc/*
 *.csv
 .ipynb_checkpoints
 results/plots/*
+*.zip
