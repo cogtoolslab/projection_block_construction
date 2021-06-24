@@ -74,7 +74,7 @@ def extract_best_and_worst_sequence(sequence_scores: OrderedDict):
             continue
         #we have found a sequence and permutated worst sequence
         worst_name, worst_score = list(sequence_permutations.items())[-1]
-        return best_name, worst_name, worst_score - best_score
+        return best_name, worst_name, worst_score - best_score, best_score, worst_score
 
 def extract_most_divergent_pair_sequence(sequence_scores: OrderedDict):
     """Find the sequence such that the distance between best and worst sequence is maximized"""
@@ -89,17 +89,20 @@ def extract_most_divergent_pair_sequence(sequence_scores: OrderedDict):
             continue
         #we have found a sequence and permutated worst sequence
         worst_name, worst_score = list(sequence_permutations.items())[-1]
-        pair_scores[tuple([first_name,worst_name])] = worst_score - first_score
+        pair_scores[tuple([first_name,worst_name])] = (first_score, worst_score)
     #sort pair_scores
-    pair_scores = OrderedDict(sorted(pair_scores.items(), key = lambda pair: pair[1], reverse=True))
+    # print(pair_scores)
+    pair_scores = OrderedDict(sorted(pair_scores.items(), key = lambda pair: pair[1][1] - pair[1][0], reverse=True))
     #extract most divergent pair
     try:
         best_name, worst_name = list(pair_scores.items())[0][0]
-        delta = list(pair_scores.items())[0][1]
+        delta = list(pair_scores.items())[0][1][1] - list(pair_scores.items())[0][1][0]
+        best_score = list(pair_scores.items())[0][1][0]
+        worst_score = list(pair_scores.items())[0][1][1]
     except IndexError:
         # didn't find any pairs
         return None        
-    return best_name, worst_name, delta
+    return best_name, worst_name, delta, best_score, worst_score
 
 
 def get_best_and_worst_sequence(list_of_list_of_sequences: List[list]):
