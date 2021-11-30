@@ -91,8 +91,3 @@ class Stonehenge(World):
                                 {'A':1,'B':0,'C':1},
                                 {'A':0,'B':1,'C':1}]
     actions = ['A','B','C']
-
-
-
-    # class Block_World(World):
-    

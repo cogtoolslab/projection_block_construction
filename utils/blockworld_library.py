@@ -2,7 +2,6 @@
 
 # set up imports
 import os
-import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 stimuli_dir = os.path.join(proj_dir,'stimuli')
 
@@ -118,6 +117,14 @@ bl_silhouette2_default= [
     blockworld.BaseBlock(2,2),
     blockworld.BaseBlock(2,4),
     blockworld.BaseBlock(4,2),
+]
+
+#A block library that contains the simplest set of blocks such that larger blocks can't be composed of smaller ones. 
+bl_nonoverlapping_simple = [
+    blockworld.BaseBlock(1,2),
+    blockworld.BaseBlock(2,1),
+    blockworld.BaseBlock(3,1),
+    blockworld.BaseBlock(1,3)
 ]
 
 #beware, this might never finish, so don't run the agent in an infinte loop

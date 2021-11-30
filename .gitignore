@@ -81,3 +81,5 @@ tools_bc/*
 .ipynb_checkpoints
 results/plots/*
 *.zip
+*.DS_Store
+stimuli/tower_generate_main.py
