@@ -22,7 +22,7 @@ class TowerGenerator():
 
     def __init__(self, height: int, width: int,
                  block_library=bl_nonoverlapping_simple,  # list of blocks to choose from
-                 # function that samples from the distribution of numbers of blocks per tower
+                 # function that samples from the distribution of numbers of blocks per tower. Can also pass list or int
                  num_blocks=_default_size,
                  # is called after each block is placed and returns true for placements we want to allow
                  evaluator=lambda x: True,
@@ -55,7 +55,14 @@ class TowerGenerator():
                            physics=self.physics,
                            )
         # sample number of blocks
-        num_blocks = self.num_blocks() # remaining number of blocks
+        if type(self.num_blocks) is int:
+            num_blocks = self.num_blocks
+        elif callable(self.num_blocks):
+            num_blocks = self.num_blocks()
+        elif type(self.num_blocks) is list:
+            num_blocks = random.choice(self.num_blocks)
+        else:
+            raise ValueError("num_blocks must be int, function or list, not {}".format(type(self.num_blocks)))
         for i in range(self.max_steps):
             # first, any blocks left to place?
             if num_blocks == 0:
@@ -87,5 +94,5 @@ class TowerGenerator():
         silhouette['blockmap'] = world.current_state.blockmap
         silhouette['block_library'] = self.block_library
         silhouette['dimension'] = (self.height, self.width)
-        silhouette['bitmap'] = world.current_state.blockmap > 0
+        silhouette['bitmap'] = (world.current_state.blockmap > 0).astype(float)
         return silhouette
