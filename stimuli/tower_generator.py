@@ -28,8 +28,9 @@ class TowerGenerator():
                  evaluator=lambda x: True,
                  block_selector=random.choice,  # gets the list of blocks and choses one,
                  physics=True,  # do we care about the stability of the tower?
-                 max_steps = 1000, # the upper limit of steps to take
+                 max_steps=1000,  # the upper limit of steps to take
                  seed=None,
+                 padding=(0, 0), # padding applied to the x and y dimension on each side. X padding is applied twice, y padding is applied once (at the top). The original dimension is kept
                  ):
         """
         Initializes the tower generator.
@@ -42,6 +43,10 @@ class TowerGenerator():
         self.num_blocks = num_blocks
         self.physics = physics
         self.max_steps = max_steps
+        self.x_padding = padding[0]
+        self.y_padding = padding[1]
+        assert self.x_padding * 2 < self.width, "Padding doesn't leave width for blocks"
+        assert self.y_padding  < self.height, "Padding doesn't leave height for blocks"
         if seed is not None:
             random.seed(seed)
             np.random.seed(seed)
@@ -49,7 +54,7 @@ class TowerGenerator():
     def generate(self):
         """ Generates a single tower """
         # initialize empty world
-        world = Blockworld(dimension=np.array([self.height, self.width]),
+        world = Blockworld(dimension=np.array([self.height-self.y_padding, self.width-self.x_padding*2]),
                            block_library=self.block_library,
                            legal_action_space=False,
                            physics=self.physics,
@@ -62,7 +67,8 @@ class TowerGenerator():
         elif type(self.num_blocks) is list:
             num_blocks = random.choice(self.num_blocks)
         else:
-            raise ValueError("num_blocks must be int, function or list, not {}".format(type(self.num_blocks)))
+            raise ValueError("num_blocks must be int, function or list, not {}".format(
+                type(self.num_blocks)))
         for i in range(self.max_steps):
             # first, any blocks left to place?
             if num_blocks == 0:
@@ -70,7 +76,7 @@ class TowerGenerator():
             # get all actions
             # currently defined as a tuple of a baseblock and a x location
             potential_actions = world.current_state.possible_actions()
-            if len(potential_actions) == 0: # no more possible actions
+            if len(potential_actions) == 0:  # no more possible actions
                 break
             # TODO for now randomyl choosing an action, make it choose location and block according to provided functions
             action = random.choice(potential_actions)
@@ -88,11 +94,25 @@ class TowerGenerator():
         # get number of blocks
         num_blocks = len(world.current_state.blocks)
         assert num_blocks > 0, "Empty world"
+        # apply the padding
+        # blocks
+        blocks = copy.deepcopy(world.current_state.blocks)
+        for block in blocks:
+            block.x += self.x_padding
+            block.y += self.y_padding
+            for vert_i in range(block.verts.shape[0]):
+                block.verts[vert_i][0] += self.x_padding
+                block.verts[vert_i][1] += self.y_padding
+        # for
+        # blockmap
+        blockmap = copy.copy(world.current_state.blockmap)
+        blockmap = np.pad(blockmap, ((self.y_padding, 0),
+                                     (self.x_padding, self.x_padding)))
         # generate silhouette object
         silhouette = {}
-        silhouette['blocks'] = world.current_state.blocks
-        silhouette['blockmap'] = world.current_state.blockmap
+        silhouette['blocks'] = blocks
+        silhouette['blockmap'] = blockmap
         silhouette['block_library'] = self.block_library
         silhouette['dimension'] = (self.height, self.width)
-        silhouette['bitmap'] = (world.current_state.blockmap > 0).astype(float)
+        silhouette['bitmap'] = (blockmap > 0).astype(float)
         return silhouette
