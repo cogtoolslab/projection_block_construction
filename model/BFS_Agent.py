@@ -60,7 +60,7 @@ class BFS_Agent:
             print("Can't act with world in status",self.world.status())
             return [],{'states_evaluated':states_evaluated} 
         # if steps is not None:
-        #     print("Limited number of steps selected. This is not lookahead, are you sure?")
+        print("Limited number of steps selected. This is not lookahead, are you sure?")
         #perform BFS search 
         current_nodes = [Node(self.world.current_state,[])] #initialize root node
         result = "Ongoing"
