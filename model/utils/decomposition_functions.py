@@ -10,16 +10,18 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 from tqdm import tqdm
 
-SUBGOAL_COLORS = ['red','green','blue','yellow','orange','purple','pink','cyan','brown','black','white']
+SUBGOAL_COLORS = ['red', 'green', 'blue', 'yellow', 'orange',
+                  'purple', 'pink', 'cyan', 'brown', 'black', 'white']
 
 
 class Subgoal:
     """Stores a subgoal. 
-    
+
     Bitmap stores a boolean bitmap of the target including blank areas, while target just stores the decomposed silhouette with 0 for both background and out-of-subgoal areas."""
-    def __init__(self,source,target,bitmap=None,name=None,actions=None,C=None,prior_world=None,past_world=None,solution_cost=None,planning_cost=None):
+
+    def __init__(self, source, target, bitmap=None, name=None, actions=None, C=None, prior_world=None, past_world=None, solution_cost=None, planning_cost=None):
         self.source = source
-        self.target = copy.deepcopy(target) #aka decomposition
+        self.target = copy.deepcopy(target)  # aka decomposition
         if bitmap is not None:
             self.bitmap = bitmap
         else:
@@ -32,20 +34,23 @@ class Subgoal:
         self.solution_cost = solution_cost
         self.planning_cost = planning_cost
 
-
     def key(self):
-        key = self.target * 100 - (self.prior_world.current_state.order_invariant_blockmap() > 0)
-        return key.tostring() #make hashable
+        key = self.target * 100 - \
+            (self.prior_world.current_state.order_invariant_blockmap() > 0)
+        return key.tostring()  # make hashable
 
     def R(self):
         try:
             return np.sum((self.past_world.current_state.blockmap > 0)*1. - (self.prior_world.current_state.blockmap > 0)*1.)
         except AttributeError:
-            return 0 #if we can't solve it (or haven't yet), we return a reward of 0
+            # if we can't solve it (or haven't yet), we return a reward of 0
+            return 0
+
 
 class Subgoal_sequence:
     """Stores a sequence."""
-    def __init__(self,sequence,prior_world=None):
+
+    def __init__(self, sequence, prior_world=None):
         """Generate sequence from dict input from decomposition function"""
         self.subgoals = []
         self.score = None
@@ -53,46 +58,47 @@ class Subgoal_sequence:
         last_source = None
         for d in sequence:
             try:
-                #assuming we get a sequence from the decomposition function
-                subgoal = Subgoal(source=last_source,target=d['decomposition'],name = d['name'], bitmap=d['bitmap'])
+                # assuming we get a sequence from the decomposition function
+                subgoal = Subgoal(
+                    source=last_source, target=d['decomposition'], name=d['name'], bitmap=d['bitmap'])
                 last_source = d['decomposition']
             except TypeError:
-                #if not, then we've gotten a Subgoal object
+                # if not, then we've gotten a Subgoal object
                 subgoal = d
             self.subgoals.append(subgoal)
 
     def names(self):
         return tuple([sg.name for sg in self.subgoals])
-    
+
     def actions(self):
         actions = []
         for sg in self.subgoals:
             try:
                 actions += sg.actions
-            except: #we don't have any actions (if its unsolvable,...)
+            except:  # we don't have any actions (if its unsolvable,...)
                 pass
         return actions
 
     def planning_cost(self):
         """Planning cost of the entire sequence"""
-        return sum([sg.planning_cost if sg.planning_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
-    
+        return sum([sg.planning_cost if sg.planning_cost is not None else 0 for sg in self.subgoals])  # could be max cost as well
+
     def solution_cost(self):
         """Planning cost of the entire sequence"""
-        return sum([sg.solution_cost if sg.solution_cost is not None else 0 for sg in self.subgoals]) #could be max cost as well
-    
+        return sum([sg.solution_cost if sg.solution_cost is not None else 0 for sg in self.subgoals])  # could be max cost as well
+
     def complete(self):
         """Do we have a solution for all goals in the sequence?"""
-        return np.all([s.actions is not None and s.actions != []  for s in self.subgoals])
+        return np.all([s.actions is not None and s.actions != [] for s in self.subgoals])
 
-    def V(self,c_weight=1):
+    def V(self, c_weight=1):
         """Adds up the cost and rewards of the subgoals"""
-        score = sum([sg.R() - sg.C * c_weight 
-            if sg.C is not None else
-                0 #sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
-            for sg in self.subgoals])
+        score = sum([sg.R() - sg.C * c_weight
+                     if sg.C is not None else
+                     0  # sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
+                     for sg in self.subgoals])
         return score
-    
+
     def R(self):
         """Cumulative reward of subgoals"""
         score = sum([sg.R() for sg in self.subgoals])
@@ -103,32 +109,36 @@ class Subgoal_sequence:
         # get silhouette
         silhouette = self.prior_world.silhouette
         plt.close('all')
-        plt.figure(figsize=(4,4))
+        plt.figure(figsize=(4, 4))
         # plot existing blocks
-        plt.pcolor(self.prior_world.current_state.blockmap[::-1], cmap='hot_r',vmin=0,vmax=20,linewidth=0,edgecolor='none')
-        #we print the target silhouette as transparent overlay
-        plt.pcolor(silhouette[::-1],cmap='binary',alpha=.8,linewidth=0.5,facecolor='grey',edgecolor='grey',capstyle='round',joinstyle='round',linestyle=':')
+        plt.pcolor(self.prior_world.current_state.blockmap[::-1],
+                   cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
+        # we print the target silhouette as transparent overlay
+        plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=0.5, facecolor='grey',
+                   edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
         # draw subgoals
-        for i,sg in enumerate(self.subgoals):
+        for i, sg in enumerate(self.subgoals):
             # get body of mass for subgoal
-            y,x = ndimage.measurements.center_of_mass(sg.bitmap)
+            y, x = ndimage.measurements.center_of_mass(sg.bitmap)
             if sg.bitmap is not None:
                 # create binary colormap
                 cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
                     "", [(0., 0., 0., 0.),
-                    matplotlib.colors.to_rgba(SUBGOAL_COLORS[i],alpha=.33)])
+                         matplotlib.colors.to_rgba(SUBGOAL_COLORS[i], alpha=.33)])
                 # plot subgoal
-                plt.pcolor(sg.bitmap[::-1]>0,cmap = cmap, linewidth=0.75,facecolor=SUBGOAL_COLORS[i],edgecolor='none')
-            plt.text(x,silhouette.shape[0] - y,sg.name,fontsize=8,color=SUBGOAL_COLORS[i],backgroundcolor='black',ha='left',va='bottom', alpha=0.66)
-        plt.show(block=blocking)        
+                plt.pcolor(sg.bitmap[::-1] > 0, cmap=cmap, linewidth=0.75,
+                           facecolor=SUBGOAL_COLORS[i], edgecolor='none')
+            plt.text(x, silhouette.shape[0] - y, sg.name, fontsize=8, color=SUBGOAL_COLORS[i],
+                     backgroundcolor='black', ha='left', va='bottom', alpha=0.66)
+        plt.show(block=blocking)
 
     def __len__(self):
         return len(self.subgoals)
-    
+
     def __iter__(self):
         self.a = 0
         return self
-    
+
     def __next__(self):
         try:
             sg = self.subgoals[self.a]
@@ -144,12 +154,13 @@ class Decomposition_Function:
         self.necessary_conditions = necessary_conditions
         self.necessary_sequence_conditions = necessary_sequence_conditions
 
-    def set_silhouette(self,silhouette):
+    def set_silhouette(self, silhouette):
         self.silhouette = silhouette
 
     def get_decompositions(self, state=None):
         decompositions = self.get_all_potential_decompositions()
-        decompositions = [d for d in decompositions if self.check_necessary_conditions(d, state)]
+        decompositions = [
+            d for d in decompositions if self.check_necessary_conditions(d, state)]
         return decompositions
 
     def check_necessary_conditions(self, decomposition, state):
@@ -159,7 +170,7 @@ class Decomposition_Function:
         return True
 
     def check_necessary_sequence_conditions(self, sequence, state):
-        #special case for empty sequence
+        # special case for empty sequence
         if len(sequence) == 0:
             return False
         for condition in self.necessary_sequence_conditions:
@@ -174,7 +185,8 @@ class Decomposition_Function:
         if filter_for_length:
             sequences = list(itertools.combinations(subgoals, length))
         else:
-            sequences = list(itertools.chain.from_iterable([itertools.combinations(subgoals, l) for l in range(length+1)]))
+            sequences = list(itertools.chain.from_iterable(
+                [itertools.combinations(subgoals, l) for l in range(length+1)]))
         sequences = list(sequences)
         # filter sequences
         print("Filtering sequences...")
@@ -185,11 +197,12 @@ class Decomposition_Function:
                     filtered_sequences.append(sequence)
             sequences = filtered_sequences
         else:
-            sequences = [s for s in sequences if self.check_necessary_sequence_conditions(s, state)]
+            sequences = [
+                s for s in sequences if self.check_necessary_sequence_conditions(s, state)]
         if number_of_sequences is not None and number_of_sequences < len(sequences):
             # if we want to return a limited number of sequences, we do so by randomly sampling
             sequences = random.choices(sequences, k=number_of_sequences)
-        #turn into objects
+        # turn into objects
         sequences = [Subgoal_sequence(s, state.world) for s in sequences]
         return sequences
 
@@ -199,23 +212,25 @@ class Decomposition_Function:
     def get_params(self):
         """Returns dict of parameters"""
         return {}
-  
-    def legal_next_subgoal(self,before, after):
+
+    def legal_next_subgoal(self, before, after):
         """Check if the after subgoal can follow the before, ie is a real improvement and subsumes the before"""
         return np.all(after['decomposition']-before['decomposition'] >= 0) and np.sum(after['decomposition']-before['decomposition']) > 0
 
 
 class Horizontal_Construction_Paper(Decomposition_Function):
-    """Horizontal construction paper. Returns all positions irregardless of state."""    
+    """Horizontal construction paper. Returns all positions irregardless of state."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_decompositions(self, state = None):
+    def get_decompositions(self, state=None):
         decompositions = []
         for y in range(self.silhouette.shape[0]):
             decomposition = np.copy(self.silhouette)
-            decomposition[0:y,:] = 0
-            decompositions += [{'decomposition':decomposition,'name':abs(self.silhouette.shape[0] - y)}]
+            decomposition[0:y, :] = 0
+            decompositions += [{'decomposition': decomposition,
+                                'name': abs(self.silhouette.shape[0] - y)}]
         decompositions.reverse()
         return decompositions
 
@@ -230,7 +245,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
             for current_sequence in current_sequences:
                 for subgoal in subgoals:
                     if self.legal_next_subgoal(current_sequence[-1], subgoal):
-                        #if we can do the subgoal after the current sequence, include it
+                        # if we can do the subgoal after the current sequence, include it
                         new_sequence = current_sequence+[subgoal]
                         sequences.append(new_sequence)
                         next_sequences.append(new_sequence)
@@ -239,7 +254,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
         if number_of_sequences is not None and number_of_sequences < len(sequences):
             # if we want to return a limited number of sequences, we do so by randomly sampling
             sequences = random.choices(sequences, k=number_of_sequences)
-        #turn into objects
+        # turn into objects
         sequences = [Subgoal_sequence(s, state.world) for s in sequences]
         return sequences
 
@@ -247,9 +262,11 @@ class Horizontal_Construction_Paper(Decomposition_Function):
         """Filter out sequences that don't have the required length *unless* they end with the full decomposition (since if the sequence ends, we can only reach the full decomp in lucky cases)"""
         return [s for s in sequences if len(s) == length or (len(s) <= length and np.all(s[-1]['decomposition'] == self.silhouette))]
 
+
 class Rectangular_Keyholes(Decomposition_Function):
     """Implements the decomposition of the target into rectangular keyholes. 
     Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (subgoal (with subgoal['decomposition] as bitmap), current state of the world)"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -261,79 +278,101 @@ class Rectangular_Keyholes(Decomposition_Function):
                 for w in range(self.silhouette.shape[1] - x + 1):
                     for h in range(self.silhouette.shape[0] - y + 1):
                         bitmap = np.zeros(self.silhouette.shape)
-                        bitmap[y:y+h,x:x+w] = 1
+                        bitmap[y:y+h, x:x+w] = 1
                         decomposition = self.silhouette * bitmap
-                        decompositions += [{'decomposition':decomposition, 
-                        'bitmap':bitmap, 
-                        'name':'x:{} y:{} w:{} h:{}'.format(x,y,w,h),'x':x,'y':y,'w':w,'h':h}]
+                        decompositions += [{'decomposition': decomposition,
+                                            'bitmap': bitmap,
+                                            'name': 'x:{} y:{} w:{} h:{}'.format(x, y, w, h), 'x': x, 'y': y, 'w': w, 'h': h}]
         return decompositions
 
 # CONDITIONS
-## Necessary conditions for SUBGOALS
+# Necessary conditions for SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (decomposition (with decomposition['decomposition] as bitmap), current state of the world)
 # subset of condition to implement __call__ so the object can be called like a function
+
+
 class Condition:
     def __init__(self):
         pass
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return True
+
 
 class Area_larger_than(Condition):
     def __init__(self, area):
         self.area = area
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return decomposition['w'] * decomposition['h'] > self.area
+
 
 class Area_smaller_than(Condition):
     def __init__(self, area):
         self.area = area
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return decomposition['w'] * decomposition['h'] < self.area
+
 
 class Reward_larger_than(Condition):
     def __init__(self, reward):
         self.reward = reward
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return np.sum(decomposition['decomposition']) > self.reward
 
+
 class Non_empty(Condition):
-    def __call__(self,decomposition,state):
+    def __call__(self, decomposition, state):
         return np.sum(decomposition['decomposition']) > 0
+
 
 class Width_larger_than(Condition):
     def __init__(self, width):
         self.width = width
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return decomposition.w > self.width
+
 
 class Height_larger_than(Condition):
     def __init__(self, height):
         self.height = height
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         return decomposition.h > self.height
+
 
 class No_empty_rows(Condition):
     """Ensure that no subgoals contains empty rows"""
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         # get relevant rows from bitmap
         rows = np.where(decomposition['bitmap'].sum(axis=1) > 0)[0]
-        return not np.any([np.all(decomposition['decomposition'][i,:] == 0) for i in rows])
+        return not np.any([np.all(decomposition['decomposition'][i, :] == 0) for i in rows])
+
 
 class No_empty_columns(Condition):
     """Ensure that no subgoals contains empty columns"""
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         # get relevant columns from bitmap
         columns = np.where(decomposition['bitmap'].sum(axis=0) > 0)[0]
-        return not np.any([np.all(decomposition['decomposition'][:,i] == 0) for i in columns])
+        return not np.any([np.all(decomposition['decomposition'][:, i] == 0) for i in columns])
+
 
 class No_empty_rows_or_columns(Condition):
     """Ensure that no subgoals contains empty rows or columns."""
-    def __call__(self,decomposition,state):
-        return No_empty_columns()(decomposition,state) and No_empty_rows()(decomposition,state)
+
+    def __call__(self, decomposition, state):
+        return No_empty_columns()(decomposition, state) and No_empty_rows()(decomposition, state)
+
 
 class No_edge_rows_or_columns(Condition):
     """Ensure that no subgoals contains empty rows or columns at the extremes of the subgoal"""
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         # get relevant rows from bitmap
         rows = np.where(decomposition['bitmap'].sum(axis=1) > 0)[0]
         rows = [min(rows), max(rows)]
@@ -341,67 +380,81 @@ class No_edge_rows_or_columns(Condition):
         columns = np.where(decomposition['bitmap'].sum(axis=0) > 0)[0]
         columns = [min(columns), max(columns)]
         # do we have empty space on the edge?
-        return not np.any([np.all(decomposition['decomposition'][i,:] == 0) for i in rows]) and not np.any([np.all(decomposition['decomposition'][:,i] == 0) for i in columns])
+        return not np.any([np.all(decomposition['decomposition'][i, :] == 0) for i in rows]) and not np.any([np.all(decomposition['decomposition'][:, i] == 0) for i in columns])
+
 
 class Empty_cells(Condition):
     """Ensure that no subgoals contains n or more empty cells"""
+
     def __init__(self, empty_cells):
         self.empty_cells = empty_cells
-    def __call__(self,decomposition,state):
+
+    def __call__(self, decomposition, state):
         # get map of empty space in subgoal
-        empty_space = (decomposition['decomposition'] == 0) * decomposition['bitmap']
+        empty_space = (decomposition['decomposition']
+                       == 0) * decomposition['bitmap']
         # do we have empty space on the edge?
         return np.sum(empty_space) > self.empty_cells
 
-## Necessary conditions for SEQUENCES OF SUBGOALS
+# Necessary conditions for SEQUENCES OF SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed ([decomposition (with decomposition['decomposition] as bitmap]), current state of the world)
+
+
 class Sequence_Condition:
     def __init__(self):
         pass
-    def __call__(self,sequence,state):
+
+    def __call__(self, sequence, state):
         return True
+
 
 class Keyhole_increasing(Sequence_Condition):
     """For Horizontal_Construction_Paper,. Ensures that only increasing sequences are considered"""
-    def __call__(self,sequence,state):
-        for i in range(1,len(sequence)):
+
+    def __call__(self, sequence, state):
+        for i in range(1, len(sequence)):
             if int(sequence[i]['name']) <= int(sequence[i-1]['name']):
                 return False
         return True
 
+
 class No_overlap(Sequence_Condition):
     """Should be general. Ensure that no subgoals overlap on parts of the actual figure"""
-    def __call__(self,sequence,state):
+
+    def __call__(self, sequence, state):
         # create map of occupancy
         occupancy = (sequence[0]['decomposition'] > 0) * 1.0
-        for i in range(1,len(sequence)):
+        for i in range(1, len(sequence)):
             occupancy = occupancy + (sequence[i]['decomposition'] > 0)
         return max(occupancy.flatten()) <= 1
+
 
 class Supported(Sequence_Condition):
     """Ensures that there is at least one cell in each subgoal that has below it a cell that is either filled out or part of a previous subgoal"""
     # TODO ensure that up is up
-    def __call__(self,sequence,state):
+
+    def __call__(self, sequence, state):
         # create map of occupancy
         occupancy = (state.blockmap > 0) * 1.0
-        for i in range(1,len(sequence)):
+        for i in range(1, len(sequence)):
             # update occupancy
             occupancy += sequence[i-1]['decomposition'] > 0
             current = sequence[i]['decomposition'] > 0
             # we need to ignore what is currently 'in' the subgoal to see if it is supported
             other_occupancy = occupancy * (current == 0)
             # shift current occupancy down by one
-            current = np.roll(current,1,axis=0)
+            current = np.roll(current, 1, axis=0)
             # ignore first row since we looped it around
-            current[0,:] = 0
+            current[0, :] = 0
             # any overlap?
             if not np.sum(other_occupancy * current) > 0:
                 return False
         # we also need to make sure that the entire set of subgoals is supported by the ground. Ie there needs to be occupancy (either from decompositions or existing blocks all the way to the bottom)
-        if len(sequence) == 1: # we don't enter the above loop for single subgoals
+        if len(sequence) == 1:  # we don't enter the above loop for single subgoals
             occupancy += sequence[0]['decomposition'] > 0
         occupied_rows = np.where(occupancy.sum(axis=1) > 0)[0]
-        min_y = np.min(occupied_rows) # this is the top of the subgoal structure
+        # this is the top of the subgoal structure
+        min_y = np.min(occupied_rows)
         if list(range(min_y, state.world.silhouette.shape[0])) != list(occupied_rows):
             return False
         return True
