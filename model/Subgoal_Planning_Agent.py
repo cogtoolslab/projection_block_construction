@@ -11,6 +11,8 @@ import model.utils.decomposition_functions
 import copy
 import numpy as np
 
+import random
+
 UNSOLVABLE_PENALTY = 999999999999
 MAX_STEPS = 20
 
@@ -28,6 +30,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                          sequence_length = 1, #consider sequences up to this length
                          step_size = 1, #how many subgoals to act. Negative or zero to act from end of plan
                          include_subsequences=True,
+                        # randomly sample n sequences. Use `None` to use all possible sequences
+                        number_of_sequences=None,
                          c_weight = 1/1000,
                          max_cost=10**3, #maximum cost before we give up trying to solve a subgoal
                          lower_agent = BFS_Lookahead_Agent(only_improving_actions=True),
@@ -36,6 +40,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             self.world = world
             self.sequence_length = sequence_length
             self.include_subsequences = include_subsequences # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
+            self.number_of_sequences = number_of_sequences
             self.step_size = step_size
             self.c_weight = c_weight
             self.max_cost = max_cost
@@ -46,7 +51,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             if decomposer is None:
                 try:
                     decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(self.world.full_silhouette)
-                except AttributeError: # no world has been passed, will need to be updated using decomposer.set_silhouette
+                except AttributeError: # no world has been passed, will need to be updated using decomposer.set_silhouette. Done automatically using Agent.set_world
                     decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(None) 
             self.decomposer = decomposer
             self._cached_subgoal_evaluations = {} #sets up cache for  subgoal evaluations
@@ -62,6 +67,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             'sequence_length':self.sequence_length,
             'decomposition_function':self.decomposer.__class__.__name__,
             'include_subsequences':self.include_subsequences,
+            'number_of_sequences':self.number_of_sequences,
             'c_weight':self.c_weight,
             'max_cost':self.max_cost,
             'step_size':self.step_size,
@@ -74,7 +80,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self._cached_subgoal_evaluations = {} #clear cache
 
     def act(self,steps=None,verbose=False):
-        """Finds subgoal plan, then builds the first n subgoals. Pass none to build plan length. Steps here refers to subgoals (ie. 2 steps is acting the first two planned subgoals). Pass -1 to steps to execute the entire subgoal plan.
+        """Finds subgoal plan, then builds the first _steps_ subgoals. Pass none to build plan length. Steps here refers to subgoals (ie. 2 steps is acting the first two planned subgoals). Pass -1 to steps to execute the entire subgoal plan.
         
         NOTE: only the latest decomposed silhouette is saved by experiment runner: the plan needs to be extracted from the saved subgoal sequence."""
         if self.random_seed is None: self.random_seed = randint(0,99999)
@@ -118,11 +124,15 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     def plan_subgoals(self,verbose=False):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within. Returns chosen sequence and the set of all sequences"""
         self.decomposer.set_silhouette(self.world.full_silhouette) #make sure that the decomposer has the right silhouette
-        sequences = self.decomposer.get_sequences(state = self.world.current_state,length=self.sequence_length,filter_for_length=not self.include_subsequences)
+        sequences = self.decomposer.get_sequences(state = self.world.current_state,length=self.sequence_length,filter_for_length=not self.include_subsequences, number_of_sequences=self.number_of_sequences, verbose=verbose)
         if verbose: 
             print("Got",len(sequences),"sequences:")
             for sequence in sequences:
                 print([g.name for g in sequence])
+            # sample a few sequences and show them
+            for i in range(5):
+                sequence = random.choice(sequences)
+                sequence.visual_display(blocking=True)
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences,verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
