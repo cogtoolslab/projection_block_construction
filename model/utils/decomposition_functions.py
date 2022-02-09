@@ -106,16 +106,20 @@ class Subgoal_sequence:
 
     def visual_display(self, blocking=True):
         """Displays the sequence visually. See also Blockworld.State.visual_display()"""
-        # get silhouette
-        silhouette = self.prior_world.silhouette
         plt.close('all')
         plt.figure(figsize=(4, 4))
-        # plot existing blocks
-        plt.pcolor(self.prior_world.current_state.blockmap[::-1],
-                   cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
-        # we print the target silhouette as transparent overlay
-        plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=0.5, facecolor='grey',
-                   edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
+        try:
+            # get silhouette
+            silhouette = self.prior_world.silhouette
+            # plot existing blocks
+            plt.pcolor(self.prior_world.current_state.blockmap[::-1],
+                    cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
+            # we print the target silhouette as transparent overlay
+            plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=0.5, facecolor='grey',
+                    edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
+        except AttributeError:
+            # no prior world.
+            silhouette = np.zeros(self.subgoals[0].bitmap.shape)
         # draw subgoals
         for i, sg in enumerate(self.subgoals):
             # get body of mass for subgoal
@@ -407,6 +411,16 @@ class Sequence_Condition:
     def __call__(self, sequence, state):
         return True
 
+class Complete(Sequence_Condition):
+    """The entire structure is covered by the subgoals"""
+    
+    def __call__(self, sequence, state):
+        silhouette = state.world.silhouette
+        occupancy = np.zeros(silhouette.shape)
+        for decomposition in sequence:
+            occupancy += decomposition['decomposition']
+        return np.all((occupancy > 0) == (silhouette > 0))
+
 
 class Keyhole_increasing(Sequence_Condition):
     """For Horizontal_Construction_Paper,. Ensures that only increasing sequences are considered"""
@@ -436,11 +450,14 @@ class Supported(Sequence_Condition):
     def __call__(self, sequence, state):
         # create map of occupancy
         occupancy = (state.blockmap > 0) * 1.0
-        for i in range(1, len(sequence)):
+        for i in range(len(sequence)):
             # update occupancy
-            occupancy += sequence[i-1]['decomposition'] > 0
+            if i > 0: # nothing to fill for the first subgoal
+                occupancy += sequence[i-1]['decomposition'] > 0
             current = sequence[i]['decomposition'] > 0
             # we need to ignore what is currently 'in' the subgoal to see if it is supported
+            # is the current subgoal supported by the ground? If yes, we can move on to the next one
+            if np.any(current[-1::]): continue
             other_occupancy = occupancy * (current == 0)
             # shift current occupancy down by one
             current = np.roll(current, 1, axis=0)
@@ -449,12 +466,4 @@ class Supported(Sequence_Condition):
             # any overlap?
             if not np.sum(other_occupancy * current) > 0:
                 return False
-        # we also need to make sure that the entire set of subgoals is supported by the ground. Ie there needs to be occupancy (either from decompositions or existing blocks all the way to the bottom)
-        if len(sequence) == 1:  # we don't enter the above loop for single subgoals
-            occupancy += sequence[0]['decomposition'] > 0
-        occupied_rows = np.where(occupancy.sum(axis=1) > 0)[0]
-        # this is the top of the subgoal structure
-        min_y = np.min(occupied_rows)
-        if list(range(min_y, state.world.silhouette.shape[0])) != list(occupied_rows):
-            return False
         return True
