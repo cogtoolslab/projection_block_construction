@@ -191,7 +191,6 @@ class Decomposition_Function:
         else:
             sequences = list(itertools.chain.from_iterable(
                 [itertools.combinations(subgoals, l) for l in range(length+1)]))
-        sequences = list(sequences)
         # filter sequences
         print("Filtering sequences...")
         filtered_sequences = []

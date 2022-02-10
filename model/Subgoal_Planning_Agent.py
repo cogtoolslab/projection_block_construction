@@ -139,7 +139,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i in range(5):
+            for i in range(min(len(sequences), 5)):
                 sequence = random.choice(sequences)
                 sequence.visual_display(blocking=True)
         # we need to score each in sequence (as it depends on the state before)
