@@ -156,6 +156,16 @@ class Blockworld(World):
             state = self.current_state
         if state.score(F1score) == 1 and state.stability():
             return True
+    def is_full_win(self, state=None):
+        if state is None:
+            state = self.current_state
+        # temporarily replace the silhouette with the full one, restore after checking
+        old_silhouette = np.copy(self.silhouette)
+        self.silhouette = self.full_silhouette
+        if state.score(F1score) == 1 and state.stability():
+            self.silhouette = old_silhouette
+            return True
+        self.silhouette = old_silhouette
         return False
 
     def score(self, state=None, scoring_function=None):
