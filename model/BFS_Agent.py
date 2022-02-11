@@ -27,6 +27,7 @@ class BFS_Agent:
         """Returns dictionary of agent parameters."""
         return {
             'agent_type': self.__class__.__name__,
+            'shuffle': self.shuffle,
             'random_seed': self.random_seed
         }
 
