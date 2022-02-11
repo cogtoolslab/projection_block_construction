@@ -33,7 +33,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  # randomly sample n sequences. Use `None` to use all possible sequences
                  number_of_sequences=None,
                  c_weight=1/1000,
-                 max_cost=10**3,  # maximum cost before we give up trying to solve a subgoal
+                 max_cost=10**3,  # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
                  lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
                  random_seed=None
                  ):
