@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from tqdm import tqdm
+import math
 
 SUBGOAL_COLORS = ['red', 'green', 'blue', 'yellow', 'orange',
                   'purple', 'pink', 'cyan', 'brown', 'black', 'white']
@@ -113,10 +114,10 @@ class Subgoal_sequence:
             silhouette = self.prior_world.silhouette
             # plot existing blocks
             plt.pcolor(self.prior_world.current_state.blockmap[::-1],
-                    cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
+                       cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
             # we print the target silhouette as transparent overlay
             plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=0.5, facecolor='grey',
-                    edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
+                       edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
         except AttributeError:
             # no prior world.
             silhouette = np.zeros(self.subgoals[0].bitmap.shape)
@@ -132,7 +133,7 @@ class Subgoal_sequence:
                 # plot subgoal
                 plt.pcolor(sg.bitmap[::-1] > 0, cmap=cmap, linewidth=0.75,
                            facecolor=SUBGOAL_COLORS[i], edgecolor='none')
-            plt.text(x, silhouette.shape[0] - y, sg.name, fontsize=8, color=SUBGOAL_COLORS[i],
+            plt.text(x, silhouette.shape[0] - y, str(i) + ": " + sg.name, fontsize=8, color=SUBGOAL_COLORS[i],
                      backgroundcolor='black', ha='left', va='bottom', alpha=0.66)
         plt.show(block=blocking)
 
@@ -187,15 +188,19 @@ class Decomposition_Function:
         subgoals = self.get_decompositions(state)
         # combinations
         if filter_for_length:
-            sequences = list(itertools.combinations(subgoals, length))
+            sequences = itertools.permutations(subgoals, length)
         else:
-            sequences = list(itertools.chain.from_iterable(
-                [itertools.combinations(subgoals, l) for l in range(length+1)]))
+            sequences = itertools.chain.from_iterable(
+                [itertools.permutations(subgoals, l) for l in range(length+1)])
         # filter sequences
-        print("Filtering sequences...")
         filtered_sequences = []
         if verbose:
-            for sequence in tqdm(sequences):
+            print("Filtering sequences...")
+            # let's calculate the number of permutations so we don't need to turn the iterator into a list
+            num_permutations = int(sum([math.factorial(
+                len(subgoals))/math.factorial(len(subgoals)-l) for l in range(1,length+1)]))
+            print("Predicted number of sequences:", num_permutations)
+            for sequence in tqdm(sequences, total=num_permutations):
                 if self.check_necessary_sequence_conditions(sequence, state):
                     filtered_sequences.append(sequence)
             sequences = filtered_sequences
@@ -410,9 +415,10 @@ class Sequence_Condition:
     def __call__(self, sequence, state):
         return True
 
+
 class Complete(Sequence_Condition):
     """The entire structure is covered by the subgoals"""
-    
+
     def __call__(self, sequence, state):
         silhouette = state.world.silhouette
         occupancy = np.zeros(silhouette.shape)
@@ -444,19 +450,19 @@ class No_overlap(Sequence_Condition):
 
 class Supported(Sequence_Condition):
     """Ensures that there is at least one cell in each subgoal that has below it a cell that is either filled out or part of a previous subgoal"""
-    # TODO ensure that up is up
 
     def __call__(self, sequence, state):
         # create map of occupancy
         occupancy = (state.blockmap > 0) * 1.0
         for i in range(len(sequence)):
             # update occupancy
-            if i > 0: # nothing to fill for the first subgoal
+            if i > 0:  # nothing to fill for the first subgoal
                 occupancy += sequence[i-1]['decomposition'] > 0
             current = sequence[i]['decomposition'] > 0
             # we need to ignore what is currently 'in' the subgoal to see if it is supported
             # is the current subgoal supported by the ground? If yes, we can move on to the next one
-            if np.any(current[-1::]): continue
+            if np.any(current[-1::]):
+                continue
             other_occupancy = occupancy * (current == 0)
             # shift current occupancy down by one
             current = np.roll(current, 1, axis=0)
