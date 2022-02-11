@@ -107,7 +107,7 @@ class Astar_Agent(BFS_Agent):
                 return node.actions, states_evaluated
             # if node is not winning, add it's children to open set
             actions = node.state.possible_actions()  # get possible actions
-            for action in node.state.possible_actions():
+            for action in actions:
                 child = node.state.transition(action)
                 open_set.put(FringeNode(self.f(child), Node(
                     child, node.actions+[action])))
