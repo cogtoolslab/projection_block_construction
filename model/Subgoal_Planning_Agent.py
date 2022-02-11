@@ -139,8 +139,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i in range(min(len(sequences), 5)):
-                sequence = random.choice(sequences)
+            for sequence in sequences:
                 sequence.visual_display(blocking=True)
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences, verbose=verbose)
@@ -166,12 +165,17 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                   "with score", chosen_sequence.V(self.c_weight))
         return chosen_sequence
 
-    def fill_subgoals_in_sequence(self, sequences, verbose=False):
+    def fill_subgoals_in_sequence(self, sequences, cumulative_subgoals = False,verbose=False):
+        """Computes the cost and value of every subgoal in the sequence. Also computes the cost of the entire sequence. Returns the sequence with the subgoal costs, values and solutions filled in.
+        Cumulative subgoals: set to False if the subgoal decompositions do not overlap (ie. rectangular). Shouldn't do any harm even with overlapping decompositions."""
         seq_counter = 0  # for verbose printing
         for sequence in sequences:
             if verbose:
                 print("Solving sequence:", str(sequence.names()),
                       "\t", seq_counter, '/', len(sequences))
+            if not cumulative_subgoals:
+                # we change the targets in the sequence to be cumulative
+                sequence = cumulatize(sequence)
             seq_counter += 1  # for verbose printing
             sg_counter = 0  # for verbose printing
             current_world = self.world
@@ -252,3 +256,11 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         subgoal.iterations = i
         self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
+
+def cumulatize(sequence):
+    """Takes a sequence with non-overlapping subgoals and makes it so that each subgoal target also contains the last few"""
+    previous_targets = sequence.subgoals[0].target
+    for subgoal in sequence.subgoals:
+        subgoal.target = previous_targets + subgoal.target
+        previous_targets = subgoal.target > 0
+    return sequence
