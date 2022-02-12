@@ -59,6 +59,9 @@ class Blockworld(World):
     def __str__(self):
         """String representation of the world"""
         return self.__class__.__name__
+    
+    def copy(self):
+        return copy.deepcopy(self)
 
     def transition(self, action, state=None, force=False):
         """Takes an action and a state and returns the resulting state without applying it to the current state of the world."""
