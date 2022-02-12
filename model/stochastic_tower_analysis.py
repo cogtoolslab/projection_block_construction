@@ -130,7 +130,7 @@ def run_and_save_analysis(set, agent, n=100, filename=None):
     if filename is None:
         filename = "_".join(set.keys())+"_"+agent.__class__.__name__ + \
                             "_stochastic_tower_analysis.csv"
-    df.to_csv(os.path.join(df_dir, filename))
+    df.to_pickle(os.path.join(df_dir, filename))
     print("Saved to {}".format(os.path.join(df_dir, filename)))
 
 def prep_for_offline_running(set, agent, n=100, filename = None):
