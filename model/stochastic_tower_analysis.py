@@ -34,14 +34,13 @@ import numpy as np
 import pandas as pd
 import pickle
 
-print(proj_dir)
-
 # we need those imports for main
 import utils.blockworld_library as bl
 import utils.blockworld as bw
 from utils.blockworld import *
 from model.Random_Agent import Random_Agent # might have to add other agent classes here if theyr're to be used in the analysis
 
+NUM_CPUS = 0.75
 
 def analyze_single_tower(world, agent, n=1000, verbose=True):
     """Takes a single tower and an agent and takes a single steps.
@@ -96,7 +95,7 @@ def run_parallelized_analysis_across_towers(worlds, agent, n=1000):
 
     Worlds is a dictionary with {name: world}"""
     outcomes = p_tqdm.p_map(lambda w: analyze_single_tower(
-        worlds[w], agent, n=n, verbose=False), worlds)
+        worlds[w], agent, n=n, verbose=False), worlds, num_cpus = NUM_CPUS)
     return {world_name: outcome for world_name, outcome in zip(worlds.keys(), outcomes)}
 
 
