@@ -23,6 +23,8 @@ if __name__ == "__main__":  # required for multiprocessing
     import utils.blockworld as bw
     import utils.blockworld_library as bl
     import experiments.experiment_runner as experiment_runner
+    import tower_generator
+    import tqdm
     # import experiments.subgoal_generator_runner as experiment_runner
 
     import pickle
@@ -34,18 +36,33 @@ if __name__ == "__main__":  # required for multiprocessing
 
     fraction_of_cpus = 0.8
 
-    PATH_TO_TOWERS = os.path.join(
-        stim_dir, 'generated_towers_bl_nonoverlapping_simple.pkl')
-    # load towers
-    with open(PATH_TO_TOWERS, 'rb') as f:
-        towers = pickle.load(f)
+    # # loading towers from disk
+    # PATH_TO_TOWERS = os.path.join(
+    #     stim_dir, 'generated_towers_bl_nonoverlapping_simple.pkl')
+    # # load towers
+    # with open(PATH_TO_TOWERS, 'rb') as f:
+    #     towers = pickle.load(f)
+        
+    # create towers on the fly
+    print("Generating towers...")
+    block_library = bl.bl_nonoverlapping_simple
+    generator = tower_generator.TowerGenerator(8, 8,
+                                               block_library=block_library,
+                                               seed=42,
+                                               padding=(2, 0),
+                                               num_blocks=lambda: random.randint(5,10),
+                                               )
+    NUM_TOWERS = 256
+    towers = []
+    for i in tqdm.tqdm(range(NUM_TOWERS)):
+        towers.append(generator.generate())
+
     for i in range(len(towers)):
         towers[i]['name'] = str(i)
-    # limit to a few words
-    towers = towers[:10]
     towers = {t['name']: t['bitmap'] for t in towers}
     worlds = {name: bw.Blockworld(silhouette=silhouette, block_library=bl.bl_nonoverlapping_simple,
                                          legal_action_space=True, physics=False) for name, silhouette in towers.items()}
+    print("Made {} towers".format(len(towers)))
 
     lower_agent = Best_First_Search_Agent()
     decomposer = Rectangular_Keyholes(necessary_conditions=[
@@ -69,6 +86,7 @@ if __name__ == "__main__":  # required for multiprocessing
         lower_agent,
     ]
 
+    print("Running experiment...")
     results = experiment_runner.run_experiment(
         worlds, agents, per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers", maxtasksperprocess=5)
 
