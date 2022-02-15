@@ -23,9 +23,9 @@ if __name__ == "__main__":  # required for multiprocessing
     import utils.blockworld as bw
     import utils.blockworld_library as bl
     import experiments.experiment_runner as experiment_runner
+    import experiments.subgoal_generator_runner as subgoal_generator_runner
     import tower_generator
     import tqdm
-    # import experiments.subgoal_generator_runner as experiment_runner
 
     import pickle
 
@@ -61,10 +61,10 @@ if __name__ == "__main__":  # required for multiprocessing
         towers[i]['name'] = str(i)
     towers = {t['name']: t['bitmap'] for t in towers}
     worlds = {name: bw.Blockworld(silhouette=silhouette, block_library=bl.bl_nonoverlapping_simple,
-                                         legal_action_space=True, physics=False) for name, silhouette in towers.items()}
+                                         legal_action_space=True, physics=True) for name, silhouette in towers.items()}
     print("Made {} towers".format(len(towers)))
 
-    lower_agent = Best_First_Search_Agent()
+    lower_agent = Best_First_Search_Agent(random_seed=42)
     decomposer = Rectangular_Keyholes(necessary_conditions=[
         Area_larger_than(area=4),
         # Area_smaller_than(area=28),
@@ -77,17 +77,19 @@ if __name__ == "__main__":  # required for multiprocessing
     ]
     )
 
-    agents = [
-        Subgoal_Planning_Agent(lower_agent=lower_agent,
+    subgoal_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                             decomposer=decomposer,
                             sequence_length=4,
+                            random_seed=42,
                             include_subsequences=True,
-                            number_of_sequences=64),
-        lower_agent,
-    ]
+                            number_of_sequences=1024)
 
     print("Running experiment...")
+    results_sg = subgoal_generator_runner.run_experiment(
+        worlds, [subgoal_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers subgoal_agent", maxtasksperprocess=5)
+
     results = experiment_runner.run_experiment(
-        worlds, agents, per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers", maxtasksperprocess=5)
+        worlds, [lower_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers lower_agent", maxtasksperprocess=5)
+
 
     print("Done in %s seconds" % (time.time() - start_time))
