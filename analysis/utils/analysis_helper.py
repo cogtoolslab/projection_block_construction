@@ -150,6 +150,22 @@ def compute_final_rows(df):
     if rows != []: return pd.concat(rows)
     else:
         return pd.DataFrame() 
+
+
+def summarize_df(df): # TODO add error correction 
+    """Summarizes the runs in a dataframe."""
+    summary_df = df.groupby('run_ID').agg({
+        'agent': 'first',
+        'world': 'first',
+        'blockmap': 'last',
+        'states_evaluated': ['sum', 'mean', sem],
+        'partial_solution_cost': ['sum', 'mean', sem],
+        'solution_cost': ['sum', 'mean', sem],
+        'all_sequences_planning_cost': ['sum', 'mean', sem],
+        'perfect': 'last',
+        # 'avg_cost_per_step_for_run': ['sum', 'mean', sem],
+    })
+    return summary_df
     
 def cache_final_rows(df):
     """Calculating the final rows is expensive, so let's save the dataframe with the final rows in a dictionary to only compute it once.
