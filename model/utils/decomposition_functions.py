@@ -156,8 +156,9 @@ class Subgoal_sequence:
 
 
 class Decomposition_Function:
-    def __init__(self, silhouette=None, necessary_conditions=[], necessary_sequence_conditions=[]):
+    def __init__(self, silhouette=None, filter_for_length=True, necessary_conditions=[], necessary_sequence_conditions=[]):
         self.silhouette = silhouette
+        self.filter_for_length = filter_for_length # if yes, only include sequences that are of the length requested in the `get_sequences` function or that end in the complete decomposition
         self.necessary_conditions = necessary_conditions
         self.necessary_sequence_conditions = necessary_sequence_conditions
 
@@ -185,11 +186,14 @@ class Decomposition_Function:
                 return False
         return True
 
-    def get_sequences(self, state=None, length=1, filter_for_length=True, number_of_sequences=None, verbose=False):
+    def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
         """Returns all possible decompositions as a list of Subgoal_sequences"""
         subgoals = self.get_decompositions(state)
-        # combinations
-        if filter_for_length:
+        if len(subgoals) == 0:
+            # we can't decompose the rest of the silhouette (are the conditions too strict?)
+            if verbose: print("No decompositions for state found")
+            return []
+        if self.filter_for_length:
             sequences = itertools.permutations(subgoals, length)
         else:
             sequences = itertools.chain.from_iterable(
@@ -244,8 +248,10 @@ class Horizontal_Construction_Paper(Decomposition_Function):
         decompositions.reverse()
         return decompositions
 
-    def get_sequences(self, state=None, length=1, filter_for_length=True, number_of_sequences=None, verbose=False):
-        """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep"""
+    def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
+        """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep.
+        
+        Filter for length ensures that the lenght of sequence is either *n* or that the sequence ends in the complete decomposition. False includes incomplete sequences (use this for incremental planners)."""
         subgoals = self.get_decompositions(state=state)
         sequences = [[s] for s in subgoals]
         next_sequences = sequences.copy()  # stores the sequences of the current length
@@ -259,7 +265,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
                         new_sequence = current_sequence+[subgoal]
                         sequences.append(new_sequence)
                         next_sequences.append(new_sequence)
-        if filter_for_length:
+        if self.filter_for_length:
             sequences = self.filter_for_length(sequences, length)
         if number_of_sequences is not None and number_of_sequences < len(sequences):
             # if we want to return a limited number of sequences, we do so by randomly sampling
@@ -275,7 +281,11 @@ class Horizontal_Construction_Paper(Decomposition_Function):
 
 class Rectangular_Keyholes(Decomposition_Function):
     """Implements the decomposition of the target into rectangular keyholes. 
-    Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (subgoal (with subgoal['decomposition] as bitmap), current state of the world)"""
+    Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (subgoal (with subgoal['decomposition] as bitmap), current state of the world)
+    
+    `decomposition` contains the part of the silhouette that is covered by the subgoal.
+    `bitmap` contains the *shape* of the subgoal, including negative space in the silhouette that happens to be in the subgoal.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
