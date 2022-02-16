@@ -155,7 +155,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         # if we get an empty sequence, there is nothing to choose and we return an empty sequence
         if len(sequences) == 0:
             if verbose: print("No sequences to choose from")
-            return model.utils.decomposition_functions.SubgoalSequence([])
+            return model.utils.decomposition_functions.Subgoal_sequence([])
         scores = [None]*len(sequences)
         for i in range(len(sequences)):
             scores[i] = sequences[i].V(self.c_weight)
