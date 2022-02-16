@@ -33,7 +33,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  # randomly sample n sequences. Use `None` to use all possible sequences
                  number_of_sequences=None,
                  c_weight=1/1000,
-                 max_cost=10**3,  # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
+                 # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
+                 max_cost=10**3,
                  lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
                  random_seed=None
                  ):
@@ -165,7 +166,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                   "with score", chosen_sequence.V(self.c_weight))
         return chosen_sequence
 
-    def fill_subgoals_in_sequence(self, sequences, cumulative_subgoals = False,verbose=False):
+    def fill_subgoals_in_sequence(self, sequences, cumulative_subgoals=False, verbose=False):
         """Computes the cost and value of every subgoal in the sequence. Also computes the cost of the entire sequence. Returns the sequence with the subgoal costs, values and solutions filled in.
         Cumulative subgoals: set to False if the subgoal decompositions do not overlap (ie. rectangular). Shouldn't do any harm even with overlapping decompositions."""
         seq_counter = 0  # for verbose printing
@@ -256,6 +257,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         subgoal.iterations = i
         self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
+
 
 def cumulatize(sequence):
     """Takes a sequence with non-overlapping subgoals and makes it so that each subgoal target also contains the last few"""
