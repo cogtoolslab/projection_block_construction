@@ -295,7 +295,7 @@ class Blockworld(World):
             if self.world.physics is False:
                 # turning off physics means everything is stable
                 return True
-            if self._stable is not None:
+            if self._stable is not None and not visual_display:
                 # return cached value
                 return self._stable
             bwworld = self.state_to_bwworld()
