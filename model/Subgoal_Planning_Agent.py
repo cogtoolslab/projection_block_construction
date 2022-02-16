@@ -19,6 +19,8 @@ MAX_STEPS = 20
 class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out. 
 
+        `include_subsequences`: include incomplete sequences shorter than the chosen sequence length. Wehn building an incremental subgoal agent, set this to true (and be sure to remove the decomposer condition for complete sequences)
+
         Three costs:
         * solution cost: how expensive was it to find the path of winning actions in the case that it actually found a solution across the sequence of subgoals
         * planning cost: how expensive was it to plan the sequence of subgoals including the failed attempts
@@ -134,14 +136,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self.decomposer.set_silhouette(
             self.world.full_silhouette)  # make sure that the decomposer has the right silhouette
         sequences = self.decomposer.get_sequences(state=self.world.current_state, length=self.sequence_length,
-                                                  filter_for_length=not self.include_subsequences, number_of_sequences=self.number_of_sequences, verbose=verbose)
+                                                   number_of_sequences=self.number_of_sequences, verbose=verbose)
         if verbose:
             print("Got", len(sequences), "sequences:")
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for sequence in sequences:
-                sequence.visual_display(blocking=True)
+            for i,sequence in enumerate(sequences):
+                sequence.visual_display(blocking=True, title="Sequence {} of {}".format(i+1, len(sequences)))
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences, verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
@@ -164,6 +166,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         if verbose:
             print("Chose sequence:", chosen_sequence.names(),
                   "with score", chosen_sequence.V(self.c_weight))
+            # visually display
+            chosen_sequence.visual_display(blocking=True, title = "Chosen sequence")
         return chosen_sequence
 
     def fill_subgoals_in_sequence(self, sequences, cumulative_subgoals=False, verbose=False):
@@ -171,15 +175,15 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         Cumulative subgoals: set to False if the subgoal decompositions do not overlap (ie. rectangular). Shouldn't do any harm even with overlapping decompositions."""
         seq_counter = 0  # for verbose printing
         for sequence in sequences:
+            current_world = self.world
             if verbose:
                 print("Solving sequence:", str(sequence.names()),
                       "\t", seq_counter, '/', len(sequences))
             if not cumulative_subgoals:
                 # we change the targets in the sequence to be cumulative
-                sequence = cumulatize(sequence)
+                sequence = cumulatize(sequence, world = current_world)
             seq_counter += 1  # for verbose printing
             sg_counter = 0  # for verbose printing
-            current_world = self.world
             for subgoal in sequence:
                 sg_counter += 1  # for verbose printing
                 # get reward and cost and success of that particular subgoal and store the resulting world
@@ -259,9 +263,12 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         return subgoal
 
 
-def cumulatize(sequence):
-    """Takes a sequence with non-overlapping subgoals and makes it so that each subgoal target also contains the last few"""
+def cumulatize(sequence, world=None):
+    """Takes a sequence with non-overlapping subgoals and makes it so that each subgoal target also contains the last few. Pass it a world to include the blockmap—this should enable incremental subgoals."""
     previous_targets = sequence.subgoals[0].target
+    if world is not None:
+        # we assume that the blocks that have already been placed in the world have been placed legally and we can keep them there
+        previous_targets = (previous_targets + world.current_state.blockmap) > 0
     for subgoal in sequence.subgoals:
         subgoal.target = previous_targets + subgoal.target
         previous_targets = subgoal.target > 0
