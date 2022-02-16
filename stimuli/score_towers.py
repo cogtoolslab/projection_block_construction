@@ -42,7 +42,7 @@ if __name__ == "__main__":  # required for multiprocessing
     # # load towers
     # with open(PATH_TO_TOWERS, 'rb') as f:
     #     towers = pickle.load(f)
-        
+
     # create towers on the fly
     print("Generating towers...")
     block_library = bl.bl_nonoverlapping_simple
@@ -50,9 +50,10 @@ if __name__ == "__main__":  # required for multiprocessing
                                                block_library=block_library,
                                                seed=42,
                                                padding=(2, 0),
-                                               num_blocks=lambda: random.randint(5,10),
+                                               num_blocks=lambda: random.randint(
+                                                   5, 10),
                                                )
-    NUM_TOWERS = 256
+    NUM_TOWERS = 16
     towers = []
     for i in tqdm.tqdm(range(NUM_TOWERS)):
         towers.append(generator.generate())
@@ -61,11 +62,12 @@ if __name__ == "__main__":  # required for multiprocessing
         towers[i]['name'] = str(i)
     towers = {t['name']: t['bitmap'] for t in towers}
     worlds = {name: bw.Blockworld(silhouette=silhouette, block_library=bl.bl_nonoverlapping_simple,
-                                         legal_action_space=True, physics=True) for name, silhouette in towers.items()}
+                                  legal_action_space=True, physics=True) for name, silhouette in towers.items()}
     print("Made {} towers".format(len(towers)))
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
-    decomposer = Rectangular_Keyholes(necessary_conditions=[
+
+    full_decomposer = Rectangular_Keyholes(necessary_conditions=[
         Area_larger_than(area=4),
         # Area_smaller_than(area=28),
         No_edge_rows_or_columns(),
@@ -77,19 +79,35 @@ if __name__ == "__main__":  # required for multiprocessing
     ]
     )
 
-    subgoal_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
-                            decomposer=decomposer,
-                            sequence_length=4,
-                            random_seed=42,
-                            include_subsequences=True,
-                            number_of_sequences=1024)
+    scoping_decomposer = Rectangular_Keyholes(necessary_conditions=[
+        Area_larger_than(area=4),
+        # Area_smaller_than(area=28),
+        No_edge_rows_or_columns(),
+        Fewer_built_cells(0),
+    ],
+        necessary_sequence_conditions=[
+        # Complete(),
+        No_overlap(),
+        Supported(),
+    ]
+    )
+
+    full_subgoal_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                                decomposer=full_decomposer,
+                                                sequence_length=4,
+                                                random_seed=42,
+                                                include_subsequences=True,
+                                                number_of_sequences=1024)
+
+    scoping_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                           decomposer=scoping_decomposer,
+                                           sequence_length=1,
+                                           random_seed=42,
+                                           include_subsequences=False,
+                                           number_of_sequences=1024)
 
     print("Running experiment...")
-    results_sg = subgoal_generator_runner.run_experiment(
-        worlds, [subgoal_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers subgoal_agent", maxtasksperprocess=5)
-
-    results = experiment_runner.run_experiment(
-        worlds, [lower_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers lower_agent", maxtasksperprocess=5)
-
+    results_sg = experiment_runner.run_experiment(
+        worlds, [full_subgoal_agent, scoping_agent, lower_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers", maxtasksperprocess=5)
 
     print("Done in %s seconds" % (time.time() - start_time))
