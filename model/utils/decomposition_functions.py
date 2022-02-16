@@ -406,6 +406,18 @@ class Empty_cells(Condition):
         # do we have empty space on the edge?
         return np.sum(empty_space) > self.empty_cells
 
+class Fewer_built_cells(Condition):
+    """Ensures that no subgoal contains n or more cells that have already built blocks on them"""
+
+    def __init__(self, built_cells=0):
+        self.built_cells = built_cells
+
+    def __call__(self, decomposition, state):
+        # get map of empty space in subgoal
+        built_space = (state.blockmap * decomposition['bitmap']) > 0
+        # do we have empty space on the edge?
+        return np.sum(built_space) <= self.built_cells
+
 # Necessary conditions for SEQUENCES OF SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed ([decomposition (with decomposition['decomposition] as bitmap]), current state of the world)
 
