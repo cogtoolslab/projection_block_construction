@@ -24,7 +24,7 @@ if __name__ == "__main__":  # required for multiprocessing
     import utils.blockworld_library as bl
     import experiments.experiment_runner as experiment_runner
     import experiments.subgoal_generator_runner as subgoal_generator_runner
-    import tower_generator
+    import stimuli.tower_generator
     import tqdm
 
     import pickle
@@ -46,7 +46,7 @@ if __name__ == "__main__":  # required for multiprocessing
     # create towers on the fly
     print("Generating towers...")
     block_library = bl.bl_nonoverlapping_simple
-    generator = tower_generator.TowerGenerator(8, 8,
+    generator = stimuli.tower_generator.TowerGenerator(8, 8,
                                                block_library=block_library,
                                                seed=42,
                                                padding=(2, 0),
