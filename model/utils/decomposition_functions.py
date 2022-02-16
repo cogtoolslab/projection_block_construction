@@ -105,7 +105,7 @@ class Subgoal_sequence:
         score = sum([sg.R() for sg in self.subgoals])
         return score
 
-    def visual_display(self, blocking=True):
+    def visual_display(self, blocking=True, title = None):
         """Displays the sequence visually. See also Blockworld.State.visual_display()"""
         plt.close('all')
         plt.figure(figsize=(4, 4))
@@ -135,6 +135,8 @@ class Subgoal_sequence:
                            facecolor=SUBGOAL_COLORS[i], edgecolor='none')
             plt.text(x, silhouette.shape[0] - y, str(i) + ": " + sg.name, fontsize=8, color=SUBGOAL_COLORS[i],
                      backgroundcolor='black', ha='left', va='bottom', alpha=0.66)
+        if title is not None:
+            plt.title(title)
         plt.show(block=blocking)
 
     def __len__(self):
