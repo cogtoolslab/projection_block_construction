@@ -152,6 +152,10 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
 
     def choose_sequence(self, sequences, verbose=False):
         """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$ including weighing by lambda"""
+        # if we get an empty sequence, there is nothing to choose and we return an empty list
+        if len(sequences) == 0:
+            if verbose: print("No sequences to choose from")
+            return []
         scores = [None]*len(sequences)
         for i in range(len(sequences)):
             scores[i] = sequences[i].V(self.c_weight)
