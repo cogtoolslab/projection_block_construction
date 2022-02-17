@@ -97,14 +97,14 @@ if __name__ == "__main__":  # required for multiprocessing
                                                 sequence_length=4,
                                                 random_seed=42,
                                                 include_subsequences=True,
-                                                number_of_sequences=1024)
+                                                number_of_sequences=4092)
 
     scoping_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                            decomposer=scoping_decomposer,
                                            sequence_length=1,
                                            random_seed=42,
                                            include_subsequences=False,
-                                           number_of_sequences=1024)
+                                           number_of_sequences=4092)
 
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
