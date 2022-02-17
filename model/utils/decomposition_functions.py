@@ -94,10 +94,14 @@ class Subgoal_sequence:
 
     def V(self, c_weight=1):
         """Adds up the cost and rewards of the subgoals"""
-        score = sum([sg.R() - sg.C * c_weight
-                     if sg.C is not None else
-                     0  # sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
-                     for sg in self.subgoals])
+        try: 
+            score = sum([sg.R() - sg.C * c_weight
+                        if sg.C is not None else
+                        None  # sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
+                        for sg in self.subgoals])
+        except TypeError:
+            # if we can't solve it (or haven't yet) (-> we observe a cost of none), we return a reward of None
+            score = None
         return score
 
     def R(self):

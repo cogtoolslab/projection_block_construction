@@ -12,14 +12,13 @@ proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 
-UNSOLVABLE_PENALTY = 999999999999
 MAX_STEPS = 20
 
 
 class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
-    """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out. 
+    """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out.
 
-        `include_subsequences`: include incomplete sequences shorter than the chosen sequence length. Wehn building an incremental subgoal agent, set this to true (and be sure to remove the decomposer condition for complete sequences)
+        `include_subsequences`: include incomplete sequences shorter than the chosen sequence length. When building an incremental subgoal agent, set this to true (and be sure to remove the decomposer condition for complete sequences)
 
         Three costs:
         * solution cost: how expensive was it to find the path of winning actions in the case that it actually found a solution across the sequence of subgoals
@@ -109,7 +108,6 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             if cur_i == steps:
                 break  # stop after the nth subgoal
             if sg.actions is None:  # no actions could be found
-                # raise Warning("No actions could be found for subgoal "+str(sg.name))
                 print("No actions could be found for subgoal "+str(sg.name))
                 continue
             for action in sg.actions:
@@ -142,8 +140,9 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i,sequence in enumerate(sequences):
-                sequence.visual_display(blocking=True, title="Sequence {} of {}".format(i+1, len(sequences)))
+            for i, sequence in enumerate(sequences):
+                sequence.visual_display(
+                    blocking=True, title="Sequence {} of {}".format(i+1, len(sequences)))
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences, verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
@@ -162,8 +161,15 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             if verbose:
                 print("Scoring sequence", i+1, "of", len(sequences), "->",
                       [g.name for g in sequences[i]], "score:\t\t", scores[i])
+            try:
+                max_scores = max(
+                    [score for score in scores if score is not None])
+            except ValueError:
+                # looks like no sequences worked out (this happens when none of the sequences can be solved)
+                if verbose: print("No sequences have a found solution, choosing empty sequence")
+                return model.utils.decomposition_functions.Subgoal_sequence([])
         top_indices = [i for i in range(
-            len(scores)) if scores[i] == max(scores)]
+            len(scores)) if scores[i] == max_scores]
         top_sequences = [sequences[i] for i in top_indices]
         seed(self.random_seed)  # fix random seed
         chosen_sequence = choice(top_sequences)
@@ -200,7 +206,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                           subgoal.name,
                           "with C:"+str(subgoal.C), " R:"+str(subgoal.R()), " actions:"+str(subgoal.actions))
                 # if we can't solve it to have a base for the next one, we break
-                if subgoal.C == UNSOLVABLE_PENALTY:
+                if subgoal.C == None:
                     break
                 # store the resulting world as the input to the next one
                 current_world = subgoal.past_world
@@ -259,8 +265,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 return subgoal
         # if we've made it here, we've failed to find a solution
         # store cached evaluation
-        subgoal.solution_cost = UNSOLVABLE_PENALTY
-        subgoal.C = UNSOLVABLE_PENALTY
+        subgoal.solution_cost = None
+        subgoal.C = None
         subgoal.planning_cost = total_costs
         subgoal.iterations = i
         self._cached_subgoal_evaluations[key] = subgoal
