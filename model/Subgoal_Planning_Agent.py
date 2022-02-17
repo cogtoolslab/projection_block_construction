@@ -18,7 +18,7 @@ MAX_STEPS = 20
 class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     """Implements n subgoal planning. Works by running the lower level agent until it has found a solution or times out.
 
-        `include_subsequences`: include incomplete sequences shorter than the chosen sequence length. When building an incremental subgoal agent, set this to true (and be sure to remove the decomposer condition for complete sequences)
+        Whether or not the sequences considered are complete (`include_subsequences`) is determined by the decomposition_function object, not this agent.
 
         Three costs:
         * solution cost: how expensive was it to find the path of winning actions in the case that it actually found a solution across the sequence of subgoals
@@ -28,9 +28,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     def __init__(self,
                  world=None,
                  decomposer=None,
-                 sequence_length=1,  # consider sequences up to this length
                  step_size=1,  # how many subgoals to act. Negative or zero to act from end of plan
-                 include_subsequences=True,
                  # randomly sample n sequences. Use `None` to use all possible sequences
                  number_of_sequences=None,
                  c_weight=1/1000,
@@ -40,9 +38,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  random_seed=None
                  ):
         self.world = world
-        self.sequence_length = sequence_length
         # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
-        self.include_subsequences = include_subsequences
         self.number_of_sequences = number_of_sequences
         self.step_size = step_size
         self.c_weight = c_weight
@@ -69,15 +65,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         """Returns dictionary of agent parameters."""
         return {**{
             'agent_type': self.__class__.__name__,
-            'sequence_length': self.sequence_length,
             'decomposition_function': self.decomposer.__class__.__name__,
-            'include_subsequences': self.include_subsequences,
             'number_of_sequences': self.number_of_sequences,
             'c_weight': self.c_weight,
             'max_cost': self.max_cost,
             'step_size': self.step_size,
             'random_seed': self.random_seed
-        }, **{"lower level: "+key: value for key, value in self.lower_agent.get_parameters().items()}}
+        }, **{"lower level: "+key: value for key, value in self.lower_agent.get_parameters().items()},
+        **{"decomposition function: "+key: value for key, value in self.decomposer.get_parameters().items()}}
 
     def set_world(self, world):
         super().set_world(world)
@@ -133,7 +128,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within. Returns chosen sequence and the set of all sequences"""
         self.decomposer.set_silhouette(
             self.world.full_silhouette)  # make sure that the decomposer has the right silhouette
-        sequences = self.decomposer.get_sequences(state=self.world.current_state, length=self.sequence_length,
+        sequences = self.decomposer.get_sequences(state=self.world.current_state, 
                                                    number_of_sequences=self.number_of_sequences, verbose=verbose)
         if verbose:
             print("Got", len(sequences), "sequences:")

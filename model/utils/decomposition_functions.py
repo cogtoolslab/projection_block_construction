@@ -94,7 +94,7 @@ class Subgoal_sequence:
 
     def V(self, c_weight=1):
         """Adds up the cost and rewards of the subgoals"""
-        try: 
+        try:
             score = sum([sg.R() - sg.C * c_weight
                         if sg.C is not None else
                         None  # sg.R() - 0 * c_weight #if we havent scores the cost yet, it's 0, but there should be an unreachable penalty somewhere leading up
@@ -109,7 +109,7 @@ class Subgoal_sequence:
         score = sum([sg.R() for sg in self.subgoals])
         return score
 
-    def visual_display(self, blocking=True, title = None):
+    def visual_display(self, blocking=True, title=None):
         """Displays the sequence visually. See also Blockworld.State.visual_display()"""
         plt.close('all')
         plt.figure(figsize=(4, 4))
@@ -160,9 +160,10 @@ class Subgoal_sequence:
 
 
 class Decomposition_Function:
-    def __init__(self, silhouette=None, filter_for_length=True, necessary_conditions=[], necessary_sequence_conditions=[]):
+    """Decomposition function for a blockworld. See the end of this file for a list of conditions to filter on."""
+    def __init__(self, silhouette=None, sequence_length = 3, necessary_conditions=[], necessary_sequence_conditions=[]):
         self.silhouette = silhouette
-        self.filter_for_length = filter_for_length # if yes, only include sequences that are of the length requested in the `get_sequences` function or that end in the complete decomposition
+        self.sequence_length = sequence_length
         self.necessary_conditions = necessary_conditions
         self.necessary_sequence_conditions = necessary_sequence_conditions
 
@@ -190,25 +191,25 @@ class Decomposition_Function:
                 return False
         return True
 
-    def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
+    def get_sequences(self, state=None, length=None, number_of_sequences=None, verbose=False):
         """Returns all possible decompositions as a list of Subgoal_sequences"""
         subgoals = self.get_decompositions(state)
+        if length is None: # we can request a particular length, but by default the properties of the decomposer should be used
+            length = self.sequence_length
         if len(subgoals) == 0:
             # we can't decompose the rest of the silhouette (are the conditions too strict?)
-            if verbose: print("No decompositions for state found")
+            if verbose:
+                print("No decompositions for state found")
             return []
-        if self.filter_for_length:
-            sequences = itertools.permutations(subgoals, length)
-        else:
-            sequences = itertools.chain.from_iterable(
-                [itertools.permutations(subgoals, l) for l in range(length+1)])
+        sequences = itertools.chain.from_iterable(
+            [itertools.permutations(subgoals, l) for l in range(length+1)])
         # filter sequences
         filtered_sequences = []
         if verbose:
             print("Filtering sequences...")
             # let's calculate the number of permutations so we don't need to turn the iterator into a list
             num_permutations = int(sum([math.factorial(
-                len(subgoals))/math.factorial(len(subgoals)-l) for l in range(1,length+1)]))
+                len(subgoals))/math.factorial(len(subgoals)-l) for l in range(1, length+1)]))
             print("Predicted number of sequences:", num_permutations)
             for sequence in tqdm(sequences, total=num_permutations):
                 if self.check_necessary_sequence_conditions(sequence, state):
@@ -229,7 +230,11 @@ class Decomposition_Function:
 
     def get_params(self):
         """Returns dict of parameters"""
-        return {}
+        return {'necessary_conditions': [cond.__str__() for cond in self.necessary_conditions],
+                'necessary_sequence_conditions': [cond.__str__() for cond in self.necessary_sequence_conditions]}
+
+    def __str__(self):
+        return self.get_name() + "(" + str(self.get_params()) + ")"
 
     def legal_next_subgoal(self, before, after):
         """Check if the after subgoal can follow the before, ie is a real improvement and subsumes the before"""
@@ -254,7 +259,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
 
     def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
         """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep.
-        
+
         Filter for length ensures that the lenght of sequence is either *n* or that the sequence ends in the complete decomposition. False includes incomplete sequences (use this for incremental planners)."""
         subgoals = self.get_decompositions(state=state)
         sequences = [[s] for s in subgoals]
@@ -286,7 +291,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
 class Rectangular_Keyholes(Decomposition_Function):
     """Implements the decomposition of the target into rectangular keyholes. 
     Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (subgoal (with subgoal['decomposition] as bitmap), current state of the world)
-    
+
     `decomposition` contains the part of the silhouette that is covered by the subgoal.
     `bitmap` contains the *shape* of the subgoal, including negative space in the silhouette that happens to be in the subgoal.
     """
@@ -322,6 +327,9 @@ class Condition:
     def __call__(self, decomposition, state):
         return True
 
+    def __str__(self):
+        return self.__class__.__name__
+
 
 class Area_larger_than(Condition):
     def __init__(self, area):
@@ -329,6 +337,9 @@ class Area_larger_than(Condition):
 
     def __call__(self, decomposition, state):
         return decomposition['w'] * decomposition['h'] > self.area
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.area) + ")"
 
 
 class Area_smaller_than(Condition):
@@ -338,6 +349,9 @@ class Area_smaller_than(Condition):
     def __call__(self, decomposition, state):
         return decomposition['w'] * decomposition['h'] < self.area
 
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.area) + ")"
+
 
 class Reward_larger_than(Condition):
     def __init__(self, reward):
@@ -345,6 +359,9 @@ class Reward_larger_than(Condition):
 
     def __call__(self, decomposition, state):
         return np.sum(decomposition['decomposition']) > self.reward
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.reward) + ")"
 
 
 class Non_empty(Condition):
@@ -359,6 +376,9 @@ class Width_larger_than(Condition):
     def __call__(self, decomposition, state):
         return decomposition.w > self.width
 
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.width) + ")"
+
 
 class Height_larger_than(Condition):
     def __init__(self, height):
@@ -366,6 +386,9 @@ class Height_larger_than(Condition):
 
     def __call__(self, decomposition, state):
         return decomposition.h > self.height
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.height) + ")"
 
 
 class No_empty_rows(Condition):
@@ -420,6 +443,10 @@ class Empty_cells(Condition):
         # do we have empty space on the edge?
         return np.sum(empty_space) > self.empty_cells
 
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.empty_cells) + ")"
+
+
 class Fewer_built_cells(Condition):
     """Ensures that no subgoal contains n or more cells that have already built blocks on them"""
 
@@ -432,6 +459,9 @@ class Fewer_built_cells(Condition):
         # do we have empty space on the edge?
         return np.sum(built_space) <= self.built_cells
 
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.built_cells) + ")"
+
 # Necessary conditions for SEQUENCES OF SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed ([decomposition (with decomposition['decomposition] as bitmap]), current state of the world)
 
@@ -443,6 +473,52 @@ class Sequence_Condition:
     def __call__(self, sequence, state):
         return True
 
+    def __str__(self):
+        return self.__class__.__name__
+
+class Filter_for_length(Sequence_Condition):
+    """Only allow sequences of a certain length. Shorter, but complete sequences are always allowed."""
+
+    def __init__(self, length):
+        self.length = length
+
+    def __call__(self, sequence, state):
+        if len(sequence) == self.length:
+            return True
+        if len(sequence) < self.length and Complete()(sequence, state):
+            return True
+        return False
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.length) + ")"
+
+class Longer_than(Sequence_Condition):
+    """Only allow sequences longer than n. If you want shorter sequences, pass a parameter to the decomposition function—super inefficient to overgenerate and sample in that case."""
+
+    def __init__(self, length):
+        self.length = length
+
+    def __call__(self, sequence, state):
+        if len(sequence) > self.length:
+            return True
+        return False
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.length) + ")"
+
+class Longer_than_or_complete(Sequence_Condition):
+    """Only allow sequences longer than n, or complete sequences. If you want shorter sequences, pass a parameter to the decomposition function—super inefficient to overgenerate and sample in that case."""
+
+    def __init__(self, length):
+        self.length = length
+
+    def __call__(self, sequence, state):
+        if len(sequence) > self.length or Complete()(sequence, state):
+            return True
+        return False
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.length) + ")"
 
 class Complete(Sequence_Condition):
     """The entire structure is covered by the subgoals"""
