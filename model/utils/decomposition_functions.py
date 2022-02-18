@@ -474,6 +474,25 @@ class Fewer_built_cells(Condition):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.built_cells) + ")"
 
+class Proportion_of_silhouette_less_than(Condition):
+    """Ensures that the ratio of the silhouette of the subgoal to the area of the subgoal is less than a certain value. Ie., pass 2/3 to ensure that all subgoals cover less than 2/3 of the mass of the silhouette. 1 will still prevent the single full decomposition, but nothing else."""
+
+    def __init__(self, ratio):
+        self.ratio = ratio
+
+    def __call__(self, decomposition, state):
+        # get silhouette
+        silhouette = state.world.silhouette
+        mass = np.sum(silhouette  > 0)
+        # get area
+        area = np.sum(decomposition['decomposition'] > 0)
+        # get ratio
+        ratio = area / mass
+        return ratio < self.ratio
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.ratio) + ")"
+
 # Necessary conditions for SEQUENCES OF SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed ([decomposition (with decomposition['decomposition] as bitmap]), current state of the world)
 
