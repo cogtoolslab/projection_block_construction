@@ -162,14 +162,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             if verbose:
                 print("Scoring sequence", i+1, "of", len(sequences), "->",
                       [g.name for g in sequences[i]], "score:\t\t", scores[i])
-            try:
-                max_scores = max(
-                    [score for score in scores if score is not None])
-            except ValueError:
-                # looks like no sequences worked out (this happens when none of the sequences can be solved)
-                if verbose:
-                    print("No sequences have a found solution, choosing empty sequence")
-                return model.utils.decomposition_functions.Subgoal_sequence([])
+        try:
+            max_scores = max(
+                [score for score in scores if score is not None])
+        except ValueError:
+            # looks like no sequences worked out (this happens when none of the sequences can be solved)
+            if verbose:
+                print("No sequences have a found solution, choosing empty sequence")
+            return model.utils.decomposition_functions.Subgoal_sequence([])
         top_indices = [i for i in range(
             len(scores)) if scores[i] == max_scores]
         top_sequences = [sequences[i] for i in top_indices]
