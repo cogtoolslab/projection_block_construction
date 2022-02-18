@@ -211,11 +211,14 @@ def insert_into_run_df(world_label, world, run_ID, agent_parameters, agent_param
     r.at[i, 'world'] = world_label
     r.at[i, 'step'] = i
     r.at[i, 'planning_step'] = planning_step
-            # human readable blocks
+    # human readable blocks
     r.at[i, 'blocks'] = [block.__str__()
                                  for block in world.current_state.blocks[:i+1]]
     r.at[i, '_blocks'] = world.current_state.blocks[:i+1]
-    r.at[i, 'blockmap'] = planning_step_blockmaps[i]
+    try:
+        r.at[i, 'blockmap'] = planning_step_blockmaps[i]
+    except IndexError:
+        pass
     r.at[i, '_world'] = world
     r.at[i, 'legal_action_space'] = world.legal_action_space
     r.at[i, 'fast_failure'] = world.fast_failure
