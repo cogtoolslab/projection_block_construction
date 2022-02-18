@@ -30,7 +30,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  decomposer=None,
                  step_size=1,  # how many subgoals to act. Negative or zero to act from end of plan
                  # randomly sample n sequences. Use `None` to use all possible sequences
-                 number_of_sequences=None,
+                 max_number_of_sequences=None,
                  c_weight=1/1000,
                  # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
                  max_cost=10**3,
@@ -40,8 +40,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  ):
         self.world = world
         # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
-        self.number_of_sequences = number_of_sequences
-        self.step_size = step_size
+        self.max_number_of_sequences = max_number_of_sequences
+        self.step_size = step_size  # this is used to make the agent act the entire sequence (0) or only one step (1). Used as default value for `steps` in `act`
         self.c_weight = c_weight
         self.max_cost = max_cost
         self.lower_agent = lower_agent
@@ -69,7 +69,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             'agent_type': self.__class__.__name__,
             'label': self.label,
             'decomposition_function': self.decomposer.__class__.__name__,
-            'number_of_sequences': self.number_of_sequences,
+            'number_of_sequences': self.max_number_of_sequences,
             'c_weight': self.c_weight,
             'max_cost': self.max_cost,
             'step_size': self.step_size,
@@ -92,9 +92,9 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         sequence, all_sequences, solved_sequences = self.plan_subgoals(
             verbose=verbose)
         if steps is None:
-            if self.step_size <= 0:
+            if self.step_size <= 0: # if we've got a negative value, we act the length of the plan up to n steps before the end
                 steps = len(sequence) + self.step_size
-            else:
+            else: # otherwise, we act `step_size` many subgoals (ie. 1)
                 steps = self.step_size
         # finally plan and build all subgoals in order
         cur_i = 0
@@ -115,6 +115,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             solution_cost += sg.solution_cost
             partial_planning_cost += sg.planning_cost
             last_silhouette = sg.target
+            cur_i += 1
         all_sequences_cost = sum([s.planning_cost() for s in all_sequences])
         return actions, {
             'partial_solution_cost': solution_cost,  # solutions cost of steps acted
@@ -132,7 +133,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self.decomposer.set_silhouette(
             self.world.full_silhouette)  # make sure that the decomposer has the right silhouette
         sequences = self.decomposer.get_sequences(state=self.world.current_state,
-                                                  number_of_sequences=self.number_of_sequences, verbose=verbose)
+                                                  number_of_sequences=self.max_number_of_sequences, verbose=verbose)
         if verbose:
             print("Got", len(sequences), "sequences:")
             for sequence in sequences:
