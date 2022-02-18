@@ -32,8 +32,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  # randomly sample n sequences. Use `None` to use all possible sequences
                  max_number_of_sequences=None,
                  c_weight=1/1000,
-                 # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
-                 max_cost=10**3,
+                 # Will keep retrying to solve subgoals until this cost is reached. Set to 1 for a single try (ie. deterministic algorithms)
+                 max_cost=1,
                  lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
                  random_seed=None,
                  label="Subgoal Planner"
@@ -41,7 +41,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self.world = world
         # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
         self.max_number_of_sequences = max_number_of_sequences
-        self.step_size = step_size  # this is used to make the agent act the entire sequence (0) or only one step (1). Used as default value for `steps` in `act`
+        # this is used to make the agent act the entire sequence (0) or only one step (1). Used as default value for `steps` in `act`
+        self.step_size = step_size
         self.c_weight = c_weight
         self.max_cost = max_cost
         self.lower_agent = lower_agent
@@ -92,9 +93,9 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         sequence, all_sequences, solved_sequences = self.plan_subgoals(
             verbose=verbose)
         if steps is None:
-            if self.step_size <= 0: # if we've got a negative value, we act the length of the plan up to n steps before the end
+            if self.step_size <= 0:  # if we've got a negative value, we act the length of the plan up to n steps before the end
                 steps = len(sequence) + self.step_size
-            else: # otherwise, we act `step_size` many subgoals (ie. 1)
+            else:  # otherwise, we act `step_size` many subgoals (ie. 1)
                 steps = self.step_size
         # finally plan and build all subgoals in order
         cur_i = 0
@@ -139,7 +140,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i, sequence in enumerate(sequences):
+            for i, sequence in enumerate(random.sample(sequences, min(len(sequences), 5))):
                 sequence.visual_display(
                     blocking=True, title="Sequence {} of {}".format(i+1, len(sequences)))
         # we need to score each in sequence (as it depends on the state before)
