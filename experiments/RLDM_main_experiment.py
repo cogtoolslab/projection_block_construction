@@ -68,11 +68,39 @@ if __name__ == "__main__":  # required for multiprocessing
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
 
-    full_decomposer = Rectangular_Keyholes(
+    full_decomposer3 = Rectangular_Keyholes(
         sequence_length=3,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=13),
+            Area_smaller_than(area=16),
+            No_edge_rows_or_columns(),
+        ],
+        necessary_sequence_conditions=[
+            Complete(),
+            No_overlap(),
+            Supported(),
+        ]
+    )
+
+    full_decomposer2 = Rectangular_Keyholes(
+        sequence_length=2,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            Area_smaller_than(area=16),
+            No_edge_rows_or_columns(),
+        ],
+        necessary_sequence_conditions=[
+            Complete(),
+            No_overlap(),
+            Supported(),
+        ]
+    )
+
+    full_decomposer4 = Rectangular_Keyholes(
+        sequence_length=4,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            Area_smaller_than(area=16),
             No_edge_rows_or_columns(),
         ],
         necessary_sequence_conditions=[
@@ -86,7 +114,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=1,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=13),
+            Area_smaller_than(area=16),
             No_edge_rows_or_columns(),
             Fewer_built_cells(0),
         ],
@@ -100,7 +128,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=2,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=13),
+            Area_smaller_than(area=16),
             No_edge_rows_or_columns(),
             Fewer_built_cells(0),
         ],
@@ -111,12 +139,26 @@ if __name__ == "__main__":  # required for multiprocessing
         ]
     )
 
-    full_subgoal_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
-                                                decomposer=full_decomposer,
+    full_subgoal2_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                                decomposer=full_decomposer2,
                                                 random_seed=42,
                                                 step_size=0,
                                                 max_number_of_sequences=8192,
-                                                label="Full Subgoal Decomposition")
+                                                label="Full Subgoal Decomposition 2")
+
+    full_subgoal3_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                                decomposer=full_decomposer3,
+                                                random_seed=42,
+                                                step_size=0,
+                                                max_number_of_sequences=8192,
+                                                label="Full Subgoal Decomposition 3")
+
+    full_subgoal4_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                                decomposer=full_decomposer4,
+                                                random_seed=42,
+                                                step_size=0,
+                                                max_number_of_sequences=8192,
+                                                label="Full Subgoal Decomposition 4")
 
     scoping_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                            decomposer=scoping_decomposer,
@@ -135,7 +177,7 @@ if __name__ == "__main__":  # required for multiprocessing
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
         worlds,
-        [full_subgoal_agent, scoping_agent, lookahead2_agent, lower_agent],
+        [full_subgoal2_agent, full_subgoal3_agent, scoping_agent, lookahead2_agent, lower_agent],
         per_exp=1,
         steps=16,
         verbose=False,
