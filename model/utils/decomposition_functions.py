@@ -228,7 +228,7 @@ class Decomposition_Function:
     def get_name(self):
         return type(self).__name__
 
-    def get_params(self):
+    def get_parameters(self):
         """Returns dict of parameters"""
         return {'necessary_conditions': [cond.__str__() for cond in self.necessary_conditions],
                 'necessary_sequence_conditions': [cond.__str__() for cond in self.necessary_sequence_conditions]}
@@ -431,7 +431,10 @@ class No_edge_rows_or_columns(Condition):
     def __call__(self, decomposition, state):
         # get relevant rows from bitmap
         rows = np.where(decomposition['bitmap'].sum(axis=1) > 0)[0]
-        rows = [min(rows), max(rows)]
+        try:
+            rows = [min(rows), max(rows)]
+        except ValueError: #happens if there are no rows/cols
+            return True # since this condition is not technically violated
         # get relevant columns from bitmap
         columns = np.where(decomposition['bitmap'].sum(axis=0) > 0)[0]
         columns = [min(columns), max(columns)]
