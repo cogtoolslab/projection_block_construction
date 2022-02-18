@@ -20,7 +20,7 @@ df_dir = os.path.join(results_dir, 'dataframes')
 """
 # Meaning of columns in dataframe:
 A row corresponds to an individual action taken, ie. a single block placed.
-## every action
+# every action
 'run_ID': unique ID for that run (very long)
 'agent': type of agent as string
 'world': name of world as string
@@ -36,10 +36,10 @@ A row corresponds to an individual action taken, ie. a single block placed.
 '_blocks': blocks as objects (for analysis)
 'blockmap': bitmap of the world at the current state
 various agent parameters (depends on agent loaded)
-## only at planning step
+# only at planning step
 '_world': current state of the world as object (for analysis). State is only updated at each planning step.
 'legal_action_space': if true, only legal (in silhouette, not necessarily stable) actions are considered
-'fast_failure': if true, the trial is ended when it is clear it can't lead to a perfect reconstruction. 
+'fast_failure': if true, the trial is ended when it is clear it can't lead to a perfect reconstruction.
 '_blocks': current list of blocks in the world as object (for analysis)
 'execution_time': computation time of the planning step in seconds
 'world_status': either fail, ongoing, winning
@@ -50,7 +50,7 @@ various agent parameters (depends on agent loaded)
 
 DF_COLS = ['run_ID', 'agent', 'world', 'step', 'planning_step', 'states_evaluated', 'action', '_action', 'action_x', 'action_block_width', 'action_block_height',
            'blocks', '_blocks', 'blockmap', '_world', 'legal_action_space', 'fast_failure', 'execution_time', 'world_status', 'world_failure_reason', 'agent_attributes']
-RAM_LIMIT = 90  # percentage of RAM usage over which a process doesn't run as to not run out of memory
+RAM_LIMIT = 100  # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 
 def run_experiment(worlds, agents, per_exp=100, steps=40, verbose=False, save=True, parallelized=True, maxtasksperprocess=1):
@@ -114,7 +114,6 @@ def run_experiment(worlds, agents, per_exp=100, steps=40, verbose=False, save=Tr
 
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
-    # to prevent memory overflows only run if enough free memory exists.
     world_dict, agent, steps, verbose, run_nr = experiment
     world_label = world_dict[0]
     world = world_dict[1]
@@ -161,31 +160,18 @@ def _run_single_experiment(experiment):
                 Warning(
                     "Number of actions ({}) exceeding steps ({}).".format(ai, steps))
                 break
-            # adding the agent parameters
-            for key, value in agent_parameters.items():
-                r.at[i, key] = value
-            r.at[i, 'run_ID'] = run_ID
-            r.at[i, 'agent'] = agent_parameters['agent_type']
-            r.at[i, 'agent_attributes'] = str(agent_parameters_w_o_random_seed)
-            r.at[i, 'world'] = world_label
-            r.at[i, 'step'] = i
-            r.at[i, 'planning_step'] = planning_step
-            r.at[i, 'action'] = [str(e)
-                                 for e in action]  # human readable action
-            r.at[i, '_action'] = action  # action as object
-            r.at[i, 'action_x'] = action[1]
-            r.at[i, 'action_block_width'] = action[0].width
-            r.at[i, 'action_block_height'] = action[0].height
-            # human readable blocks
-            r.at[i, 'blocks'] = [block.__str__()
-                                 for block in world.current_state.blocks[:i+1]]
-            r.at[i, '_blocks'] = world.current_state.blocks[:i+1]
-            r.at[i, 'blockmap'] = planning_step_blockmaps[i]
-            r.at[i, '_world'] = world
-            r.at[i, 'legal_action_space'] = world.legal_action_space
-            r.at[i, 'fast_failure'] = world.fast_failure
+            insert_into_run_df(world_label, world, run_ID, agent_parameters,
+                               agent_parameters_w_o_random_seed, r, i, planning_step, planning_step_blockmaps, action)
             i += 1
         # the following are only filled for each planning step, not action step
+        if len(chosen_actions) == 0:
+            # we couldn't find any actions
+            # we also need to fill the boiler plate for the dataframe
+            i += 1  # since we didnt increment the counter above
+        # insert planning step info
+            insert_into_run_df(world_label, world, run_ID, agent_parameters,
+                               agent_parameters_w_o_random_seed, r, i, planning_step, planning_step_blockmaps, action=None)
+            i += 1 # for the following code. NOTE better check whether that truly makes sense
         r.at[i-1, 'execution_time'] = duration
         world_status = world.status()
         r.at[i-1, 'world_status'] = world_status[0]
@@ -214,6 +200,33 @@ def _run_single_experiment(experiment):
     # truncate df and return
     return r[r['run_ID'].notnull()]
 
+
+def insert_into_run_df(world_label, world, run_ID, agent_parameters, agent_parameters_w_o_random_seed, r, i, planning_step, planning_step_blockmaps, action=None):
+    # adding the agent parameters
+    for key, value in agent_parameters.items():
+        r.at[i, key] = value
+    r.at[i, 'run_ID'] = run_ID
+    r.at[i, 'agent'] = agent_parameters['agent_type']
+    r.at[i, 'agent_attributes'] = str(agent_parameters_w_o_random_seed)
+    r.at[i, 'world'] = world_label
+    r.at[i, 'step'] = i
+    r.at[i, 'planning_step'] = planning_step
+            # human readable blocks
+    r.at[i, 'blocks'] = [block.__str__()
+                                 for block in world.current_state.blocks[:i+1]]
+    r.at[i, '_blocks'] = world.current_state.blocks[:i+1]
+    r.at[i, 'blockmap'] = planning_step_blockmaps[i]
+    r.at[i, '_world'] = world
+    r.at[i, 'legal_action_space'] = world.legal_action_space
+    r.at[i, 'fast_failure'] = world.fast_failure
+    r.at[i, 'physics'] = world.physics
+    # fill action
+    if action is not None:
+        r.at[i, 'action'] = [str(e) for e in action]  # human readable action
+        r.at[i, '_action'] = action  # action as object
+        r.at[i, 'action_x'] = action[1]
+        r.at[i, 'action_block_width'] = action[0].width
+        r.at[i, 'action_block_height'] = action[0].height
 
 def get_blockmaps(blockmap):
     """Takes a blockmap as input and returns the sequence of blockmaps leading up to it.
