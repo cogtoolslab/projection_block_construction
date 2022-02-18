@@ -34,7 +34,7 @@ if __name__ == "__main__":  # required for multiprocessing
 
     print("Running experiment....")
 
-    fraction_of_cpus = 0.8
+    fraction_of_cpus = 1
 
     # # loading towers from disk
     # PATH_TO_TOWERS = os.path.join(
@@ -72,7 +72,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=3,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=16),
+            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
             No_edge_rows_or_columns(),
         ],
         necessary_sequence_conditions=[
@@ -86,7 +86,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=2,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=16),
+            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
             No_edge_rows_or_columns(),
         ],
         necessary_sequence_conditions=[
@@ -100,7 +100,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=4,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=16),
+            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
             No_edge_rows_or_columns(),
         ],
         necessary_sequence_conditions=[
@@ -114,7 +114,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=1,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=16),
+            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
             No_edge_rows_or_columns(),
             Fewer_built_cells(0),
         ],
@@ -128,7 +128,7 @@ if __name__ == "__main__":  # required for multiprocessing
         sequence_length=2,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Area_smaller_than(area=16),
+            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
             No_edge_rows_or_columns(),
             Fewer_built_cells(0),
         ],
@@ -142,6 +142,7 @@ if __name__ == "__main__":  # required for multiprocessing
     full_subgoal2_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                                 decomposer=full_decomposer2,
                                                 random_seed=42,
+                                                c_weight=1.,
                                                 step_size=0,
                                                 max_number_of_sequences=8192,
                                                 label="Full Subgoal Decomposition 2")
@@ -149,6 +150,7 @@ if __name__ == "__main__":  # required for multiprocessing
     full_subgoal3_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                                 decomposer=full_decomposer3,
                                                 random_seed=42,
+                                                c_weight=1.,
                                                 step_size=0,
                                                 max_number_of_sequences=8192,
                                                 label="Full Subgoal Decomposition 3")
@@ -156,6 +158,7 @@ if __name__ == "__main__":  # required for multiprocessing
     full_subgoal4_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                                 decomposer=full_decomposer4,
                                                 random_seed=42,
+                                                c_weight=1.,
                                                 step_size=0,
                                                 max_number_of_sequences=8192,
                                                 label="Full Subgoal Decomposition 4")
@@ -163,6 +166,7 @@ if __name__ == "__main__":  # required for multiprocessing
     scoping_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                            decomposer=scoping_decomposer,
                                            random_seed=42,
+                                           c_weight=1.,
                                            step_size=1,
                                            max_number_of_sequences=8192,
                                            label="Incremental Scoping")
@@ -170,6 +174,7 @@ if __name__ == "__main__":  # required for multiprocessing
     lookahead2_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                               decomposer=lookahead2_decomposer,
                                               random_seed=42,
+                                              c_weight=1.,
                                               step_size=1,
                                               max_number_of_sequences=8192,
                                               label="Lookahead Scoping")
