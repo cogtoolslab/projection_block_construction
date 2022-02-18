@@ -13,6 +13,7 @@ sys.path.insert(0, proj_dir)
 
 
 MAX_STEPS = 20
+DISPLAY_N_SEQS = 5 # how many sequences to display at most
 
 
 class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
@@ -140,9 +141,9 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             for sequence in sequences:
                 print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i, sequence in enumerate(random.sample(sequences, min(len(sequences), 5))):
+            for i, sequence in enumerate(random.sample(sequences, min(len(sequences), DISPLAY_N_SEQS))):
                 sequence.visual_display(
-                    blocking=True, title="Sequence {} of {}".format(i+1, len(sequences)))
+                    blocking=True, title="Sequence {} of {} (showing {})".format(i+1, len(sequences), min(len(sequences), DISPLAY_N_SEQS)))
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences, verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
