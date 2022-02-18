@@ -17,6 +17,8 @@ MAX_NUMBER_OF_SUBGOALS = 64
 """
 NOTE
 The corresponding code in decomposition_functions has changed and this will need to be adapted to work
+
+NOTE this is out of date and most likely superseded by the subgoal planning agent class. Consider deleting.
 """
 
 class Resource_Rational_Subgoal_Planning_Agent(BFS_Lookahead_Agent):
