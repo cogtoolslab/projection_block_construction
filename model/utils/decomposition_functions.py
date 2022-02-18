@@ -353,16 +353,25 @@ class Area_smaller_than(Condition):
         return self.__class__.__name__ + "(" + str(self.area) + ")"
 
 
-class Reward_larger_than(Condition):
-    def __init__(self, reward):
-        self.reward = reward
+class Mass_larger_than(Condition):
+    def __init__(self, area):
+        self.area = area
 
     def __call__(self, decomposition, state):
-        return np.sum(decomposition['decomposition']) > self.reward
+        return np.sum(decomposition['decomposition'] > 0) > self.area
 
     def __str__(self):
-        return self.__class__.__name__ + "(" + str(self.reward) + ")"
+        return self.__class__.__name__ + "(" + str(self.area) + ")"
 
+class Mass_smaller_than(Condition):
+    def __init__(self, area):
+        self.area = area
+
+    def __call__(self, decomposition, state):
+        return np.sum(decomposition['decomposition'] > 0) < self.area
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.area) + ")"
 
 class Non_empty(Condition):
     def __call__(self, decomposition, state):
