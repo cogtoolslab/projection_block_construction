@@ -28,17 +28,18 @@ class Astar_Agent(BFS_Agent):
     The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. Penalties get represented as really large distances. 
     """
 
-    def __init__(self, world=None, heuristic=blockworld.recall, only_improving_actions=False, random_seed=None):
+    def __init__(self, world=None, heuristic=blockworld.recall, only_improving_actions=False, random_seed=None, label="A*"):
         self.world = world
         self.heuristic = heuristic
         self.only_improving_actions = only_improving_actions
         self.random_seed = random_seed
+        self.label = label
         if self.random_seed is None:
             self.random_seed = random.randint(0, 99999)
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' random seed: '+str(self.random_seed) + ' label: '+str(self.label)
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
@@ -46,6 +47,7 @@ class Astar_Agent(BFS_Agent):
             'agent_type': self.__class__.__name__,
             'heuristic': self.heuristic.__name__,
             'random_seed': self.random_seed,
+            'label': self.label
         }
 
     def act(self, steps=None, verbose=False):

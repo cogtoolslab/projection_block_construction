@@ -11,14 +11,15 @@ sys.path.insert(0, proj_dir)
 class BFS_Agent:
     """An agent performing exhaustive BFS search. This can take a long time to finish."""
 
-    def __init__(self, world=None, shuffle=False, random_seed=None):
+    def __init__(self, world=None, shuffle=False, random_seed=None, label="BFS"):
         self.world = world
         self.shuffle = shuffle
         self.random_seed = random_seed
+        self.label = label
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' shuffle:'+str(self.shuffle)+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' shuffle:'+str(self.shuffle)+' random seed: '+str(self.random_seed) + ' label: ' + self.label
 
     def set_world(self, world):
         self.world = world
@@ -28,7 +29,8 @@ class BFS_Agent:
         return {
             'agent_type': self.__class__.__name__,
             'shuffle': self.shuffle,
-            'random_seed': self.random_seed
+            'random_seed': self.random_seed,
+            'label': self.label
         }
 
     def search(self, current_nodes):

@@ -32,19 +32,20 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
     This is a simplified implementation that doesn't take into account that the same state can be reached in multiple ways. However, because we defined the cost function as number of steps, every state can only be reached in the same number of steps (since taking more steps means placing more blocks, and different sizes of blocks lead to potentially different stability), and therefore there cannot be a better path to a node in open set, just an equivalently good one. 
     """
 
-    def __init__(self, world=None, heuristic=blockworld.recall, max_steps=10**6, only_improving_actions=False, dense_stability=False, random_seed=None):
+    def __init__(self, world=None, heuristic=blockworld.recall, max_steps=10**6, only_improving_actions=False, dense_stability=False, random_seed=None, label="A* lookahead"):
         self.world = world
         self.heuristic = heuristic
         self.max_steps = max_steps
         self.only_improving_actions = only_improving_actions
         self.dense_stability = dense_stability
         self.random_seed = random_seed
+        self.label = label
         if self.random_seed is None:
             self.random_seed = random.randint(0, 99999)
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_steps '+str(self.max_steps)+' dense_stability '+str(self.dense_stability)+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' max_steps '+str(self.max_steps)+' dense_stability '+str(self.dense_stability)+' random seed: '+str(self.random_seed) + ' label: '+self.label
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
@@ -53,7 +54,8 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
             'heuristic': self.heuristic.__name__,
             'max_steps': self.max_steps,
             'dense_stability': self.dense_stability,
-            'random_seed': self.random_seed
+            'random_seed': self.random_seed,
+            'label': self.label
         }
 
     def act(self, steps=None, verbose=False):

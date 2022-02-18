@@ -35,7 +35,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  # maximum cost before we give up trying to solve a subgoal. Set to 1 for a single try (ie. deterministic algorithms)
                  max_cost=10**3,
                  lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
-                 random_seed=None
+                 random_seed=None,
+                 label="Subgoal Planner"
                  ):
         self.world = world
         # only consider sequences of subgoals exactly `lookahead` long or ending on final decomposition
@@ -45,6 +46,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self.max_cost = max_cost
         self.lower_agent = lower_agent
         self.random_seed = random_seed
+        self.label = label
         if self.random_seed is None:
             self.random_seed = self.random_seed = randint(0, 99999)
         if decomposer is None:
@@ -59,12 +61,13 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return str(self.get_parameters())
+        return str(self.get_parameters()) + " label: " + self.label
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {**{
             'agent_type': self.__class__.__name__,
+            'label': self.label,
             'decomposition_function': self.decomposer.__class__.__name__,
             'number_of_sequences': self.number_of_sequences,
             'c_weight': self.c_weight,
@@ -72,7 +75,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             'step_size': self.step_size,
             'random_seed': self.random_seed
         }, **{"lower level: "+key: value for key, value in self.lower_agent.get_parameters().items()},
-        **{"decomposition function: "+key: value for key, value in self.decomposer.get_parameters().items()}}
+            **{"decomposition function: "+key: value for key, value in self.decomposer.get_parameters().items()}}
 
     def set_world(self, world):
         super().set_world(world)
@@ -128,8 +131,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         """Plan a sequence of subgoals. First, we need to compute a sequence of subgoals however many steps in advance (since completion depends on subgoals). Then, we compute the cost and value of every subgoal in the sequence. Finally, we choose the sequence of subgoals that maximizes the total value over all subgoals within. Returns chosen sequence and the set of all sequences"""
         self.decomposer.set_silhouette(
             self.world.full_silhouette)  # make sure that the decomposer has the right silhouette
-        sequences = self.decomposer.get_sequences(state=self.world.current_state, 
-                                                   number_of_sequences=self.number_of_sequences, verbose=verbose)
+        sequences = self.decomposer.get_sequences(state=self.world.current_state,
+                                                  number_of_sequences=self.number_of_sequences, verbose=verbose)
         if verbose:
             print("Got", len(sequences), "sequences:")
             for sequence in sequences:
@@ -148,7 +151,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$ including weighing by lambda"""
         # if we get an empty sequence, there is nothing to choose and we return an empty sequence
         if len(sequences) == 0:
-            if verbose: print("No sequences to choose from")
+            if verbose:
+                print("No sequences to choose from")
             return model.utils.decomposition_functions.Subgoal_sequence([])
         scores = [None]*len(sequences)
         for i in range(len(sequences)):
@@ -161,7 +165,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                     [score for score in scores if score is not None])
             except ValueError:
                 # looks like no sequences worked out (this happens when none of the sequences can be solved)
-                if verbose: print("No sequences have a found solution, choosing empty sequence")
+                if verbose:
+                    print("No sequences have a found solution, choosing empty sequence")
                 return model.utils.decomposition_functions.Subgoal_sequence([])
         top_indices = [i for i in range(
             len(scores)) if scores[i] == max_scores]
@@ -172,7 +177,8 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             print("Chose sequence:", chosen_sequence.names(),
                   "with score", chosen_sequence.V(self.c_weight))
             # visually display
-            chosen_sequence.visual_display(blocking=True, title = "Chosen sequence")
+            chosen_sequence.visual_display(
+                blocking=True, title="Chosen sequence")
         return chosen_sequence
 
     def fill_subgoals_in_sequence(self, sequences, cumulative_subgoals=False, verbose=False):
@@ -186,7 +192,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                       "\t", seq_counter, '/', len(sequences))
             if not cumulative_subgoals:
                 # we change the targets in the sequence to be cumulative
-                sequence = cumulatize(sequence, world = current_world)
+                sequence = cumulatize(sequence, world=current_world)
             seq_counter += 1  # for verbose printing
             sg_counter = 0  # for verbose printing
             for subgoal in sequence:
@@ -273,7 +279,8 @@ def cumulatize(sequence, world=None):
     previous_targets = sequence.subgoals[0].target
     if world is not None:
         # we assume that the blocks that have already been placed in the world have been placed legally and we can keep them there
-        previous_targets = (previous_targets + world.current_state.blockmap) > 0
+        previous_targets = (previous_targets +
+                            world.current_state.blockmap) > 0
     for subgoal in sequence.subgoals:
         subgoal.target = previous_targets + subgoal.target
         previous_targets = subgoal.target > 0

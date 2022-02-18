@@ -16,7 +16,7 @@ class BFS_Lookahead_Agent:
 
     All agent should return a dictionary after acting along with the chosen actions. That dictionary can be empty, but can also contain other information to be logged."""
 
-    def __init__(self, world=None, horizon=2, scoring='Final_state', only_improving_actions=False, sparse=False, first_solution=True, scoring_function=blockworld.F1_stability_score, dense_stability=True, random_seed=None):
+    def __init__(self, world=None, horizon=2, scoring='Final_state', only_improving_actions=False, sparse=False, first_solution=True, scoring_function=blockworld.F1_stability_score, dense_stability=True, random_seed=None, label="BFS Lookahead"):
         self.world = world
         self.horizon = horizon
         self.sparse = sparse
@@ -26,10 +26,11 @@ class BFS_Lookahead_Agent:
         self.dense_stability = dense_stability
         self.random_seed = random_seed
         self.only_improving_actions = only_improving_actions
+        self.label = label
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+'first_solution: '+str(self.first_solution)+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed)
+        return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+'first_solution: '+str(self.first_solution)+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed) + ' label: ' + self.label
 
     def set_world(self, world):
         self.world = world
@@ -42,7 +43,8 @@ class BFS_Lookahead_Agent:
             'horizon': self.horizon,
             'first_solution': self.first_solution,
             'scoring_type': self.scoring,
-            'random_seed': self.random_seed
+            'random_seed': self.random_seed,
+            'label': self.label
         }
 
     def build_ast(self, state=None, horizon=None, verbose=False):
