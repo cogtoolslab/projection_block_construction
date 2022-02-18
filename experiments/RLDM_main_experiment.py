@@ -47,12 +47,13 @@ if __name__ == "__main__":  # required for multiprocessing
     print("Generating towers...")
     block_library = bl.bl_nonoverlapping_simple
     generator = stimuli.tower_generator.TowerGenerator(8, 8,
-                                               block_library=block_library,
-                                               seed=42,
-                                               padding=(2, 0),
-                                               num_blocks=lambda: random.randint(
-                                                   5, 10),
-                                               )
+                                                       block_library=block_library,
+                                                       seed=42,
+                                                       padding=(2, 0),
+                                                       num_blocks=lambda: random.randint(
+                                                           5, 10),
+                                                       physics=True,
+                                                       )
     NUM_TOWERS = 16
     towers = []
     for i in tqdm.tqdm(range(NUM_TOWERS)):
@@ -67,47 +68,79 @@ if __name__ == "__main__":  # required for multiprocessing
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
 
-    full_decomposer = Rectangular_Keyholes(necessary_conditions=[
-        Area_larger_than(area=4),
-        # Area_smaller_than(area=28),
-        No_edge_rows_or_columns(),
-    ],
+    full_decomposer = Rectangular_Keyholes(
+        sequence_length=3,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            Area_smaller_than(area=13),
+            No_edge_rows_or_columns(),
+        ],
         necessary_sequence_conditions=[
-        Complete(),
-        No_overlap(),
-        Supported(),
-    ]
+            Complete(),
+            No_overlap(),
+            Supported(),
+        ]
     )
 
-    scoping_decomposer = Rectangular_Keyholes(necessary_conditions=[
-        Area_larger_than(area=4),
-        # Area_smaller_than(area=28),
-        No_edge_rows_or_columns(),
-        Fewer_built_cells(0),
-    ],
+    scoping_decomposer = Rectangular_Keyholes(
+        sequence_length=1,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            Area_smaller_than(area=13),
+            No_edge_rows_or_columns(),
+            Fewer_built_cells(0),
+        ],
         necessary_sequence_conditions=[
-        # Complete(),
-        No_overlap(),
-        Supported(),
-    ]
+            No_overlap(),
+            Supported(),
+        ]
+    )
+
+    lookahead2_decomposer = Rectangular_Keyholes(
+        sequence_length=2,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            Area_smaller_than(area=13),
+            No_edge_rows_or_columns(),
+            Fewer_built_cells(0),
+        ],
+        necessary_sequence_conditions=[
+            No_overlap(),
+            Supported(),
+            Filter_for_length(2),
+        ]
     )
 
     full_subgoal_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                                 decomposer=full_decomposer,
-                                                sequence_length=4,
                                                 random_seed=42,
-                                                include_subsequences=True,
-                                                number_of_sequences=4092)
+                                                step_size=0,
+                                                max_number_of_sequences=8192,
+                                                label="Full Subgoal Decomposition")
 
     scoping_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
                                            decomposer=scoping_decomposer,
-                                           sequence_length=1,
                                            random_seed=42,
-                                           include_subsequences=False,
-                                           number_of_sequences=4092)
+                                           step_size=1,
+                                           max_number_of_sequences=8192,
+                                           label="Incremental Scoping")
+
+    lookahead2_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                              decomposer=lookahead2_decomposer,
+                                              random_seed=42,
+                                              step_size=1,
+                                              max_number_of_sequences=8192,
+                                              label="Lookahead Scoping")
 
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
-        worlds, [full_subgoal_agent, scoping_agent, lower_agent], per_exp=1, steps=16, verbose=False, parallelized=fraction_of_cpus, save="scoring towers", maxtasksperprocess=5)
+        worlds,
+        [full_subgoal_agent, scoping_agent, lookahead2_agent, lower_agent],
+        per_exp=1,
+        steps=16,
+        verbose=False,
+        parallelized=fraction_of_cpus,
+        save=os.path.basename(__file__).split(".")[0],
+        maxtasksperprocess=5)
 
     print("Done in %s seconds" % (time.time() - start_time))
