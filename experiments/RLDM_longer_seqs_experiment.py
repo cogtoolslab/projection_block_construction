@@ -68,8 +68,8 @@ if __name__ == "__main__":  # required for multiprocessing
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
 
-    full_decomposer5 = Rectangular_Keyholes(
-        sequence_length=5,
+    full_decomposer4 = Rectangular_Keyholes(
+        sequence_length=4,
         necessary_conditions=[
             Area_larger_than(area=1),
             Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
@@ -83,12 +83,12 @@ if __name__ == "__main__":  # required for multiprocessing
     )
 
     full_subgoal4_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
-                                                decomposer=full_decomposer5,
+                                                decomposer=full_decomposer4,
                                                 random_seed=42,
                                                 c_weight=1.,
                                                 step_size=0,
                                                 max_number_of_sequences=8192,
-                                                label="Full Subgoal Decomposition 5")
+                                                label="Full Subgoal Decomposition 4")
 
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
