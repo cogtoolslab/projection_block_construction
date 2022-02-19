@@ -552,10 +552,12 @@ class Longer_than_or_complete(Sequence_Condition):
         return self.__class__.__name__ + "(" + str(self.length) + ")"
 
 class Complete(Sequence_Condition):
-    """The entire structure is covered by the subgoals"""
+    """The entire remaining structure is covered by the subgoals"""
 
     def __call__(self, sequence, state):
         silhouette = state.world.silhouette
+        # we only need to care about the part of the silhouette that we haven't built on yet
+        silhouette = silhouette * (state.blockmap == 0)
         occupancy = np.zeros(silhouette.shape)
         for decomposition in sequence:
             occupancy += decomposition['decomposition']
