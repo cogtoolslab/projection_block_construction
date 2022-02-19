@@ -93,7 +93,7 @@ if __name__ == "__main__":  # required for multiprocessing
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
         worlds,
-        [full_decomposer5],
+        [full_subgoal4_agent],
         per_exp=1,
         steps=16,
         verbose=False,
