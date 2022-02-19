@@ -234,7 +234,7 @@ class Decomposition_Function:
                 'necessary_sequence_conditions': [cond.__str__() for cond in self.necessary_sequence_conditions]}
 
     def __str__(self):
-        return self.get_name() + "(" + str(self.get_params()) + ")"
+        return self.get_name() + "(" + str(self.get_parameters()) + ")"
 
     def legal_next_subgoal(self, before, after):
         """Check if the after subgoal can follow the before, ie is a real improvement and subsumes the before"""
