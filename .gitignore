@@ -83,3 +83,4 @@ results/plots/*
 *.zip
 *.DS_Store
 stimuli/tower_generate_main.py
+list/*
