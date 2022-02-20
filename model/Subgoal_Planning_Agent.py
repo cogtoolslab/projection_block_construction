@@ -124,6 +124,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             'solution_cost': sequence.solution_cost(),
             'partial_planning_cost': partial_planning_cost,  # planning cost of steps
             'planning_cost': sequence.planning_cost(),
+            'num_subgoals_acted': cur_i, #how many subgoals did we execute?
             'all_sequences_planning_cost': all_sequences_cost,
             'decomposed_silhouette': last_silhouette,
             '_all_subgoal_sequences': all_sequences,
