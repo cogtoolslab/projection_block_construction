@@ -54,7 +54,7 @@ if __name__ == "__main__":  # required for multiprocessing
                                                            5, 10),
                                                        physics=True,
                                                        )
-    NUM_TOWERS = 16
+    NUM_TOWERS = 64
     towers = []
     for i in tqdm.tqdm(range(NUM_TOWERS)):
         towers.append(generator.generate())
@@ -101,7 +101,7 @@ if __name__ == "__main__":  # required for multiprocessing
 
     # now we need to generate a number of scoping agents across ranges of c_weight
     
-    lambdas = np.arange(0, 1.1, 0.1)
+    lambdas = np.arange(0, 0.525, 0.025)
 
     scoping_agents = [Subgoal_Planning_Agent(lower_agent=lower_agent,
                                              decomposer=scoping_decomposer,
@@ -122,12 +122,12 @@ if __name__ == "__main__":  # required for multiprocessing
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
         worlds,
-        [*scoping_agents, *lookahead2_agents],
-        per_exp=1,
+        [*scoping_agents],
+        per_exp=10,
         steps=16,
         verbose=False,
         parallelized=fraction_of_cpus,
-        save=os.path.basename(__file__).split(".")[0],
+        save="RLDM_scoping_experiment",
         maxtasksperprocess=5)
 
     print("Done in %s seconds" % (time.time() - start_time))

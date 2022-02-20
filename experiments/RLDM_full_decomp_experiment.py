@@ -54,7 +54,7 @@ if __name__ == "__main__":  # required for multiprocessing
                                                            5, 10),
                                                        physics=True,
                                                        )
-    NUM_TOWERS = 16
+    NUM_TOWERS = 64
     towers = []
     for i in tqdm.tqdm(range(NUM_TOWERS)):
         towers.append(generator.generate())
@@ -182,12 +182,12 @@ if __name__ == "__main__":  # required for multiprocessing
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
         worlds,
-        [full_subgoal2_agent, full_subgoal3_agent, scoping_agent, lookahead2_agent, lower_agent],
-        per_exp=1,
+        [full_subgoal2_agent, full_subgoal3_agent, lower_agent],
+        per_exp=10, #since we might have different solutions depending on best first order
         steps=16,
         verbose=False,
         parallelized=fraction_of_cpus,
-        save=os.path.basename(__file__).split(".")[0],
+        save="RLDM_full_decomp_experiment",
         maxtasksperprocess=5)
 
     print("Done in %s seconds" % (time.time() - start_time))

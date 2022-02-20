@@ -68,37 +68,66 @@ if __name__ == "__main__":  # required for multiprocessing
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
 
-    full_decomposer4 = Rectangular_Keyholes(
-        sequence_length=4,
+    scoping_decomposer = Rectangular_Keyholes(
+        sequence_length=1,
         necessary_conditions=[
             Area_larger_than(area=1),
-            Proportion_of_silhouette_less_than(ratio=3/4), # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
+            # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
+            Proportion_of_silhouette_less_than(ratio=3/4),
             No_edge_rows_or_columns(),
+            Fewer_built_cells(0),
         ],
         necessary_sequence_conditions=[
-            Complete(),
             No_overlap(),
             Supported(),
         ]
     )
 
-    full_subgoal4_agent = Subgoal_Planning_Agent(lower_agent=lower_agent,
-                                                decomposer=full_decomposer4,
+    lookahead2_decomposer = Rectangular_Keyholes(
+        sequence_length=2,
+        necessary_conditions=[
+            Area_larger_than(area=1),
+            # maximum subgoal size is 3/4 of the mass of the tower. Prevents degeneratee case of 1 subgoal
+            Proportion_of_silhouette_less_than(ratio=3/4),
+            No_edge_rows_or_columns(),
+            Fewer_built_cells(0),
+        ],
+        necessary_sequence_conditions=[
+            No_overlap(),
+            Supported(),
+            Filter_for_length(2),
+        ]
+    )
+
+    # now we need to generate a number of scoping agents across ranges of c_weight
+    
+    lambdas = np.arange(0, 1.1, 0.1)
+
+    scoping_agents = [Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                             decomposer=scoping_decomposer,
+                                             random_seed=42,
+                                             c_weight=cw,
+                                             step_size=1,
+                                             max_number_of_sequences=8192,
+                                             label="Incremental Scoping lambda={}".format(cw)) for cw in lambdas]
+
+    lookahead2_agents = [Subgoal_Planning_Agent(lower_agent=lower_agent,
+                                                decomposer=lookahead2_decomposer,
                                                 random_seed=42,
-                                                c_weight=1.,
-                                                step_size=0,
+                                                c_weight=cw,
+                                                step_size=1,
                                                 max_number_of_sequences=8192,
-                                                label="Full Subgoal Decomposition 4")
+                                                label="Lookahead Scoping lambda={}".format(cw)) for cw in lambdas]
 
     print("Running experiment...")
     results_sg = experiment_runner.run_experiment(
         worlds,
-        [full_subgoal4_agent],
-        per_exp=1,
+        [*lookahead2_agents],
+        per_exp=10,
         steps=16,
         verbose=False,
         parallelized=fraction_of_cpus,
-        save="RLDM_longer_seqs_experiment",
+        save="RLDM_lookahead_scoping_experiment",
         maxtasksperprocess=5)
 
     print("Done in %s seconds" % (time.time() - start_time))
