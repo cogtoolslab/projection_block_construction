@@ -121,6 +121,9 @@ def _run_single_experiment(experiment):
     try:
         if agent.random_seed is None:
             agent.random_seed = random.randint(0, 99999)
+        else:
+            # we increment the random seed with the run number to ensure different behavior between runs
+            agent.random_seed += run_nr
     except AttributeError:
         pass
     run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | ' + \
