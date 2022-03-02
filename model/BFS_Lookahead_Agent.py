@@ -1,4 +1,5 @@
 from random import randint, seed
+from model.Agent import Agent
 import utils.blockworld as blockworld
 from itertools import repeat
 import os
@@ -7,7 +8,7 @@ proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 
-class BFS_Lookahead_Agent:
+class BFS_Lookahead_Agent(Agent):
     """An agent. This class holds the scoring and decision functions and maintains beliefs about the values of the possible actions. An action can be whatever—it's left implicit for now—, but should be an iterable. Performs lookahead BFS search.
 
     `only_improving_actions` means that the agent only takes actions if the action improves F1 score. Note that the agent returns an empty action if no actions can be taken—this will lead to infinite loops with simple while loops!
@@ -31,9 +32,6 @@ class BFS_Lookahead_Agent:
     def __str__(self):
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' scoring: '+self.scoring_function.__name__+'first_solution: '+str(self.first_solution)+' horizon: '+str(self.horizon)+' scoring: '+self.scoring+' sparse?: '+str(self.sparse)+' random seed: '+str(self.random_seed) + ' label: ' + self.label
-
-    def set_world(self, world):
-        self.world = world
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""

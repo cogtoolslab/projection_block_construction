@@ -21,9 +21,6 @@ class BFS_Agent:
         """Yields a string representation of the agent"""
         return self.__class__.__name__+' shuffle:'+str(self.shuffle)+' random seed: '+str(self.random_seed) + ' label: ' + self.label
 
-    def set_world(self, world):
-        self.world = world
-
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {
