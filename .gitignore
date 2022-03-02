@@ -84,3 +84,5 @@ results/plots/*
 *.DS_Store
 stimuli/tower_generate_main.py
 list/*
+node_modules
+package-lock.json
