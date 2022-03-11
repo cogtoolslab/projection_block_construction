@@ -49,13 +49,13 @@ var setupWorldWithBlocks = function (blocks) {
     canvasWidth * 1.5,
     floorHeight
   );
-  sideLeft = new Block.Boundary(-30, canvasHeight / 2, 60, canvasHeight);
-  sideRight = new Block.Boundary(
-    canvasWidth + 30,
-    canvasHeight / 2,
-    60,
-    canvasHeight
-  );
+//   sideLeft = new Block.Boundary(-30, canvasHeight / 2, 60, canvasHeight);
+//   sideRight = new Block.Boundary(
+//     canvasWidth + 30,
+//     canvasHeight / 2,
+//     60,
+//     canvasHeight
+//   );
   // add each block to the world
   for (var i = 0; i < blocks.length; i++) {
     var block = blocks[i];
@@ -89,18 +89,12 @@ var checkStability = function () {
   }
   // we need to run the engine in increments, long time steps break it
   for (var t = 0; t < SIM_TIME / FRAME_LENGTH; t++) {
-    for (var t = 0; t < SIM_TIME / FRAME_LENGTH; t++) { 
-  for (var t = 0; t < SIM_TIME / FRAME_LENGTH; t++) {
-    Engine.update(engine, FRAME_LENGTH);
-        Engine.update(engine, FRAME_LENGTH); 
     Engine.update(engine, FRAME_LENGTH);
     // check if all blocks are in the same place
     for (var i = 3; i < world.bodies.length; i++) {
       // we can start at 3 here since we ignore the floor and the sides
       var block = world.bodies[i];
       var start_position = start_positions[i];
-      // check if block has moved
-            // check if block has moved 
       // check if block has moved
       var xMove =
         Math.abs(block.position.x - start_position.x) > MOVEMENT_DELTA;
@@ -111,8 +105,8 @@ var checkStability = function () {
         return false;
       }
     }
+  }
         }            
-    }
   }
   return true;
 };
@@ -191,7 +185,7 @@ var y_to_coord = function (y, h) {
   return (
     floorY * worldScale -
     (floorHeight * worldScale) / 2 -
-    y * worldScale -
+    y * sF -
     (h * sF) / 2
   );
 };
