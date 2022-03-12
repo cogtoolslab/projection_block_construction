@@ -4,11 +4,8 @@ const argv = require("minimist")(process.argv.slice(2)),
   app = require("express")(),
   express = require("express"),
   _ = require("lodash");
-//   parser = require('xmldom').DOMParser,
-//   XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest,
-//   sendPostRequest = require('request').post;
 
-var port = process.env.PORT || argv.port || 8885;
+var port = process.env.PORT || argv.port || 5069;
 
 app.use(express.static("static"));
 
@@ -21,11 +18,14 @@ io.on("connection", function (socket) {
     console.log("disconnected, exiting...");
     process.exit(0);
   });
-  socket.on("blocks", function (data) {
+  socket.on("get_stability", function (data) {
+    console.log("get_stability");
     blocks = parseBlocks(data);
+    console.log(blocks);
     setupWorldWithBlocks(blocks);
     stable = checkStability(data);
     socket.emit("stability", stable);
+    console.log("stability: " + stable);
   });
 });
 
@@ -33,9 +33,21 @@ console.log("Created server on port " + port);
 
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
-  // for matter, y is upper corner. 0,0 is top left, with y decreasing as we go up the area
+  // for matter, y is upper corner of area. 0,0 is top left, with y decreasing as we go up the area
   // left is x = 0
-
+  // positions specify the midpoint of a rectangle
+  var blocks = [];
+  // for (i,obj in data.blocks) {
+  for (var i = 0; i < data.blocks.length; i++) {
+    obj = data.blocks[i];
+    block = {
+      x: x_to_coord(Number(obj.x), Number(obj.w)),
+      y: y_to_coord(Number(obj.y), Number(obj.h)),
+      w: Number(obj.w),
+      h: Number(obj.h),
+    };
+    blocks.push(block);
+  }
   return blocks;
 };
 
@@ -49,13 +61,6 @@ var setupWorldWithBlocks = function (blocks) {
     canvasWidth * 1.5,
     floorHeight
   );
-//   sideLeft = new Block.Boundary(-30, canvasHeight / 2, 60, canvasHeight);
-//   sideRight = new Block.Boundary(
-//     canvasWidth + 30,
-//     canvasHeight / 2,
-//     60,
-//     canvasHeight
-//   );
   // add each block to the world
   for (var i = 0; i < blocks.length; i++) {
     var block = blocks[i];
@@ -66,7 +71,6 @@ var setupWorldWithBlocks = function (blocks) {
       block.h * sF,
       Block.options
     );
-    // NOTE could be done from block kind
     World.add(engine.world, b); //this where a block gets added to matter
   }
 };
@@ -105,8 +109,6 @@ var checkStability = function () {
         return false;
       }
     }
-  }
-        }            
   }
   return true;
 };
@@ -175,36 +177,13 @@ console.log("Created engine & world");
 
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
-  // 137.5 determined empirically
+  // 137.5 determined empirically (but it also doesn't really matter)
   return 137 + x * worldScale - (w * sF) / 2;
 };
 
 var y_to_coord = function (y, h) {
   // first term is merely the y position of the floor
-  //NOTE this might be wrong
   return (
-    floorY * worldScale -
-    (floorHeight * worldScale) / 2 -
-    y * sF -
-    (h * sF) / 2
+    floorY * worldScale - (floorHeight * worldScale) / 2 - y * sF - (h * sF) / 2
   );
 };
-
-// testing code
-var test_blocks = [
-    {x: 0, y: 590, w: 2, h: 4},
-    // {x: 2, y: 670, w: 2, h: 4},
-    // {x: 4, y: 4, w: 4, h: 2},
-    // {x: 2, y: 7, w: 4, h: 2},
-];
-
-setupWorldWithBlocks(test_blocks);
-
-// for (var i = 0; i < 100; i++) {
-//     console.log(i,"y:",world.bodies[3].position.y);
-//     Engine.update(engine, 1000/60);
-// }
-
-stable = checkStability(test_blocks);
-
-console.log("Stability: " + stable);
