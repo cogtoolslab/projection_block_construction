@@ -7,29 +7,32 @@ const argv = require("minimist")(process.argv.slice(2)),
 
 var port = process.env.PORT || argv.port || 5069;
 
+var busy = false; // this is true while we're executing a request to prevent messing up the world
+
 app.use(express.static("static"));
 
 server = app.listen(port);
 io = require("socket.io")(server);
 
 io.on("connection", function (socket) {
-  console.log("connected");
+  // console.log("connected");
   socket.on("disconnect", function () {
-    console.log("disconnected, exiting...");
+    // console.log("disconnected, exiting...");
     process.exit(0);
   });
   socket.on("get_stability", function (data) {
-    console.log("get_stability");
+    // console.log("get_stability");
     blocks = parseBlocks(data);
-    console.log(blocks);
+    id = data.id;
+    // console.log(blocks);
     setupWorldWithBlocks(blocks);
     stable = checkStability(data);
-    socket.emit("stability", stable);
-    console.log("stability: " + stable);
+    socket.emit("stability", {stability: stable, id: id});
+    // console.log("stability: " + stable);
   });
 });
 
-console.log("Created server on port " + port);
+// console.log("Created server on port " + port);
 
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
@@ -117,7 +120,7 @@ var checkStability = function () {
 
 var Matter = require("matter-js");
 
-var Block = require("./block.js");
+var Block = require("../utils/block.js");
 
 // Aliases for Matter functions—made global for imported functions
 (global.Engine = Matter.Engine),
@@ -173,7 +176,7 @@ engine.world = world;
 // });
 // Runner.run(runner, engine);
 
-console.log("Created engine & world");
+// console.log("Created engine & world");
 
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
