@@ -1,4 +1,4 @@
-# import utils.display_world as display_world
+import utils.display_world as display_world
 import utils.blockworld_helpers as blockworld_helpers
 import socketio
 import subprocess
@@ -330,10 +330,9 @@ class Blockworld(World):
                 return self._stable
             # we actually need to run the physics engine
             if self.world.physics_provider == "box2d":
-                # bwworld = self.state_to_bwworld()
-                # self._stable = display_world.test_world_stability(
-                #     bwworld, RENDER=visual_display) == 'stable'
-                # TODO restore box2d imports (currently not installable on Python 3.10)
+                bwworld = self.state_to_bwworld()
+                self._stable = display_world.test_world_stability(
+                    bwworld, RENDER=visual_display) == 'stable'
                 pass
             else:
                 assert type(
