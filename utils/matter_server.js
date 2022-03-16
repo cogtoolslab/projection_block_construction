@@ -7,6 +7,8 @@ const argv = require("minimist")(process.argv.slice(2)),
 
 var port = process.env.PORT || argv.port || 5069;
 
+var debug = argv.debug || false;
+
 var busy = false; // this is true while we're executing a request to prevent messing up the world
 
 app.use(express.static("static"));
@@ -15,24 +17,24 @@ server = app.listen(port);
 io = require("socket.io")(server);
 
 io.on("connection", function (socket) {
-  // console.log("connected");
+  if (debug){console.log("connected");}
   socket.on("disconnect", function () {
-    // console.log("disconnected, exiting...");
+    if (debug){console.log("disconnected, exiting...");}
     process.exit(0);
   });
   socket.on("get_stability", function (data) {
-    // console.log("get_stability");
+    if (debug){console.log("get_stability");}
     blocks = parseBlocks(data);
     id = data.id;
-    // console.log(blocks);
+    if (debug){console.log(blocks);}
     setupWorldWithBlocks(blocks);
     stable = checkStability(data);
     socket.emit("stability", {stability: stable, id: id});
-    // console.log("stability: " + stable);
+    if (debug){console.log("stability: " + stable);}
   });
 });
 
-// console.log("Created server on port " + port);
+if (debug){console.log("Created server on port " + port);}
 
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
@@ -170,13 +172,7 @@ global.engine = Engine.create(engineOptions);
 var engine = global.engine;
 engine.world = world;
 
-// Runner- use instead of line above if changes to game loop needed NOTE probably not needed here
-// runner = Matter.Runner.create({
-//     isFixed: true
-// });
-// Runner.run(runner, engine);
-
-// console.log("Created engine & world");
+if (debug){console.log("Created engine & world");}
 
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
