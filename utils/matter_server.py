@@ -8,8 +8,11 @@ from random import randint
 
 
 class Physics_Server:
-    def __init__(self, port=None, y_height=8) -> None:
-        self.socket = self.start_server(port)
+    def __init__(self, port=None, y_height=8, socket=None) -> None:
+        if socket is None:
+            self.socket = self.start_server(port)
+        else:
+            self.socket = socket
         self._results = {}  # stores the results of stability requests
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
         self.y_height = y_height
