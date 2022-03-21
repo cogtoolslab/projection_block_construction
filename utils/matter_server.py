@@ -65,10 +65,10 @@ class Physics_Server:
     def block_to_serializable(self, block):
         """Returns a serializable version of the block."""
         return {
-            'x': block.x,
-            'y': self.y_height - 1 - block.y,
-            'w': block.width,
-            'h': block.height,
+            'x': float(block.x),
+            'y': float(self.y_height - 1 - block.y),
+            'w': float(block.width),
+            'h': float(block.height),
         }
 
     def get_stability(self, blocks):
