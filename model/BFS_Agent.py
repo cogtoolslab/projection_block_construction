@@ -1,3 +1,4 @@
+from model.Agent import Agent
 from model.utils.Search_Tree import *
 import utils.blockworld as blockworld
 from itertools import repeat
@@ -8,7 +9,7 @@ proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 
-class BFS_Agent:
+class BFS_Agent(Agent):
     """An agent performing exhaustive BFS search. This can take a long time to finish."""
 
     def __init__(self, world=None, shuffle=False, random_seed=None, label="BFS"):
