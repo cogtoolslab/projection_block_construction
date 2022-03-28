@@ -36,6 +36,7 @@ class Physics_Server:
         """Starts the matter physics server and returns a socketio connection to it."""
         if port is None:
             port = randint(0, 999999999)
+        # TODO if necessary add a fallback to tcp:// for Windows users
         self.process = subprocess.Popen(
             ['node', JS_LOCATION, '--port', str(port)])
         socket = context.socket(zmq.REQ)
@@ -69,10 +70,9 @@ class Physics_Server:
         Blocks until the result is known.
         """
         blocks = self.blocks_to_serializable(blocks)
-        # DEBUG
-        global send_time
-        send_time = time.time()
         self.socket.send_json(blocks)
         # receive result—blocking
-        result = bool(self.socket.recv())
+        result = self.socket.recv()
+        # is either 'false' or 'true'
+        result = result == b'true'
         return result
