@@ -1,40 +1,59 @@
 global.__base = __dirname + "/";
 
-const argv = require("minimist")(process.argv.slice(2)),
-  app = require("express")(),
-  express = require("express"),
-  _ = require("lodash");
+const argv = require("minimist")(process.argv.slice(2));
+// app = require("express")(),
+// express = require("express"),
+// _ = require("lodash");
 
-var port = process.env.PORT || argv.port || 5069;
+var port = argv.port || 5069;
 
+var tcp_fallback = argv.tcp || false; // are we on a Windows system? If so, we need to use the TCP fallback
+
+// var debug = argv.debug || false;
 var debug = argv.debug || false;
 
 var busy = false; // this is true while we're executing a request to prevent messing up the world
 
-app.use(express.static("static"));
+var zmq = require("zeromq");
+var socket = zmq.socket("rep"); //using a reply socket here
 
-server = app.listen(port);
-io = require("socket.io")(server);
+//create the server
+if (tcp_fallback) {
+  if (debug) {
+    console.log("Using TCP fallback. Binding sync...");
+  }
+  socket.bindSync("tcp://localhost:" + port);
+  if (debug) {
+    console.log("Socket bound to", "tcp://localhost:" + port);
+  }
+} else {
+  if (debug) {
+    console.log("Using ICP. Binding sync");
+  }
+  socket.bindSync("ipc:///tmp/matter_server_" + port);
+  if (debug) {
+    console.log("Socket bound to", "ipc:///tmp/matter_server_" + port);
+  }
+}
 
-io.on("connection", function (socket) {
-  if (debug){console.log("connected");}
-  socket.on("disconnect", function () {
-    if (debug){console.log("disconnected, exiting...");}
-    process.exit(0);
-  });
-  socket.on("get_stability", function (data) {
-    if (debug){console.log("get_stability");}
-    blocks = parseBlocks(data);
-    id = data.id;
-    if (debug){console.log(blocks);}
-    setupWorldWithBlocks(blocks);
-    stable = checkStability(data);
-    socket.emit("stability", {stability: stable, id: id});
-    if (debug){console.log("stability: " + stable);}
-  });
+socket.on("message", function (msg) {
+  while (busy) {} // wait until we're not busy
+  if (debug) {
+    console.log("Received message: " + msg.toString());
+  }
+  var busy = true;
+  var data = JSON.parse(msg.toString());
+  var blocks = parseBlocks(data);
+  if (debug) {
+    console.log(blocks);
+  }
+  setupWorldWithBlocks(blocks);
+  var stable = checkStability(data);
+  //send result as bool
+  socket.send(stable);
+  busy = false;
 });
 
-if (debug){console.log("Created server on port " + port);}
 
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
@@ -42,9 +61,8 @@ var parseBlocks = function (data) {
   // left is x = 0
   // positions specify the midpoint of a rectangle
   var blocks = [];
-  // for (i,obj in data.blocks) {
-  for (var i = 0; i < data.blocks.length; i++) {
-    obj = data.blocks[i];
+  for (var i = 0; i < data.length; i++) {
+    obj = data[i];
     block = {
       x: x_to_coord(Number(obj.x), Number(obj.w)),
       y: y_to_coord(Number(obj.y), Number(obj.h)),
@@ -172,7 +190,9 @@ global.engine = Engine.create(engineOptions);
 var engine = global.engine;
 engine.world = world;
 
-if (debug){console.log("Created engine & world");}
+if (debug) {
+  console.log("Created engine & world");
+}
 
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
