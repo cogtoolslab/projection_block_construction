@@ -6,6 +6,13 @@ import socketio
 import time
 from random import randint
 
+import os
+
+JS_LOCATION = 'utils/matter_server.js'
+
+if "stimuli" in os.getcwd():
+    # if our working directory in stimuli, we need to make sure to find the location of the node file in the right place
+    JS_LOCATION = "../"+JS_LOCATION
 
 class Physics_Server:
     def __init__(self, port=None, y_height=8, socket=None) -> None:
@@ -16,12 +23,16 @@ class Physics_Server:
         self._results = {}  # stores the results of stability requests
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
         self.y_height = y_height
+        self._results_waiting = False # a semaphore so we don't have to keep checking a dictionary over and over
 
         # callback function for stability
         # can't believe that worked
         @self.socket.on('stability')
         def on_stability(data):
+            self._results_waiting = True
             self._results[data['id']] = data['stability']
+            # DEBUG
+            print("Python: Received stability in {} milliseconds\n".format((time.time() - send_time) * 1000))
 
     def __del__(self):
         """Called when the object is deleted."""
@@ -37,7 +48,7 @@ class Physics_Server:
                 port = s.server_address[1]
         # print('Starting server on port {}'.format(port))
         subprocess.Popen(
-            ['node', 'utils/matter_server.js', '--port', str(port)])
+            ['node', JS_LOCATION, '--port', str(port)])
         sio = socketio.Client()
         # time.sleep(1)  # wait for server to start
         while True:
@@ -77,10 +88,17 @@ class Physics_Server:
         """
         request_id = randint(0, 1000000)
         blocks = self.blocks_to_serializable(blocks)
+        # DEBUG
+        global send_time
+        send_time = time.time()
         self.socket.emit('get_stability', {'id': request_id, 'blocks': blocks})
+        while not self._results_waiting:
+            pass
         while request_id not in self._results:
             pass
         # do wait here to reduce system load?
         result = self._results[request_id]
         del self._results[request_id]  # remove from dict
+        if len(self._results) == 0:
+            self._results_waiting = False
         return result
