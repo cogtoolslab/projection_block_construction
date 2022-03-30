@@ -83,7 +83,7 @@ class TowerGenerator():
             # take action
             new_state = world.transition(action)
             # evaluate the new state
-            if world.stability(new_state):
+            if new_state.stability():
                 # the block placement is stable, so we can place it
                 world.apply_action(action)
                 num_blocks -= 1

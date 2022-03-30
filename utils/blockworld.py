@@ -74,7 +74,7 @@ class Blockworld(World):
             elif physics_provider == "matter":
                 # we create the physics provider ourself
                 self.physics_provider = matter_server.Physics_Server(
-                    y_height=self.dimension[1])
+                    y_height=self.dimension[0])
                 self.destroy_physics_server = True
             else:
                 raise Exception(
@@ -88,6 +88,10 @@ class Blockworld(World):
         """Destroy the world"""
         if self.destroy_physics_server:
             self.physics_provider.kill_server()
+
+    def reset(self):
+        """Restore empty state"""
+        self.current_state = Blockworld.State(self, [])
         
     def copy(self):
         return copy.deepcopy(self)
