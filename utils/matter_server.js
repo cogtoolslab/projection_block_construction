@@ -196,7 +196,7 @@ if (debug) {
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
   // 137.5 determined empirically (but it also doesn't really matter)
-  return 137 + x * sF - (w * sF / 2);
+  return 137 + x * sF + (w * sF) / 2;
 };
 
 var y_to_coord = function (y, h) {
