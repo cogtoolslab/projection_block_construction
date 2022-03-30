@@ -118,8 +118,7 @@ var checkStability = function () {
   for (var t = 0; t < SIM_TIME / FRAME_LENGTH; t++) {
     Engine.update(engine, FRAME_LENGTH);
     // check if all blocks are in the same place
-    for (var i = 3; i < world.bodies.length; i++) {
-      // we can start at 3 here since we ignore the floor and the sides
+    for (var i = 1; i < world.bodies.length; i++) {
       var block = world.bodies[i];
       var start_position = start_positions[i];
       // check if block has moved
