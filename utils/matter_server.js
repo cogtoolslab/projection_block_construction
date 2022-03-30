@@ -205,3 +205,29 @@ var y_to_coord = function (y, h) {
     floorY * worldScale - (floorHeight * worldScale) / 2 - y * sF - (h * sF) / 2
   );
 };
+
+// DEBUGGING related functions
+function getVertices(bodies) {
+  // returns the x,y vertices for every body as string
+  out_bodies = [];
+  for (var i = 0; i < bodies.length; i++) {
+    var body = bodies[i];
+    var vertices = body.vertices;
+    var out_vertices = [];
+    for (var j = 0; j < vertices.length; j++) {
+      var vertex = vertices[j];
+      out_vertices.push([vertex.x, vertex.y]);
+    }
+    out_bodies.push(out_vertices);
+  }
+  out_str = JSON.stringify(out_bodies);
+  return out_str;
+}
+
+var cp = require("child_process");
+function display() {
+  // calls the python script and blocks till it's closed
+  vert_string = getVertices(world.bodies);
+  cp.execSync("python utils/matterjs_visualization.py " + vert_string);
+}
+
