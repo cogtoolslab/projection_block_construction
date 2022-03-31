@@ -54,7 +54,6 @@ socket.on("message", function (msg) {
   busy = false;
 });
 
-
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
   // for matter, y is upper corner of area. 0,0 is top left, with y decreasing as we go up the area
@@ -107,6 +106,7 @@ const DROP_OFFSET = 1.72849999999994; // in matter units, how much to drop all b
 var checkStability = function () {
   // get the starting positions of all blocks
   var start_positions = [];
+  if (debug) display();
   for (var i = 0; i < world.bodies.length; i++) {
     var block = world.bodies[i];
     start_positions.push({
@@ -129,9 +129,15 @@ var checkStability = function () {
         Math.abs(block.position.y - start_position.y) > MOVEMENT_DELTA;
       var rotated = Math.abs(block.angle - start_position.angle) > ANGLE_DELTA;
       if (xMove || yMove || rotated) {
+        if (debug) {
+          display();
+        }
         return false;
       }
     }
+  }
+  if (debug) {
+    display();
   }
   return true;
 };
