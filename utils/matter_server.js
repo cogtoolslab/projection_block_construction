@@ -80,7 +80,7 @@ var setupWorldWithBlocks = function (blocks) {
   // add the floor
   ground = new Block.Boundary(
     canvasWidth / 2,
-    floorY,
+    floorY + DROP_OFFSET,
     canvasWidth * 1.5,
     floorHeight
   );
@@ -102,6 +102,7 @@ const MOVEMENT_DELTA = 10;
 const ANGLE_DELTA = 0.7;
 const SIM_TIME = 3500; //3.5 seconds is what the timeout in the browser is set to
 const FRAME_LENGTH = 1000 / 60;
+const DROP_OFFSET = 1.72849999999994; // in matter units, how much to drop all blocks to see if they're stable? This value is determined, uh, empirically from the webcode.
 
 var checkStability = function () {
   // get the starting positions of all blocks
