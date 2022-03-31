@@ -203,14 +203,12 @@ if (debug) {
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
   // 137.5 determined empirically (but it also doesn't really matter)
-  return 137 + x * sF + (w * sF * worldScale) / 2;
+  return 137 + x * sF * worldScale + (w * sF * worldScale) / 2;
 };
 
 var y_to_coord = function (y, h) {
   // first term is merely the y position of the floor
-  return (
-    (floorY  - (floorHeight) / 2 - y * sF - (h * sF) / 2) * worldScale
-  );
+  return (floorY - floorHeight / 2 - y * sF - (h * sF) / 2) * worldScale;
 };
 
 // DEBUGGING related functions
