@@ -90,8 +90,8 @@ var setupWorldWithBlocks = function (blocks) {
     var b = Bodies.rectangle(
       block.x,
       block.y,
-      block.w * sF,
-      block.h * sF,
+      block.w * sF * worldScale,
+      block.h * sF * worldScale,
       Block.options
     );
     World.add(engine.world, b); //this where a block gets added to matter
@@ -196,13 +196,13 @@ if (debug) {
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
   // 137.5 determined empirically (but it also doesn't really matter)
-  return 137 + x * sF + (w * sF) / 2;
+  return 137 + x * sF + (w * sF * worldScale) / 2;
 };
 
 var y_to_coord = function (y, h) {
   // first term is merely the y position of the floor
   return (
-    floorY * worldScale - (floorHeight * worldScale) / 2 - y * sF - (h * sF) / 2
+    (floorY  - (floorHeight) / 2 - y * sF - (h * sF) / 2) * worldScale
   );
 };
 
