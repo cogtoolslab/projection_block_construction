@@ -83,10 +83,15 @@ class TowerGenerator():
             # take action
             new_state = world.transition(action)
             # evaluate the new state
-            if new_state.stability():
+            if world.stability(new_state):
                 # the block placement is stable, so we can place it
                 world.apply_action(action)
                 num_blocks -= 1
+            elif len(potential_actions) == 1:
+                    # we've only got one option, and it's bad
+                    # need to start over
+                    # we do that by calling generate again
+                    return self.generate()
             else:
                 # we try again
                 continue
