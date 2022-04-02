@@ -1,14 +1,7 @@
 import utils.display_world as display_world
 import utils.blockworld_helpers as blockworld_helpers
-import socketio
-import subprocess
 import utils.matter_server as matter_server
-import string
 from random import randint
-import random
-import time
-import datetime
-import json
 import copy
 import matplotlib.patches as patches
 from matplotlib.path import Path
@@ -38,9 +31,6 @@ class Blockworld(World):
     Dimensions are in y,x. The origin is top left (in accordance with numpy arrays.
 
     Physics provider should either be "box2d" (legacy) or "matter" or an instantiated matter_server.Physics_Server with a socket to a running physics server which uses matter.js for compatibility with the human experiments (see `matter_server.js`).
-
-    Note: if the physics provider is created by the world object, the world object will not be garbabe collected and `__del__()` will need to be called manually. This is because the physics provider has a socketio.Client which is not garbage collected.
-
     """
 
     def __init__(self, dimension=(8, 8), silhouette=None, block_library=None, fast_failure=False, legal_action_space=True, physics=True, physics_provider="matter"):
@@ -78,7 +68,7 @@ class Blockworld(World):
                 self.destroy_physics_server = True
             else:
                 raise Exception(
-                    "Physics provider must be either 'box2d' or 'matter' or a socketio.Client")
+                    "Physics provider must be either 'box2d' or 'matter' or a zeromq socket to a running physics server")
 
     def __str__(self):
         """String representation of the world"""
