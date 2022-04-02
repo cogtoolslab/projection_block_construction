@@ -2,7 +2,6 @@
 
 import subprocess
 import zmq
-import time
 from random import randint
 
 import os
@@ -17,27 +16,31 @@ if "stimuli" in os.getcwd():
     JS_LOCATION = "../"+JS_LOCATION
 
 class Physics_Server:
-    def __init__(self, port=None, y_height=8, socket=None) -> None:
+    def __init__(self, port=None, y_height=8, socket=None, _process = None) -> None:
         if socket is None:
             self.socket = self.start_server(port)
         else:
             self.socket = socket
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
         self.y_height = y_height
+        # the process should only be set by the deepcopy function
+        self._process = _process
 
     def __del__(self):
         """Called when the object is deleted."""
-        try:
-            self.kill_server()
-        except: # fails if we already disconnected
-            pass
+        self.kill_server()
+
+    
+    def __deepcopy__(self, memo):
+        """Deep copy of the physics server—we keep the same socket and the same process"""
+        return Physics_Server(socket=self.socket, y_height=self.y_height, _process=self._process)
 
     def start_server(self, port=None):
         """Starts the matter physics server and returns a socketio connection to it."""
         if port is None:
             port = randint(0, 999999999)
         # TODO if necessary add a fallback to tcp:// for Windows users
-        self.process = subprocess.Popen(
+        self._process = subprocess.Popen(
             ['node', JS_LOCATION, '--port', str(port)])
         socket = context.socket(zmq.REQ)
         while True:
@@ -51,7 +54,8 @@ class Physics_Server:
 
     def kill_server(self):
         """Kills the matter physics server."""
-        self.process.kill()
+        if self._process is not None:
+            self._process.kill()
 
     def blocks_to_serializable(self, blocks):
         return [self.block_to_serializable(block) for block in blocks]
