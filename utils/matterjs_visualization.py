@@ -15,6 +15,6 @@ for v in vertices[::]:
     plt.plot([v[1][0], v[2][0]], [v[1][1], v[2][1]])
     plt.plot([v[2][0], v[3][0]], [v[2][1], v[3][1]])
     plt.plot([v[3][0], v[0][0]], [v[3][1], v[0][1]])
-plt.xlim(137,337)
-plt.ylim(600,400)
+plt.xlim(120,820)
+plt.ylim(600,0)
 plt.show()
