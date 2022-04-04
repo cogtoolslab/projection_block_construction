@@ -1,3 +1,4 @@
+from stimuli.subgoal_tree import *
 import random
 import numpy as np
 import copy
@@ -13,7 +14,7 @@ sys.path.insert(0, proj_dir)
 
 
 MAX_STEPS = 20
-DISPLAY_N_SEQS = 5 # how many sequences to display at most
+DISPLAY_N_SEQS = 5  # how many sequences to display at most
 
 
 class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
@@ -124,7 +125,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             'solution_cost': sequence.solution_cost(),
             'partial_planning_cost': partial_planning_cost,  # planning cost of steps
             'planning_cost': sequence.planning_cost(),
-            'num_subgoals_acted': cur_i, #how many subgoals did we execute?
+            'num_subgoals_acted': cur_i,  # how many subgoals did we execute?
             'all_sequences_planning_cost': all_sequences_cost,
             'decomposed_silhouette': last_silhouette,
             '_all_subgoal_sequences': all_sequences,
@@ -276,6 +277,19 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         subgoal.iterations = i
         self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
+
+    def get_subgoal_tree(self, verbose=False):
+        """Plans subgoals according to agent specification and returns a subgoal tree of filled out subgoals"""
+        # get all subgoals
+        sequence, all_sequences, solved_sequences = self.plan_subgoals(
+            verbose=verbose)
+        # create root node
+        # root_subgoal = model.utils.decomposition_functions.Subgoal(source=None,target=None)
+        root = SubgoalTreeNode(subgoal=None, parent=None, children=[])
+        subgoal_tree = SubgoalTree(root=root, world=self.world)
+        for sequence in all_sequences:
+            subgoal_tree.insert_sequence(sequence)
+        return subgoal_tree
 
 
 def cumulatize(sequence, world=None):
