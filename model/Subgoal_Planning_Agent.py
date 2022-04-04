@@ -249,7 +249,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             steps = 0
             costs = 0
             actions = []
-            while temp_world.status()[0] == 'Ongoing' and total_costs < self.max_cost and steps < MAX_STEPS:
+            while temp_world.status()[0] == 'Ongoing' and costs < self.max_cost and steps < MAX_STEPS:
                 chosen_actions, info = self.lower_agent.act()
                 actions += chosen_actions
                 costs += info['states_evaluated']
