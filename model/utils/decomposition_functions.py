@@ -1,8 +1,8 @@
 """This file contains decomposition functions as objects. The decompositions can additionally include a state object that the agent keeps track of and returns for the next decomposition (ie location of the construction paper for increments)."""
 
 import copy
-from curses.ascii import SUB
 import numpy as np
+import stimuli.subgoal_tree as sgt
 import itertools
 import random
 import matplotlib
@@ -18,7 +18,7 @@ SUBGOAL_COLORS = ['red', 'green', 'blue', 'yellow', 'orange',
 class Subgoal:
     """Stores a subgoal. 
 
-    Bitmap stores a boolean bitmap of the target including blank areas, while target just stores the decomposed silhouette with 0 for both background and out-of-subgoal areas."""
+    Bitmap stores a boolean bitmap of the target including blank areas (ie. is 1 for the full rectangle), while target just stores the decomposed silhouette with 0 for both background and out-of-subgoal areas."""
 
     def __init__(self, source, target, bitmap=None, name=None, actions=None, C=None, prior_world=None, past_world=None, solution_cost=None, planning_cost=None):
         self.source = source
@@ -64,8 +64,14 @@ class Subgoal_sequence:
                     source=last_source, target=d['decomposition'], name=d['name'], bitmap=d['bitmap'])
                 last_source = d['decomposition']
             except TypeError:
-                # if not, then we've gotten a Subgoal object
-                subgoal = d
+                # if not, then we've gotten some other object
+                if type(d) == Subgoal:
+                    subgoal = d
+                elif type(d) == sgt.SubgoalTreeNode:
+                    subgoal = d.subgoal
+                else:
+                    raise TypeError(
+                        "Pass either dict, existing subgoal or subgoal tree node as element in sequence")
             self.subgoals.append(subgoal)
 
     def names(self):
@@ -91,6 +97,14 @@ class Subgoal_sequence:
     def complete(self):
         """Do we have a solution for all goals in the sequence?"""
         return np.all([s.actions is not None and s.actions != [] for s in self.subgoals])
+
+    def fully_covering(self):
+        """Would completing the sequence lead to the entire target being covered?"""
+        common_target = self.subgoals[0].target
+        for sg in self.subgoals[1:]:
+            common_target = np.logical_or(common_target, sg.target)
+        silhouette = self.prior_world.full_silhouette == 1
+        return np.all(np.equal(common_target, silhouette))
 
     def V(self, c_weight=1):
         """Adds up the cost and rewards of the subgoals"""
@@ -161,7 +175,8 @@ class Subgoal_sequence:
 
 class Decomposition_Function:
     """Decomposition function for a blockworld. See the end of this file for a list of conditions to filter on."""
-    def __init__(self, silhouette=None, sequence_length = 3, necessary_conditions=[], necessary_sequence_conditions=[]):
+
+    def __init__(self, silhouette=None, sequence_length=3, necessary_conditions=[], necessary_sequence_conditions=[]):
         self.silhouette = silhouette
         self.sequence_length = sequence_length
         self.necessary_conditions = necessary_conditions
@@ -194,7 +209,7 @@ class Decomposition_Function:
     def get_sequences(self, state=None, length=None, number_of_sequences=None, verbose=False):
         """Returns all possible decompositions as a list of Subgoal_sequences"""
         subgoals = self.get_decompositions(state)
-        if length is None: # we can request a particular length, but by default the properties of the decomposer should be used
+        if length is None:  # we can request a particular length, but by default the properties of the decomposer should be used
             length = self.sequence_length
         if len(subgoals) == 0:
             # we can't decompose the rest of the silhouette (are the conditions too strict?)
@@ -363,6 +378,7 @@ class Mass_larger_than(Condition):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.area) + ")"
 
+
 class Mass_smaller_than(Condition):
     def __init__(self, area):
         self.area = area
@@ -372,6 +388,7 @@ class Mass_smaller_than(Condition):
 
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.area) + ")"
+
 
 class Non_empty(Condition):
     def __call__(self, decomposition, state):
@@ -433,8 +450,8 @@ class No_edge_rows_or_columns(Condition):
         rows = np.where(decomposition['bitmap'].sum(axis=1) > 0)[0]
         try:
             rows = [min(rows), max(rows)]
-        except ValueError: #happens if there are no rows/cols
-            return True # since this condition is not technically violated
+        except ValueError:  # happens if there are no rows/cols
+            return True  # since this condition is not technically violated
         # get relevant columns from bitmap
         columns = np.where(decomposition['bitmap'].sum(axis=0) > 0)[0]
         columns = [min(columns), max(columns)]
@@ -474,6 +491,7 @@ class Fewer_built_cells(Condition):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.built_cells) + ")"
 
+
 class Proportion_of_silhouette_less_than(Condition):
     """Ensures that the ratio of the silhouette of the subgoal to the area of the subgoal is less than a certain value. Ie., pass 2/3 to ensure that all subgoals cover less than 2/3 of the mass of the silhouette. 1 will still prevent the single full decomposition, but nothing else."""
 
@@ -483,7 +501,7 @@ class Proportion_of_silhouette_less_than(Condition):
     def __call__(self, decomposition, state):
         # get silhouette
         silhouette = state.world.silhouette
-        mass = np.sum(silhouette  > 0)
+        mass = np.sum(silhouette > 0)
         # get area
         area = np.sum(decomposition['decomposition'] > 0)
         # get ratio
@@ -507,6 +525,7 @@ class Sequence_Condition:
     def __str__(self):
         return self.__class__.__name__
 
+
 class Filter_for_length(Sequence_Condition):
     """Only allow sequences of a certain length. Shorter, but complete sequences are always allowed."""
 
@@ -523,6 +542,7 @@ class Filter_for_length(Sequence_Condition):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.length) + ")"
 
+
 class Longer_than(Sequence_Condition):
     """Only allow sequences longer than n. If you want shorter sequences, pass a parameter to the decomposition function—super inefficient to overgenerate and sample in that case."""
 
@@ -537,6 +557,7 @@ class Longer_than(Sequence_Condition):
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.length) + ")"
 
+
 class Longer_than_or_complete(Sequence_Condition):
     """Only allow sequences longer than n, or complete sequences. If you want shorter sequences, pass a parameter to the decomposition function—super inefficient to overgenerate and sample in that case."""
 
@@ -550,6 +571,7 @@ class Longer_than_or_complete(Sequence_Condition):
 
     def __str__(self):
         return self.__class__.__name__ + "(" + str(self.length) + ")"
+
 
 class Complete(Sequence_Condition):
     """The entire remaining structure is covered by the subgoals"""
