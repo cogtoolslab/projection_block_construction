@@ -4,10 +4,12 @@ import random
 from Box2D import *
 import utils.blockworld_helpers as bw
 import json
+
+# get rid of annoying message from pygame
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame.locals import *
 import pygame
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 
 """Helper functions for interacting between stimulus generation and pybox2D.             
