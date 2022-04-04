@@ -74,11 +74,6 @@ class Blockworld(World):
         """String representation of the world"""
         return self.__class__.__name__
 
-    def __del__(self):
-        """Destroy the world"""
-        if self.destroy_physics_server:
-            self.physics_provider.kill_server()
-
     def reset(self):
         """Restore empty state"""
         self.current_state = Blockworld.State(self, [])
