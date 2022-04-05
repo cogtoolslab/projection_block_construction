@@ -279,12 +279,11 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         return subgoal
 
     def get_subgoal_tree(self, verbose=False):
-        """Plans subgoals according to agent specification and returns a subgoal tree of filled out subgoals"""
+        """Plans subgoals according to agent specification and returns a subgoal tree of filled out subgoals. Note that this should be preceeded by a call to world.reset() in most cases, as the resulting tree will depend on the state of the world."""
         # get all subgoals
         sequence, all_sequences, solved_sequences = self.plan_subgoals(
             verbose=verbose)
         # create root node
-        # root_subgoal = model.utils.decomposition_functions.Subgoal(source=None,target=None)
         root = SubgoalTreeNode(subgoal=None, parent=None, children=[])
         subgoal_tree = SubgoalTree(root=root, world=self.world)
         for sequence in all_sequences:

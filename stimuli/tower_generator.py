@@ -99,6 +99,8 @@ class TowerGenerator():
         # get number of blocks
         num_blocks = len(world.current_state.blocks)
         assert num_blocks > 0, "Empty world"
+        if self.physics:
+            assert world.current_state.stability(), "Tower is unstable"
         # apply the padding
         # blocks
         blocks = copy.deepcopy(world.current_state.blocks)

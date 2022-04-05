@@ -100,7 +100,11 @@ class Subgoal_sequence:
 
     def fully_covering(self):
         """Would completing the sequence lead to the entire target being covered?"""
-        common_target = self.subgoals[0].target
+        try:
+            common_target = self.subgoals[0].target
+        except IndexError:
+            # we don't even have a single subgoal
+            return False
         for sg in self.subgoals[1:]:
             common_target = np.logical_or(common_target, sg.target)
         silhouette = self.prior_world.full_silhouette == 1
@@ -272,7 +276,7 @@ class Horizontal_Construction_Paper(Decomposition_Function):
         decompositions.reverse()
         return decompositions
 
-    def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
+    def get_sequences(self, state=None, length=1, number_of_sequences=None):
         """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep.
 
         Filter for length ensures that the lenght of sequence is either *n* or that the sequence ends in the complete decomposition. False includes incomplete sequences (use this for incremental planners)."""
