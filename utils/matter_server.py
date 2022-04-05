@@ -1,7 +1,7 @@
 # This file contains helper functions for the matter physics server
 
 import subprocess
-import sys
+import copyreg
 import zmq
 from random import randint
 import atexit
@@ -26,7 +26,11 @@ class Physics_Server:
         if _process is not None:
             self._process = _process
             # increase reference counter
-            pid_reference_manager[self._process.pid] += 1
+            try:
+                pid_reference_manager[self._process.pid] += 1
+            except KeyError:
+                # this should not happen, since the initialization of a process should always add the PID to the reference manager
+                pid_reference_manager[self._process.pid] = 1
         if socket is None:
             self.socket = self.start_server(port)
         else:
@@ -45,7 +49,7 @@ class Physics_Server:
         return Physics_Server(socket=self.socket, y_height=self.y_height, _process=self._process)
 
     def start_server(self, port=None):
-        """Starts the matter physics server and returns a socketio connection to it."""
+        """Starts the matter physics server and returns a zeromq connection to it."""
         if port is None:
             port = randint(0, 999999999)
         # TODO if necessary add a fallback to tcp:// for Windows users
@@ -64,8 +68,14 @@ class Physics_Server:
                 pass
         return socket
 
-    def kill_server(self):
+    def kill_server(self, force=False):
         """Kills the matter physics server."""
+        if force:
+            try:
+                del(pid_reference_manager[self._process.pid])
+                self._process.kill()
+            except:
+                pass
         if self._process is not None:
             if pid_reference_manager[self._process.pid] == 1:
                 # we're the last user of the node server, let's kill it
@@ -87,10 +97,31 @@ class Physics_Server:
             'h': float(block.height),
         }
 
+    def keep_alive(self):
+        """After pickling etc. the socket and the process can be lost. This function checks if we need to restart the node.js process and regenerate the socket."""
+        if self._process is None:
+            # we don't have a process, so we need to start one
+            try:
+                del pid_reference_manager[self._process.pid]
+            except:
+                pass
+            self.socket = self.start_server()
+        elif self._process.poll() is not None:
+            # the process has died, so we need to start a new one
+            try:
+                del pid_reference_manager[self._process.pid]
+            except:
+                pass
+            self.socket = self.start_server()
+        else:
+            # we have a process, but it's still alive, so we don't need to do anything
+            pass
+
     def get_stability(self, blocks):
         """Returns the stability of the given blocks.
         Blocks until the result is known.
         """
+        self.keep_alive()
         blocks = self.blocks_to_serializable(blocks)
         self.socket.send_json(blocks)
         # receive result—blocking
@@ -99,8 +130,18 @@ class Physics_Server:
         result = result == b'true'
         return result
 
+
+def pickle_physics_server(server):
+    """Pickle function for physics server. A new process is started when unpickled."""
+    return (Physics_Server, (server.y_height,))
+
+
+# register custom pickle function for the server
+copyreg.pickle(Physics_Server, pickle_physics_server)
+
+
 @atexit.register
 def killallprocesses():
     """Kills all the processes that are still running once we close the file (ie. are done with everything)."""
     for pid in pid_reference_manager:
-            os.kill(pid, 9)
+        os.kill(pid, 9)
