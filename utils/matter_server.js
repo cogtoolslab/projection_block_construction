@@ -9,7 +9,6 @@ var port = argv.port || 5069;
 
 var tcp_fallback = argv.tcp || false; // are we on a Windows system? If so, we need to use the TCP fallback
 
-// var debug = argv.debug || false;
 var debug = argv.debug || false;
 
 var busy = false; // this is true while we're executing a request to prevent messing up the world
@@ -45,7 +44,7 @@ socket.on("message", function (msg) {
   var data = JSON.parse(msg.toString());
   var blocks = parseBlocks(data);
   if (debug) {
-    console.log(blocks);
+    console.log("blocks", blocks);
   }
   setupWorldWithBlocks(blocks);
   var stable = checkStability(data);
@@ -99,7 +98,7 @@ var setupWorldWithBlocks = function (blocks) {
 
 const MOVEMENT_DELTA = 10;
 const ANGLE_DELTA = 0.7;
-const SIM_TIME = 3500; //3.5 seconds is what the timeout in the browser is set to
+const SIM_TIME = 1500; //1.5 seconds is what the timeout in the browser is set to
 const FRAME_LENGTH = 1000 / 60;
 const DROP_OFFSET = 1.72849999999994; // in matter units, how much to drop all blocks to see if they're stable? This value is determined, uh, empirically from the webcode.
 
