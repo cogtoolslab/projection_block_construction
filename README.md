@@ -61,3 +61,7 @@ Try using `$ pip install -r requirements.txt` to install all the required packag
 - PIL
 - matplotlib
 - pandas
+<!-- - socket.io (`pip install "python-socketio[client]"`) -->
+- zeromq (might need czmq)
+    - `brew install czmq`
+- node.js 
