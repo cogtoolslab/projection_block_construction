@@ -7,33 +7,32 @@ from random import randint
 import atexit
 
 import os
+import socket
 
 # socket setup
 context = zmq.Context()
 
-js_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'matter_server.js')
+js_location = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), 'matter_server.js')
 
-pid_reference_manager = {} # stores open process IDs
+pid_reference_manager = {}  # stores open process IDs
+
 
 class Physics_Server:
     def __init__(self, port=None, y_height=8, socket=None, _process=None) -> None:
-        if _process is not None:
-            self._process = _process
+        self.socket = socket
+        # the process should only be set by the deepcopy function
+        self._process = _process
+        self.port = port
+        if self._process is not None:
             # increase reference counter
             try:
                 pid_reference_manager[self._process.pid] += 1
             except KeyError:
                 # this should not happen, since the initialization of a process should always add the PID to the reference manager
                 pid_reference_manager[self._process.pid] = 1
-        if socket is None:
-            # we do lazy initialization here to prevent launching a ton of server when reading pickled objects. keep_alive should launch the server if necessary
-            pass
-        else:
-            self.socket = socket
-            self._process = _process
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
         self.y_height = y_height
-        # the process should only be set by the deepcopy function
 
     def __del__(self):
         """Called when the object is deleted."""
@@ -46,7 +45,7 @@ class Physics_Server:
     def start_server(self, port=None):
         """Starts the matter physics server and returns a zeromq connection to it."""
         if port is None:
-            port = randint(10000, 999999999)
+            port = find_free_port()
         # TODO if necessary add a fallback to tcp:// for Windows users
         self._process = subprocess.Popen(
             ['node', js_location, '--port', str(port)])
@@ -140,3 +139,9 @@ def killallprocesses():
     """Kills all the processes that are still running once we close the file (ie. are done with everything)."""
     for pid in pid_reference_manager:
         os.kill(pid, 9)
+
+
+def find_free_port():
+    with socket.socket() as s:
+        s.bind(('', 0))            # Bind to a free port provided by the host.
+        return s.getsockname()[1]  # Return the port number assigned.
