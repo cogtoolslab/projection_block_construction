@@ -26,7 +26,8 @@ class Physics_Server:
                 # this should not happen, since the initialization of a process should always add the PID to the reference manager
                 pid_reference_manager[self._process.pid] = 1
         if socket is None:
-            self.socket = self.start_server(port)
+            # we do lazy initialization here to prevent launching a ton of server when reading pickled objects. keep_alive should launch the server if necessary
+            pass
         else:
             self.socket = socket
             self._process = _process
@@ -45,7 +46,7 @@ class Physics_Server:
     def start_server(self, port=None):
         """Starts the matter physics server and returns a zeromq connection to it."""
         if port is None:
-            port = randint(0, 999999999)
+            port = randint(10000, 999999999)
         # TODO if necessary add a fallback to tcp:// for Windows users
         self._process = subprocess.Popen(
             ['node', js_location, '--port', str(port)])
@@ -99,14 +100,14 @@ class Physics_Server:
                 del pid_reference_manager[self._process.pid]
             except:
                 pass
-            self.socket = self.start_server()
+            self.socket = self.start_server(self.port)
         elif self._process.poll() is not None:
             # the process has died, so we need to start a new one
             try:
                 del pid_reference_manager[self._process.pid]
             except:
                 pass
-            self.socket = self.start_server()
+            self.socket = self.start_server(self.port)
         else:
             # we have a process, but it's still alive, so we don't need to do anything
             pass
