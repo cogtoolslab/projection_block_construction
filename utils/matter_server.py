@@ -11,15 +11,9 @@ import os
 # socket setup
 context = zmq.Context()
 
-JS_LOCATION = 'utils/matter_server.js'
+js_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'matter_server.js')
 
-# keeps a dictionary of the references to the PIDs of the node processes so that we can close them safely
-pid_reference_manager = {}
-
-if "stimuli" in os.getcwd():
-    # if our working directory in stimuli, we need to make sure to find the location of the node file in the right place
-    JS_LOCATION = "../"+JS_LOCATION
-
+pid_reference_manager = {} # stores open process IDs
 
 class Physics_Server:
     def __init__(self, port=None, y_height=8, socket=None, _process=None) -> None:
@@ -54,7 +48,7 @@ class Physics_Server:
             port = randint(0, 999999999)
         # TODO if necessary add a fallback to tcp:// for Windows users
         self._process = subprocess.Popen(
-            ['node', JS_LOCATION, '--port', str(port)])
+            ['node', js_location, '--port', str(port)])
         # add reference counter
         assert not self._process.pid in pid_reference_manager, "PID already in use"
         pid_reference_manager[self._process.pid] = 1
