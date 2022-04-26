@@ -68,6 +68,8 @@ class Physics_Server:
             try:
                 del(pid_reference_manager[self._process.pid])
                 self._process.kill()
+                self.socket = None
+                self._process = None
             except:
                 pass
         if self._process is not None:
@@ -75,6 +77,8 @@ class Physics_Server:
                 # we're the last user of the node server, let's kill it
                 del pid_reference_manager[self._process.pid]
                 self._process.kill()
+                self.socket = None
+                self._process
             else:
                 # there are more references around, but we're letting this one go
                 pid_reference_manager[self._process.pid] -= 1
