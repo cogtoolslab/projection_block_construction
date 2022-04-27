@@ -55,7 +55,6 @@ class Blockworld(World):
         self.fast_failure = fast_failure
         self.legal_action_space = legal_action_space  # only return legal actions?
         self.physics = physics  # turn physics on or off?
-        self.destroy_physics_server = False # do we need to kill the server? (only matters if we're using matter and created it)
         if physics:
             if physics_provider == "box2d":
                 self.physics_provider = "box2d"
@@ -65,7 +64,6 @@ class Blockworld(World):
                 # we create the physics provider ourself
                 self.physics_provider = matter_server.Physics_Server(
                     y_height=self.dimension[0])
-                self.destroy_physics_server = True
             else:
                 raise Exception(
                     "Physics provider must be either 'box2d' or 'matter' or a zeromq socket to a running physics server")

@@ -1,57 +1,8 @@
 global.__base = __dirname + "/";
 
-const argv = require("minimist")(process.argv.slice(2));
-// app = require("express")(),
-// express = require("express"),
-// _ = require("lodash");
+var debug = false;
 
-var port = argv.port || 5069;
-
-var tcp_fallback = argv.tcp || false; // are we on a Windows system? If so, we need to use the TCP fallback
-
-var debug = argv.debug || false;
-
-var busy = false; // this is true while we're executing a request to prevent messing up the world
-
-var zmq = require("zeromq");
-var socket = zmq.socket("rep"); //using a reply socket here
-
-//create the server
-if (tcp_fallback) {
-  if (debug) {
-    console.log("Using TCP fallback. Binding sync...");
-  }
-  socket.bindSync("tcp://localhost:" + port);
-  if (debug) {
-    console.log("Socket bound to", "tcp://localhost:" + port);
-  }
-} else {
-  if (debug) {
-    console.log("Using ICP. Binding sync");
-  }
-  socket.bindSync("ipc:///tmp/matter_server_" + port);
-  if (debug) {
-    console.log("Socket bound to", "ipc:///tmp/matter_server_" + port);
-  }
-}
-
-socket.on("message", function (msg) {
-  while (busy) {} // wait until we're not busy
-  if (debug) {
-    console.log("Received message: " + msg.toString());
-  }
-  busy = true;
-  var data = JSON.parse(msg.toString());
-  var blocks = parseBlocks(data);
-  if (debug) {
-    console.log("blocks", blocks);
-  }
-  setupWorldWithBlocks(blocks);
-  var stable = checkStability();
-  //send result as bool
-  socket.send(stable);
-  busy = false;
-});
+var busy = false;
 
 var parseBlocks = function (data) {
   // blocks have x, y, w, h
@@ -182,7 +133,7 @@ var engine;
 
 // Set up Matter Physics Engine
 engineOptions = {
-  enableSleeping: true,
+  enableSleeping: false,
   velocityIterations: 24,
   positionIterations: 12,
 };
@@ -195,10 +146,6 @@ world = World.create({
 global.engine = Engine.create(engineOptions);
 var engine = global.engine;
 engine.world = world;
-
-if (debug) {
-  console.log("Created engine & world");
-}
 
 var x_to_coord = function (x, w) {
   //okay, so I think the x, y coordinates mark the middle of the rectangle, so we need to take the height into account
@@ -236,3 +183,17 @@ function display() {
   cp.execSync("python utils/matterjs_visualization.py " + vert_string);
 }
 
+// read stdin
+var stdin = process.openStdin();
+stdin.addListener("data", function (d) {
+  var msg = d;
+  var data = JSON.parse(msg);
+  var blocks = parseBlocks(data);
+  while (busy) {} // wait for previous simulation to finish
+  busy = true;
+  setupWorldWithBlocks(blocks);
+  var stable = checkStability();
+  // write result out to stdout
+  console.log(stable);
+  busy = false;
+});
