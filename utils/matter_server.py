@@ -1,6 +1,7 @@
 # This file contains helper functions for the matter physics server
 
 from asyncio import start_server
+from re import A
 import subprocess
 import copyreg
 from random import randint
@@ -49,19 +50,23 @@ class Physics_Server:
             finally:
                 self._process = None
                 return
-        if self._process is not None:
-            try:
-                if pid_reference_manager[self._process.pid] == 1:
-                    # we're the last user of the node server, let's kill it
-                    del pid_reference_manager[self._process.pid]
-                    self._process.kill()
+        try:
+            if self._process is not None:
+                try:
+                    if pid_reference_manager[self._process.pid] == 1:
+                        # we're the last user of the node server, let's kill it
+                        del pid_reference_manager[self._process.pid]
+                        self._process.kill()
+                        self._process = None
+                    else:
+                        # there are more references around, but we're letting this one go
+                        pid_reference_manager[self._process.pid] -= 1
+                except KeyError:
+                    # the process is already dead
                     self._process = None
-                else:
-                    # there are more references around, but we're letting this one go
-                    pid_reference_manager[self._process.pid] -= 1
-            except KeyError:
-                # the process is already dead
-                self._process = None
+        except AttributeError:
+            # the process is already dead
+            self._process = None
 
     def blocks_to_serializable(self, blocks):
         return [self.block_to_serializable(block) for block in blocks]
