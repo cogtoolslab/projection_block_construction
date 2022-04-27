@@ -77,9 +77,10 @@ class Physics_Server:
 
     def keep_alive(self):
         """After pickling etc. the process and the process can be lost. This function checks if we need to restart the node.js process and regenerate the process."""
-        if self._process is None:
-            self.start_server()
-        if self._process.poll() is not None:
+        try:
+            if self._process.poll() is not None:
+                self.start_server()
+        except: # we don't have a process
             self.start_server()
 
     def get_stability(self, blocks):
