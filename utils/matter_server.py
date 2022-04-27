@@ -37,8 +37,6 @@ class Physics_Server:
             ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # add the process to the reference manager
         pid_reference_manager[self._process.pid] = 1
-        print("created process with PID: " + str(self._process.pid))
-
 
     def kill_server(self, force=False):
         """Kills the matter physics server."""
@@ -65,7 +63,6 @@ class Physics_Server:
                 # the process is already dead
                 self._process = None
 
-
     def blocks_to_serializable(self, blocks):
         return [self.block_to_serializable(block) for block in blocks]
 
@@ -82,7 +79,7 @@ class Physics_Server:
         """After pickling etc. the process and the process can be lost. This function checks if we need to restart the node.js process and regenerate the process."""
         if self._process is None:
             self.start_server()
-        if self._process.poll() is not None: 
+        if self._process.poll() is not None:
             self.start_server()
 
     def get_stability(self, blocks):
@@ -99,7 +96,7 @@ class Physics_Server:
         result = self._process.stdout.readline().decode('utf-8')
         # return the result
         return result == 'true\n'
-        
+
 
 def pickle_physics_server(server):
     """Pickle function for physics server. A new process is started when unpickled."""
