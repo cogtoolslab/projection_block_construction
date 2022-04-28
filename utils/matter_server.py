@@ -61,7 +61,7 @@ class Physics_Server:
                     else:
                         # there are more references around, but we're letting this one go
                         pid_reference_manager[self._process.pid] -= 1
-                except KeyError:
+                except:
                     # the process is already dead
                     self._process = None
         except AttributeError:
