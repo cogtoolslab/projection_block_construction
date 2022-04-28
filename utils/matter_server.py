@@ -20,7 +20,7 @@ pid_reference_manager = {}  # stores open process IDs
 class Physics_Server:
     def __init__(self, y_height=8) -> None:
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
-        self.start_server()
+        # self.start_server() # don't start the server here, rather lazily load it when physics is requested (since we often clone worlds but then not do anything with them)
         self.y_height = y_height
 
     def __del__(self):
