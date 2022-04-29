@@ -96,7 +96,7 @@ generator = tower_generator.TowerGenerator(8, 8,
 
 
 # %%
-NUM_TOWERS  = 16 #64
+NUM_TOWERS  = 16
 towers = []
 for i in tqdm(range(NUM_TOWERS)):
     towers.append(generator.generate())
@@ -122,7 +122,7 @@ def visualize_towers(towers, text_parameters=None):
     plt.show()
 
 # %%
-visualize_towers(towers)
+# visualize_towers(towers)
 
 # %% [markdown]
 # ## Score towers for basic difficulty
@@ -145,28 +145,28 @@ def get_tower_cost(agent,world):
     return cost,world.status()
 
 # %%
-# costs = []
-# statusses = []
-# for world in tqdm(worlds):
-#     cost,status = get_tower_cost(lower_agent,world)
-#     costs.append(cost)
-#     statusses.append(status)
+costs = []
+statusses = []
+for world in tqdm(worlds):
+    cost,status = get_tower_cost(lower_agent,world)
+    costs.append(cost)
+    statusses.append(status)
 
 # %% [markdown]
 # Split the basic costs into three percentiles: easy, medium, hard.
 
 # %%
-# difficulty_percentiles = [np.percentile(costs, i)
-#                for i in [33, 66, 99]]
+difficulty_percentiles = [np.percentile(costs, i)
+               for i in [33, 66, 99]]
 
-# percentiles = [None] * len(costs)
-# for i, cost in enumerate(costs):
-#     if cost < difficulty_percentiles[0]:
-#         percentiles[i] = 'easy'
-#     elif cost < difficulty_percentiles[1]:
-#         percentiles[i] = 'medium'
-#     else:
-#         percentiles[i] = 'hard'
+percentiles = [None] * len(costs)
+for i, cost in enumerate(cosats):
+    if cost < difficulty_percentiles[0]:
+        percentiles[i] = 'easy'
+    elif cost < difficulty_percentiles[1]:
+        percentiles[i] = 'medium'
+    else:
+        percentiles[i] = 'hard'
 
 # %% [markdown]
 # ## Find best and worst subgoals
@@ -176,7 +176,7 @@ def get_tower_cost(agent,world):
 
 # %%
 decomposer = Rectangular_Keyholes(
-    sequence_length=4,
+    sequence_length=3,
     necessary_conditions=[
         Area_larger_than(area=1),
         Area_smaller_than(area=18), # used to be 21
@@ -249,17 +249,11 @@ for r in results:
 # What is the distribution over the subgoal deltas?
 
 # %%
-df['subgoal cost delta'].plot()
+# df['subgoal cost delta'].plot()
 
 # %% [markdown]
 # Let's display some of the subgoals 
 
-# %%
-for i,row in df.sort_values('subgoal cost delta',ascending=False).head(5).iterrows():
-    print(i,row['subgoal cost delta'])
-    # construct dummy sequence
-    sequence = Subgoal_sequence([row['best subgoal'], row['worst subgoal']])
-    sequence.visual_display()
 
 # %% [markdown]
 # Let's save the dataframe to disk. This will serve as the basis for the `given_subgoal` human experiment.
