@@ -4,6 +4,7 @@ from nis import match
 from typing import Dict
 import model.utils.decomposition_functions as dcf
 import random
+import matplotlib.pyplot as plt
 import numpy as np
 
 from utils.blockworld import Blockworld
@@ -187,3 +188,14 @@ class SubgoalTreeNode:
             return None
         # we do random choice between equally good subgoals here
         return random.choice([child for child in self.children if child.cost == max_cost])
+
+    def visualize(self):
+        """Plots current subgoal and the children"""
+        fig = plt.figure()
+        if self.subgoal is not None:
+            self.subgoal.visualize(title="Node subgoal", fig=fig)
+        for i,child in enumerate(self.children):
+            child.visualize(title="Child {}".format(i), fig=fig)
+        plt.show()
+
+            

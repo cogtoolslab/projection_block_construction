@@ -47,6 +47,47 @@ class Subgoal:
             # if we can't solve it (or haven't yet), we return a reward of 0
             return 0
 
+    def visualize(self, title=None, fig=None):
+        """Make a pretty visualization of the subgoal state. 
+        Set up in a flexible way to ensure that I can reuse the code for various purposes (ie. analysis step by step). Pass it a figure to have this function add a subplot to it."""
+        # pull out the relevant objects
+        blocks = self.past_world.current_state.blocks
+        full_silhouette = self.past_world.full_silhouette
+        subgoal_silhouette = self.past_world.silhouette
+        subgoal_bitmap = self.bitmap
+        # create figure
+        if fig is None:
+            fig = plt.figure()
+            draw = True
+        else:
+            draw = False
+        ax = fig.add_subplot(111)
+        # add subtle gridlines
+        # plot the current blocks
+        for i, block in enumerate(blocks):
+            # plot rectangle
+            ax.add_patch(plt.Rectangle((block.x-block.width+0.5, block.y-block.height+0.5), block.width,
+                        block.height, facecolor='orange', linewidth=3, edgecolor='black', label=i+1, alpha=1, zorder=5))
+            # add text labels in the middle of the blocks
+            ax.text(block.x, block.y, str(i+1),
+                    fontsize=15, color='grey', zorder=6)
+        # plot the full silhouette
+        ax.imshow(np.invert(full_silhouette > 0), cmap='gray', alpha=.2, zorder=1)
+        # plt.imshow(self.past_world.current_state.blockmap, cmap='pink_r', alpha=0.4)
+        # plot the subgoal silhouette as a gray overlay
+        ax.imshow(np.ones(subgoal_bitmap.shape), cmap='gray',
+                alpha=np.invert(subgoal_bitmap > 0) * 0.5, zorder=10)
+        if title:
+            ax.set_title(title)
+        # remove ticks and frame
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_frame_on(False)
+        # show the figure
+        if draw:
+            plt.show()
+        return fig
+
 
 class Subgoal_sequence:
     """Stores a sequence."""
@@ -138,7 +179,7 @@ class Subgoal_sequence:
             plt.pcolor(self.prior_world.current_state.blockmap[::-1],
                        cmap='hot_r', vmin=0, vmax=20, linewidth=0, edgecolor='none')
             # we print the target silhouette as transparent overlay
-            plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=0.5, facecolor='grey',
+            plt.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=2.5, facecolor='grey',
                        edgecolor='grey', capstyle='round', joinstyle='round', linestyle=':')
         except AttributeError:
             # no prior world.
