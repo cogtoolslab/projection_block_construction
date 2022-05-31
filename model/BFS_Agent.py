@@ -46,6 +46,9 @@ class BFS_Agent(Agent):
                              node.actions+[action])  # generate new node
                 # check if child node is winning
                 cost += 1
+                # check stability
+                if not child.state.stability():
+                    continue
                 if child.state.is_win():
                     # we've found a winning state
                     return "Winning", child, cost

@@ -84,13 +84,16 @@ class Beam_Search_Lookahead_Agent(BFS_Lookahead_Agent):
                 possible_actions = node.state.possible_actions()
                 for action in possible_actions:
                     # get target state ast node object
+                    number_of_states_evaluated += 1
                     target = Ast_node(
                         self.world.transition(action, node.state))
                     edge = Ast_edge(action, node, target)  # make edge
+                    # check for stability
+                    if self.dense_stability and not target.state.stability():
+                        continue
                     # add the parent action to allow for backtracking the found path
                     edge.target.parent_action = edge
                     candidate_edges.append(edge)
-                    number_of_states_evaluated += 1
             if verbose:
                 print("Found", len(candidate_edges), "potential edges at depth",
                       i, "for", len(current_nodes), "nodes")

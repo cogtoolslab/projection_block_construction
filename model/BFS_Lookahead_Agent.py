@@ -53,6 +53,9 @@ class BFS_Lookahead_Agent(Agent):
             possible_actions = node.state.possible_actions()
             for action in possible_actions:
                 # add action to current node with target state already filled out
+                # check for stability
+                if self.dense_stability and not self.world.transition(action, node.state).stability():
+                    continue
                 # add the result of applying the action
                 node.add_action(action, Ast_node(
                     self.world.transition(action, node.state)))

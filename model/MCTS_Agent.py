@@ -177,7 +177,7 @@ class MCTS_Agent(BFS_Lookahead_Agent):
             #     max = max - 1
             # light rollout—random agent with legal moves
             while w.status()[0] == 'Ongoing' and max != 0:
-                legal_actions = [a for a in w.possible_actions() if blockworld.legal(w.transition(a))]
+                legal_actions = [a for a in w.possible_actions() if blockworld.legal(w.transition(a)) and w.transition(a).stability()] # check for stability here
                 if legal_actions == []:
                     #if we have nowhere to go
                     # print("End of the  line",w.status())

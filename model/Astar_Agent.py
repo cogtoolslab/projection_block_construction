@@ -101,7 +101,9 @@ class Astar_Agent(BFS_Agent):
                 break
             # check if that node is winning
             states_evaluated += 1
-            # if verbose: print(node.state.blockmap) #DEBUG
+            # check for stability
+            if not node.state.stability():
+                continue # can't do anything with this node, try the next best one
             if node.state.is_win():
                 # found winning node
                 if verbose:

@@ -77,7 +77,7 @@ class Naive_Q_Agent(BFS_Lookahead_Agent):
                 last_i = step_i
                 number_of_states_evaluated += 1
                 #Have we reached a terminal state?
-                if self.world.is_fail(current_state) or self.world.is_win(current_state): 
+                if self.world.is_fail(current_state) or self.world.is_win(current_state): # this should check for stability
                     #perform terminal Q update (which is just the reward of the terminal state) for all possible actions
                     Qs.fill_Q(current_state,self.heuristic(current_state))
                     break #terminate the episode
