@@ -32,7 +32,7 @@ class Physics_Server:
     #     return Physics_Server(socket=self.socket, y_height=self.y_height, _process=self._process)
 
     def start_server(self):
-        """Starts the matter physics server."""
+        """Starts the matter physics server. Does not need to be called manually—server will be started lazily."""
         # start the node process with stdin,stdout and stderr
         self._process = subprocess.Popen(
             ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -85,7 +85,7 @@ class Physics_Server:
         try:
             if self._process.poll() is not None:
                 self.start_server()
-        except: # we don't have a process
+        except:  # we don't have a process
             self.start_server()
 
     def get_stability(self, blocks):

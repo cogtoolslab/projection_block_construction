@@ -114,7 +114,7 @@ def horizontal_tile(silhouette, reps=2):
     return np.tile(silhouette, (1, reps))[:, :]
 
 
-"""Base block libraries."""
+"""Base block libraries. width first, then height."""
 # The defaults are taken from the silhouette2 study. Width x height.
 bl_silhouette2_default = [
     blockworld.BaseBlock(1, 2),
@@ -131,6 +131,14 @@ bl_nonoverlapping_simple = [
     blockworld.BaseBlock(3, 1),
     blockworld.BaseBlock(1, 3)
 ]
+
+# for convenience named version of the above block library.
+bl_nonoverlapping_simple_named = {
+    'v2': bl_nonoverlapping_simple[0],
+    'h2': bl_nonoverlapping_simple[1],
+    'h3': bl_nonoverlapping_simple[2],
+    'v3': bl_nonoverlapping_simple[3]
+}
 
 # Non-overlapping library of appropiate complexity
 bl_nonoverlapping_med = [
