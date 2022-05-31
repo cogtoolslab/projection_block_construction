@@ -100,6 +100,43 @@ class SubgoalTree:
                 worst_cost = cost
         return worst_sequence
 
+    def get_most_divergent_pairs_of_subgoals(self, n = None):
+        """Returns the n most divergent pairs of subgoals in the tower as tuples. Each pair is based on the same node. Returns a sorted list of tuples (best, worst) of nodes."""
+        open_set = [self.root]
+        best_worst_pairs = []
+        while len(open_set) > 0:
+            current_node = open_set.pop()
+            best_child = current_node.best_child()
+            worst_child = current_node.worst_child()
+            if best_child is not None and worst_child is not None and best_child.cost != worst_child.cost: # only add if we truly have different subgoals
+                best_worst_pairs.append((best_child, worst_child))
+            for child in current_node.children:
+                open_set.append(child)
+        if n is None:
+            n = len(best_worst_pairs)
+        return sorted(best_worst_pairs, key=lambda x: x[1].cost - x[0].cost)[:min(n, len(best_worst_pairs))]
+    
+    def get_most_divergent_matching_pairs_of_subgoals(self, n = None):
+        """Returns the n most divergent pairs of subgoals that have the same mass of the tower in the tower as tuples. Each pair is based on the same node. Returns a sorted list of tuples (best, worst) of nodes."""
+        open_set = [self.root]
+        best_worst_pairs = []
+        while len(open_set) > 0:
+            current_node = open_set.pop()
+            # make dict of children with mass
+            children_with_mass = {}
+            for child in current_node.children:
+                try:
+                    children_with_mass[child.subgoal.R()] += [child]
+                except:
+                    children_with_mass[child.subgoal.R()] = [child]
+        for mass, children in children_with_mass.items():
+            children = [c for c in children if c.subgoal.solution_cost is not None]
+            if len(children) > 1:
+                # find the most divergent pair of children for that mass
+                children = sorted(children, key=lambda x: x.subgoal.solution_cost)
+                if children[0].subgoal.solution_cost != children[-1].subgoal.solution_cost:
+                    best_worst_pairs.append((children[0], children[-1]))
+        return best_worst_pairs
 
 class SubgoalTreeNode:
     """Holds a particular configuration of the building environment. A node in the tree."""
@@ -127,14 +164,26 @@ class SubgoalTreeNode:
         """Returns true if this node is a full decomposition"""
         return len(self.children) == 0
 
-    def best_subgoal(self):
-        assert len(self.subgoals >= 2), "Not enough potential subgoals"
-        min_cost = min([sg.cost for sg in self.subgoals])
+    def best_child(self):
+        """Returns the best (cheapest) child of the node."""
+        if self.is_leaf(): # no children for leaf nodes
+            return None
+        try:
+            min_cost = min([child.cost for child in self.children if child.cost is not None])
+        except ValueError:
+            # no children with a cost found
+            return None
         # we do random choice between equally good subgoals here
-        return random.choice([sg for sg in self.subgoals if sg.cost == min_cost])
+        return random.choice([child for child in self.children if child.cost == min_cost])
 
-    def worst_subgoal(self):
-        assert len(self.subgoals >= 2), "Not enough potential subgoals"
-        max_cost = max([sg.cost for sg in self.subgoals])
+    def worst_child(self):
+        """Returns the worst (most expensive) child of the node."""
+        if self.is_leaf(): # no children for leaf nodes
+            return None
+        try:
+            max_cost = max([child.cost for child in self.children if child.cost is not None])
+        except ValueError:
+            # no children with a cost found
+            return None
         # we do random choice between equally good subgoals here
-        return random.choice([sg for sg in self.subgoals if sg.cost == max_cost])
+        return random.choice([child for child in self.children if child.cost == max_cost])
