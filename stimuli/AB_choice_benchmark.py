@@ -120,15 +120,19 @@ while True:
 
     lower_agent = Best_First_Search_Agent(random_seed=42)
 
-
     costs = []
     statusses = []
-    print("Solving towers once (sequential)")
-    for world in tqdm(worlds):
-        cost,status = get_tower_cost(lower_agent,world)
-        costs.append(cost)
-        statusses.append(status)
-    costs = [np.nan] *  len(worlds)
+    print("Solving towers once (parallel)")
+    # parallelized
+    agents = [copy.deepcopy(a) for a in [lower_agent]*len(worlds)]
+
+    # remove process connection before handoff to the threads
+    for world in worlds:
+        world.physics_provider.kill_server(force=True)
+
+    results = p_tqdm.p_map(get_tower_cost, agents, worlds)
+    costs = [c[0] for c in results]
+    statusses = [c[1] for c in results]
 
     # Split the basic costs into three percentiles: easy, medium, hard.
 
