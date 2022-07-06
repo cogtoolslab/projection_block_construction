@@ -46,6 +46,8 @@ import tower_generator
 from tqdm import tqdm
 import p_tqdm
 
+import datetime
+
 import pickle
 
 import math
@@ -72,6 +74,10 @@ import utils.blockworld_library as bl
 
 
 
+# %%
+# used for naming the output file
+date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 # %% [markdown]
 # Usually we would fix the random seeds here, but the agents are being run with fixed random seeds, so this is not necessary here.
 
@@ -89,23 +95,37 @@ block_library = bl_nonoverlapping_simple
 # %%
 generator = tower_generator.TowerGenerator(8, 8,
                                            block_library=block_library,
-                                           seed=42,
+                                           seed=3,
                                            padding=(1, 0),
-                                           num_blocks=lambda: random.randint(8, 16), #  flat random interval of tower sizes (inclusive)
+                                           num_blocks=lambda: random.randint(6, 18), #  flat random interval of tower sizes (inclusive)
                                            )
 
-
 # %%
-NUM_TOWERS  = 16
+NUM_TOWERS  = 128
 towers = []
 for i in tqdm(range(NUM_TOWERS)):
-    towers.append(generator.generate())
+    tower = generator.generate()
+    towers.append(tower)
 
 # %%
 worlds = [Blockworld(silhouette=t['bitmap'], block_library=bl.bl_nonoverlapping_simple) for t in towers]
+worlds_sizes = [len(t['blocks']) for t in towers]
 
 # %% [markdown]
-# ### Visualize the generated towers
+# Generate percentiles for the size of towers to select over in the experiment creation notebook
+
+# %%
+towersize_percentiles = [np.percentile(worlds_sizes, i)
+               for i in [33, 66, 99]]
+
+size_percentiles = [None] * len(worlds_sizes)
+for i, cost in enumerate(worlds_sizes):
+    if cost < towersize_percentiles[0]:
+        size_percentiles[i] = 'small'
+    elif cost < towersize_percentiles[1]:
+        size_percentiles[i] = 'medium'
+    else:
+        size_percentiles[i] = 'large'
 
 # %%
 # look at towers
@@ -145,12 +165,16 @@ def get_tower_cost(agent,world):
     return cost,world.status()
 
 # %%
-costs = []
-statusses = []
-for world in tqdm(worlds):
-    cost,status = get_tower_cost(lower_agent,world)
-    costs.append(cost)
-    statusses.append(status)
+# parallelized
+agents = [copy.deepcopy(a) for a in [lower_agent]*len(worlds)]
+
+# remove process connection before handoff to the threads
+for world in worlds:
+    world.physics_provider.kill_server(force=True)
+
+results = p_tqdm.p_map(get_tower_cost, agents, worlds)
+costs = [c[0] for c in results]
+statusses = [c[1] for c in results]
 
 # %% [markdown]
 # Split the basic costs into three percentiles: easy, medium, hard.
@@ -160,7 +184,7 @@ difficulty_percentiles = [np.percentile(costs, i)
                for i in [33, 66, 99]]
 
 percentiles = [None] * len(costs)
-for i, cost in enumerate(cosats):
+for i, cost in enumerate(costs):
     if cost < difficulty_percentiles[0]:
         percentiles[i] = 'easy'
     elif cost < difficulty_percentiles[1]:
@@ -179,7 +203,8 @@ decomposer = Rectangular_Keyholes(
     sequence_length=3,
     necessary_conditions=[
         Area_larger_than(area=1),
-        Area_smaller_than(area=18), # used to be 21
+        # Area_smaller_than(area=30), # used to be 21
+        Mass_smaller_than(area=16),
         No_edge_rows_or_columns(),
     ],
     necessary_sequence_conditions=[
@@ -218,7 +243,7 @@ trees = p_tqdm.p_map(get_subgoal_tree_from_tower, agents, worlds)
 # For each tower, select n state/subgoal combinations that are maximally divergent.
 
 # %%
-NUM_SGs_PER_TOWER = 6 # how many subgoals do we want to choose?
+NUM_SGs_PER_TOWER = 10 # how many subgoals do we want to choose?
 
 # %%
 best_worst_subgoals = []
@@ -226,27 +251,33 @@ for tree in trees:
     best_worst_subgoals.append(tree.get_most_divergent_matching_pairs_of_subgoals(NUM_SGs_PER_TOWER))
 
 # %%
-results = [{'world':world,'world name':index, 'subgoal tree':tree,'cost':cost,'percentile':percentile, 'best_worst_subgoals':best_worst_subgoal} for world,index,tree,cost,percentile,best_worst_subgoal in zip(worlds,range(len(towers)), trees,costs,percentiles,best_worst_subgoals)]
+results = [{'world': world, 'world name': index, 'subgoal tree': tree, 'cost': cost, 'percentile': percentile, 'best_worst_subgoals': best_worst_subgoal, 'world_size': world_size, 'world_size_percentile': world_size_percentile}
+           for world, index, tree, cost, percentile, best_worst_subgoal, world_size, world_size_percentile in zip(worlds, range(len(towers)), trees, costs, percentiles, best_worst_subgoals, worlds_sizes, size_percentiles)]
+
 
 # %% [markdown]
 # Add into df
 
 # %%
-df = pd.DataFrame(columns=['world name','world','best subgoal', 'worst subgoal', 'subgoal cost delta', 'tower percentile', 'state', 'blocks'])
+df = pd.DataFrame(columns=['world name', 'world', 'best subgoal', 'worst subgoal',
+                  'subgoal cost delta', 'subgoal cost ratio', 'tower percentile', 'state', 'blocks', 'world size', 'world size percentile'])
 i = 0
 
 for r in results:
-    for best_subgoal,worst_subgoal in r['best_worst_subgoals']:
+    for best_subgoal, worst_subgoal in r['best_worst_subgoals']:
         # fill in subgoal cost delta
         delta = worst_subgoal.subgoal.solution_cost - best_subgoal.subgoal.solution_cost
+        ratio = worst_subgoal.subgoal.solution_cost / best_subgoal.subgoal.solution_cost
         # fill in state from the best subgoal
-        state = best_subgoal.subgoal.past_world.current_state
+        state = best_subgoal.subgoal.prior_world.current_state
         # insert into dataframe
-        df.loc[i] = [r['world name'],r['world'],best_subgoal,worst_subgoal,delta,r['percentile'],state,state.blocks]
+        df.loc[i] = [r['world name'], r['world'], best_subgoal,
+                     worst_subgoal, delta, ratio, r['percentile'], state, state.blocks, r['world_size'], r['world_size_percentile']]
         i += 1
 
+
 # %% [markdown]
-# What is the distribution over the subgoal deltas?
+# What is the distribution over the subgoal deltas/ratios?
 
 # %%
 # df['subgoal cost delta'].plot()
@@ -254,11 +285,30 @@ for r in results:
 # %% [markdown]
 # Let's display some of the subgoals 
 
+# %%
+for i,row in df.sort_values('subgoal cost ratio',ascending=False).head(3).iterrows():
+    print(i,row['subgoal cost delta'])
+    # construct dummy sequence
+    sequence = Subgoal_sequence([row['best subgoal'], row['worst subgoal']])
+    sequence.visual_display()
 
 # %% [markdown]
 # Let's save the dataframe to disk. This will serve as the basis for the `given_subgoal` human experiment.
 
+# # %%
+# df['world size percentile'].value_counts()
+
+# # %%
+# df['tower percentile'].value_counts()
+
 # %%
-df.to_pickle("most divergent subgoals.pkl")
+df
+
+# %%
+df.to_pickle("most divergent subgoals {}.pkl".format(date))
+print('Saved to "most divergent subgoals {}.pkl"'.format(date))
+
+# %%
+
 
 
