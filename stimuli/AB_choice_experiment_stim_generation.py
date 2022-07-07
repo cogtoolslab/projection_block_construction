@@ -243,7 +243,7 @@ trees = p_tqdm.p_map(get_subgoal_tree_from_tower, agents, worlds)
 # For each tower, select n state/subgoal combinations that are maximally divergent.
 
 # %%
-NUM_SGs_PER_TOWER = 10 # how many subgoals do we want to choose?
+NUM_SGs_PER_TOWER = 4 # how many subgoals do we want to choose?
 
 # %%
 best_worst_subgoals = []
@@ -251,6 +251,10 @@ for tree in trees:
     best_worst_subgoals.append(tree.get_most_divergent_matching_pairs_of_subgoals(NUM_SGs_PER_TOWER))
 
 # %%
+print("Got {} subgoal pairs for {} towers".format(sum([len(x) for x in best_worst_subgoals]), len(towers)))
+
+# %%
+# this is on the level of towers, not subgoal pairs
 results = [{'world': world, 'world name': index, 'subgoal tree': tree, 'cost': cost, 'percentile': percentile, 'best_worst_subgoals': best_worst_subgoal, 'world_size': world_size, 'world_size_percentile': world_size_percentile}
            for world, index, tree, cost, percentile, best_worst_subgoal, world_size, world_size_percentile in zip(worlds, range(len(towers)), trees, costs, percentiles, best_worst_subgoals, worlds_sizes, size_percentiles)]
 
@@ -263,6 +267,7 @@ df = pd.DataFrame(columns=['world name', 'world', 'best subgoal', 'worst subgoal
                   'subgoal cost delta', 'subgoal cost ratio', 'tower percentile', 'state', 'blocks', 'world size', 'world size percentile'])
 i = 0
 
+# this is on the level of subgoal pairs
 for r in results:
     for best_subgoal, worst_subgoal in r['best_worst_subgoals']:
         # fill in subgoal cost delta
@@ -276,11 +281,42 @@ for r in results:
         i += 1
 
 
+# %%
+# get percentiles for subgoal size
+subgoal_sizes = df['best subgoal'].apply(lambda x: np.sum(x.subgoal.bitmap > 0))
+
+subgoal_size_percentile_bounds = [np.percentile(subgoal_sizes, i)
+               for i in [33, 66, 99]]
+
+def get_subgoal_size_percentile(subgoal):
+    subgoal_size = np.sum(subgoal.subgoal.bitmap > 0)
+    if subgoal_size < subgoal_size_percentile_bounds[0]:
+        return 'small'
+    elif subgoal_size < subgoal_size_percentile_bounds[1]:
+        return 'medium'
+    else:
+        return 'large'
+
+df['subgoal size percentile'] = df['best subgoal'].apply(get_subgoal_size_percentile)
+
 # %% [markdown]
 # What is the distribution over the subgoal deltas/ratios?
 
 # %%
-# df['subgoal cost delta'].plot()
+# df['subgoal cost delta'].hist()
+
+# %%
+# df['subgoal cost ratio'].hist()
+
+# %% [markdown]
+# What is the size of the subgoals (in number of cells)?
+
+# %%
+df['subgoal size'] = df['best subgoal'].apply(lambda x: np.sum(x.subgoal.bitmap > 0))
+# df.groupby('subgoal size percentile').describe()['subgoal size']
+
+# %%
+# df['subgoal size'].hist()
 
 # %% [markdown]
 # Let's display some of the subgoals 
@@ -293,13 +329,13 @@ for i,row in df.sort_values('subgoal cost ratio',ascending=False).head(3).iterro
     sequence.visual_display()
 
 # %% [markdown]
+# We need to assert that we only have subgoals that don't depend on previously placed blocks because reproducing blocks is not yet implemented in the experiment.
+
+# %%
+assert np.all([x == [] for x in df['best subgoal'].apply(lambda x: x.subgoal.prior_world.current_state.blocks)]), "Not at all subgoals depend on the empty world state!"
+
+# %% [markdown]
 # Let's save the dataframe to disk. This will serve as the basis for the `given_subgoal` human experiment.
-
-# # %%
-# df['world size percentile'].value_counts()
-
-# # %%
-# df['tower percentile'].value_counts()
 
 # %%
 df
@@ -307,8 +343,5 @@ df
 # %%
 df.to_pickle("most divergent subgoals {}.pkl".format(date))
 print('Saved to "most divergent subgoals {}.pkl"'.format(date))
-
-# %%
-
 
 
