@@ -47,7 +47,7 @@ class Subgoal:
             # if we can't solve it (or haven't yet), we return a reward of 0
             return 0
 
-    def visualize(self, title=None, fig=None):
+    def visualize(self, title=None, fig=None, show_blocks=True, block_color='orange'):
         """Make a pretty visualization of the subgoal state. 
         Set up in a flexible way to ensure that I can reuse the code for various purposes (ie. analysis step by step). Pass it a figure to have this function add a subplot to it."""
         # pull out the relevant objects
@@ -64,19 +64,21 @@ class Subgoal:
         ax = fig.add_subplot(111)
         # add subtle gridlines
         # plot the current blocks
-        for i, block in enumerate(blocks):
-            # plot rectangle
-            ax.add_patch(plt.Rectangle((block.x-block.width+0.5, block.y-block.height+0.5), block.width,
-                        block.height, facecolor='orange', linewidth=3, edgecolor='black', label=i+1, alpha=1, zorder=5))
-            # add text labels in the middle of the blocks
-            ax.text(block.x, block.y, str(i+1),
-                    fontsize=15, color='grey', zorder=6)
+        if show_blocks:
+            for i, block in enumerate(blocks):
+                # plot rectangle
+                ax.add_patch(plt.Rectangle((block.x - 0.5, block.y-block.height+0.5), block.width,
+                                           block.height, facecolor=block_color, linewidth=3, edgecolor='black', label=i+1, alpha=1, zorder=5))
+                # add text labels in the middle of the blocks
+                ax.text(block.x, block.y, str(i+1),
+                        fontsize=15, color='grey', zorder=6)
         # plot the full silhouette
-        ax.imshow(np.invert(full_silhouette > 0), cmap='gray', alpha=.2, zorder=1)
+        ax.imshow(np.invert(full_silhouette > 0),
+                  cmap='gray', alpha=.2, zorder=1)
         # plt.imshow(self.past_world.current_state.blockmap, cmap='pink_r', alpha=0.4)
         # plot the subgoal silhouette as a gray overlay
         ax.imshow(np.ones(subgoal_bitmap.shape), cmap='gray',
-                alpha=np.invert(subgoal_bitmap > 0) * 0.5, zorder=10)
+                  alpha=np.invert(subgoal_bitmap > 0) * 0.5, zorder=10)
         if title:
             ax.set_title(title)
         # remove ticks and frame
