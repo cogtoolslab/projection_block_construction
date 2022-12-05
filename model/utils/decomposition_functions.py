@@ -314,12 +314,15 @@ class Horizontal_Construction_Paper(Decomposition_Function):
         for y in range(self.silhouette.shape[0]):
             decomposition = np.copy(self.silhouette)
             decomposition[0:y, :] = 0
+            bitmap = np.ones_like(self.silhouette)
+            bitmap[0:y, :] = 0
             decompositions += [{'decomposition': decomposition,
+                                'bitmap': bitmap,
                                 'name': abs(self.silhouette.shape[0] - y)}]
         decompositions.reverse()
         return decompositions
 
-    def get_sequences(self, state=None, length=1, number_of_sequences=None):
+    def get_sequences(self, state=None, length=1, number_of_sequences=None, verbose=False):
         """Generate a list of all legal (ie. only strictly increasing) sequences of subgoals up to *length* deep.
 
         Filter for length ensures that the lenght of sequence is either *n* or that the sequence ends in the complete decomposition. False includes incomplete sequences (use this for incremental planners)."""
