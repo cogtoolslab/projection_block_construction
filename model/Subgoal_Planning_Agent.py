@@ -53,12 +53,22 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         if self.random_seed is None:
             self.random_seed = self.random_seed = randint(0, 99999)
         if decomposer is None:
-            try:
-                decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(
-                    self.world.full_silhouette)
-            except AttributeError:  # no world has been passed, will need to be updated using decomposer.set_silhouette. Done automatically using Agent.set_world
-                decomposer = model.utils.decomposition_functions.Horizontal_Construction_Paper(
-                    None)
+            decomposer = model.utils.decomposition_functions.Rectangular_Keyholes(
+                sequence_length=3,
+                necessary_conditions=[
+                    model.utils.decomposition_functions.Area_larger_than(
+                        area=1),
+                    # Area_smaller_than(area=30), # used to be 21
+                    model.utils.decomposition_functions.Mass_smaller_than(
+                        area=16),
+                    model.utils.decomposition_functions.No_edge_rows_or_columns(),
+                ],
+                necessary_sequence_conditions=[
+                    model.utils.decomposition_functions.Complete(),
+                    model.utils.decomposition_functions.No_overlap(),
+                    model.utils.decomposition_functions.Supported(),
+                ]
+            )
         self.decomposer = decomposer
         self._cached_subgoal_evaluations = {}  # sets up cache for  subgoal evaluations
 
@@ -278,14 +288,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
 
-    def get_subgoal_tree(self, only_solved_sequences = False,verbose=False):
+    def get_subgoal_tree(self, only_solved_sequences=False, verbose=False):
         """Plans subgoals according to agent specification and returns a subgoal tree of filled out subgoals. Note that this should be preceeded by a call to world.reset() in most cases, as the resulting tree will depend on the state of the world.
         'only_solved_sequences' will ensure that all subgoals in the tree are buildable. Combined with a decomposer that only considers complete sequences this ensures that all subgoals in the tree is on the path to an achievable win.
         """
         # get all subgoals
         sequence, all_sequences, solved_sequences = self.plan_subgoals(
             verbose=verbose)
-        if only_solved_sequences: 
+        if only_solved_sequences:
             all_sequences = solved_sequences
         # create root node
         root = SubgoalTreeNode(subgoal=None, parent=None, children=[])
