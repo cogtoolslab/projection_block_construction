@@ -47,7 +47,7 @@ class Subgoal:
             # if we can't solve it (or haven't yet), we return a reward of 0
             return 0
 
-    def visualize(self, title=None, fig=None, show_blocks=True, block_color='orange'):
+    def visualize(self, title=None, ax = None, show_blocks=True, block_color='orange'):
         """Make a pretty visualization of the subgoal state. 
         Set up in a flexible way to ensure that I can reuse the code for various purposes (ie. analysis step by step). Pass it a figure to have this function add a subplot to it."""
         # pull out the relevant objects
@@ -56,12 +56,11 @@ class Subgoal:
         subgoal_silhouette = self.past_world.silhouette
         subgoal_bitmap = self.bitmap
         # create figure
-        if fig is None:
+        if ax is None:
             fig = plt.figure()
             draw = True
         else:
             draw = False
-        ax = fig.add_subplot(111)
         # add subtle gridlines
         # plot the current blocks
         if show_blocks:
@@ -88,7 +87,7 @@ class Subgoal:
         # show the figure
         if draw:
             plt.show()
-        return fig
+        return ax
 
 
 class Subgoal_sequence:

@@ -189,13 +189,13 @@ class SubgoalTreeNode:
         # we do random choice between equally good subgoals here
         return random.choice([child for child in self.children if child.cost == max_cost])
 
-    def visualize(self):
+    def visualize(self, block_color = None):
         """Plots current subgoal and the children"""
         fig = plt.figure()
         if self.subgoal is not None:
-            self.subgoal.visualize(title="Node subgoal", fig=fig)
+            self.subgoal.visualize(title="Node subgoal", fig=fig, block_color = block_color)
         for i,child in enumerate(self.children):
-            child.visualize(title="Child {}".format(i), fig=fig)
+            child.visualize(title="Child {}".format(i), fig=fig, block_color = block_color)
         plt.show()
 
             
