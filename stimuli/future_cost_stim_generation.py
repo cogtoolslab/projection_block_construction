@@ -245,7 +245,10 @@ def get_initial_preferences(world_in):
 
     # %%
     def entropy(p):
-        return -sum([p_i * math.log(p_i) for p_i in p])
+        try:
+            return -sum([p_i * math.log(p_i) for p_i in p])
+        except ValueError:
+            return 0
 
     # %%
     def get_relative_subgoal_informativity(subgoal_preferences):
@@ -256,7 +259,10 @@ def get_initial_preferences(world_in):
             entropy_all = entropy(subgoal_preferences[subgoal_name].values())
             for depth in subgoal_preferences[subgoal_name].keys():
                 other_entropy = entropy([subgoal_preferences[subgoal_name][d] for d in subgoal_preferences[subgoal_name].keys() if d != depth])
-                subgoal_relative_preferences[subgoal_name][depth] = entropy_all/other_entropy
+                try:
+                    subgoal_relative_preferences[subgoal_name][depth] = (entropy_all)/(other_entropy)
+                except ZeroDivisionError:
+                    subgoal_relative_preferences[subgoal_name][depth] = 0
             subgoal_relative_preferences
         return subgoal_relative_preferences
     # %%
@@ -297,6 +303,7 @@ def get_initial_preferences(world_in):
 
 
 # actually run it
+# outs = map(get_initial_preferences, list(worlds)) # for debugging purposes
 outs = p_tqdm.p_map(get_initial_preferences, list(worlds))
 initial_subgoals_dfs = [out[0] for out in outs]
 solved_sequences = {out[3]: out[1] for out in outs}
@@ -309,6 +316,9 @@ combined_df = pd.concat(initial_subgoals_dfs)
 # %%
 # save out initial_subgoals_df
 combined_df.to_csv('initial_subgoals_df_' + date + '.csv')
+# also to pickle
+with open('initial_subgoals_df_' + date + '.pkl', 'wb') as f:
+    pickle.dump(combined_df, f)
 # save the solved sequences
 with open('solved_sequences_' + date + '.pkl', 'wb') as f:
     pickle.dump(solved_sequences, f)
