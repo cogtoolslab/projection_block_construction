@@ -189,16 +189,21 @@ def get_initial_preferences(world_in):
             length_sequences[length] = [x for x in length_sequences[length] if not (x.names() in seen or seen.add(x.names()))] # I assume that a tuple of the same objects is the same even when recreated
 
         subgoals = {}
-        # get first subgoal V's
+        # get first subgoal V's (as well as other measures for later analysis)
         subgoal_depth_Vs = {}
+        subgoal_depth_sequences = {} # dict with {initial subgoal: {depth: [sequence objects]}}
         for depth in length_sequences:
             subgoal_depth_Vs[depth] = {}
-            for seq in length_sequences[depth]:
+            for seq in length_sequences[depth]: 
                 V = seq.V(c_weight) if c_weight is not None else seq.V()
+                if seq.subgoals[0].name not in subgoal_depth_sequences:
+                    subgoal_depth_sequences[seq.subgoals[0].name] = {}
                 if seq.subgoals[0].name in subgoal_depth_Vs[depth]:
                     subgoal_depth_Vs[depth][seq.subgoals[0].name] += [V]
+                    subgoal_depth_sequences[seq.subgoals[0].name][depth] += [seq]
                 else:
                     subgoal_depth_Vs[depth][seq.subgoals[0].name] = [V]
+                    subgoal_depth_sequences[seq.subgoals[0].name][depth] = [seq]
                 if seq.subgoals[0].name not in subgoals:
                     subgoals[seq.subgoals[0].name] = seq.subgoals[0]
 
@@ -213,32 +218,34 @@ def get_initial_preferences(world_in):
                 sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
                 softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
                 subgoal_preferences[subgoal_name][depth] = softmax_val
-        return subgoal_preferences
+        return subgoal_preferences, subgoal_depth_sequences
 
     # %%
     def get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas):
-        """Generates dict with {$\lambda$: {subgoal: [preference for the ith depth agent]}}"""
+        """Generates dict with {$\lambda$: {subgoal: [preference for the ith depth agent]}}
+        
+        Also returns dict with all sequences of a certain length. Note that this is only returned for a single value of $\lambda$, so be careful with running V() on it."""
         subgoal_preferences_over_lambda = {}
         for l in lambdas:
-            subgoal_preferences_over_lambda[l] = get_subgoal_choice_preferences(solved_sequences,l)
-        return subgoal_preferences_over_lambda
+            subgoal_preferences_over_lambda[l], subgoal_depth_sequences = get_subgoal_choice_preferences(solved_sequences,l)
+        return subgoal_preferences_over_lambda, subgoal_depth_sequences
 
     # %%
-    l_subgoal_choice_preferences = get_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0, 1, 100))
+    # l_subgoal_choice_preferences = get_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0, 1, 100))
 
     # %% [markdown]
     # We'll need to marginalize over lambda
 
     # %%
     def get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas):
-        subgoal_preferences_over_lambda = get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas)
+        subgoal_preferences_over_lambda, subgoal_depth_sequences = get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas)
         # marginalize over lambda
         subgoal_preferences = {}
         for subgoal_name in subgoal_preferences_over_lambda[lambdas[0]].keys():
             subgoal_preferences[subgoal_name] = {}
             for depth in subgoal_preferences_over_lambda[lambdas[0]][subgoal_name].keys():
                 subgoal_preferences[subgoal_name][depth] = np.mean([subgoal_preferences_over_lambda[l][subgoal_name][depth] for l in lambdas])
-        return subgoal_preferences
+        return subgoal_preferences, subgoal_depth_sequences
     
     # %% [markdown]
     # That gives us the absolute choice preference of the planner. We also want the relative choice preference, which is the ratio in entropy of the distribution over the first subgoals with and without the planner included. The higher the difference, the more the planner is preferred. This indicates the relative to the entropy of the other planners introducing the new one reduces entropy by a certain amount.
@@ -266,7 +273,7 @@ def get_initial_preferences(world_in):
             subgoal_relative_preferences
         return subgoal_relative_preferences
     # %%
-    subgoal_preferences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0.1, 1, 100))
+    subgoal_preferences, subgoal_depth_sequences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0.1, 1, 100))
 
     # %%
     relative_subgoal_preferences = get_relative_subgoal_informativity(subgoal_preferences)
@@ -299,7 +306,7 @@ def get_initial_preferences(world_in):
     initial_subgoals_df['R'] = initial_subgoals_df['subgoal'].apply(lambda x: x.R())
 
     # %%
-    return initial_subgoals_df, solved_sequences, w, world_index
+    return initial_subgoals_df, solved_sequences, w, world_index, subgoal_depth_sequences
 
 
 # actually run it
@@ -308,6 +315,7 @@ outs = p_tqdm.p_map(get_initial_preferences, list(worlds))
 initial_subgoals_dfs = [out[0] for out in outs]
 solved_sequences = {out[3]: out[1] for out in outs}
 worlds = {out[3]: out[2] for out in outs}
+subgoal_depth_sequencess = {out[3]: out[4] for out in outs}
 
 print("Done generating initial subgoals, collating dfs...")
 
@@ -319,6 +327,9 @@ combined_df.to_csv('initial_subgoals_df_' + date + '.csv')
 # also to pickle
 with open('initial_subgoals_df_' + date + '.pkl', 'wb') as f:
     pickle.dump(combined_df, f)
+# save the sequences organized by subgoal and depth
+with open('subgoal_depth_sequences_' + date + '.pkl', 'wb') as f:
+    pickle.dump(subgoal_depth_sequencess, f)
 # save the solved sequences
 with open('solved_sequences_' + date + '.pkl', 'wb') as f:
     pickle.dump(solved_sequences, f)
