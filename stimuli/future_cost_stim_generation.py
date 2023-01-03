@@ -148,7 +148,7 @@ def get_initial_preferences(world_in):
     # %%
     # sg_tree = sga.get_subgoal_tree(only_solved_sequences=True)
 
-    print("Generating subgoal tree for world {}".format(world_index))
+    # print("Generating subgoal tree for world {}".format(world_index))
 
     # %%
     _, all_sequences, solved_sequences = sga.plan_subgoals(verbose=False)
