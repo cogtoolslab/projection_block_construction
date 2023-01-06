@@ -58,6 +58,7 @@ class Subgoal:
         # create figure
         if ax is None:
             fig = plt.figure()
+            ax = fig.add_subplot(111)
             draw = True
         else:
             draw = False
