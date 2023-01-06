@@ -5,7 +5,7 @@ The block tower reconstrution task is based on the one described in [McCarthy, K
 
 A subset of this work has been published as:
 [Binder, F., Kirsh, D., and Fan, J. (2021). Visual scoping operations for physical assembly. _Proceedings of the 43rd Annual Meeting of the Cognitive Science Society._](http://arxiv.org/abs/2106.05654) 
-**See the work corresponging to the cogsci 2021 publication in the [cogsci2021 branch](https://github.com/cogtoolslab/tools_block_construction/tree/cogsci2021)**
+**See the work corresponding to the cogsci 2021 publication in the [cogsci2021 branch](https://github.com/cogtoolslab/tools_block_construction/tree/cogsci2021)**
 
 ## Simple action level planning agents
 
