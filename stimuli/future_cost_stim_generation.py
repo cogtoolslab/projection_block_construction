@@ -216,7 +216,10 @@ def get_initial_preferences(world_in):
                 # using softmax with K defined above
                 total_best_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
-                softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
+                try:
+                    softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
+                except ZeroDivisionError:
+                    softmax_val = 0
                 subgoal_preferences[subgoal_name][depth] = softmax_val
         return subgoal_preferences, subgoal_depth_sequences
 
