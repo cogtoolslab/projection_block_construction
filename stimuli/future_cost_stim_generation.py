@@ -98,7 +98,7 @@ generator = tower_generator.TowerGenerator(8, 8,
 
 print("Generating towers")
 # %%
-NUM_TOWERS  = 128
+NUM_TOWERS  = 128*2
 towers = []
 for i in tqdm(range(NUM_TOWERS)):
     tower = generator.generate()
@@ -108,11 +108,12 @@ for i in tqdm(range(NUM_TOWERS)):
 worlds = [Blockworld(silhouette=t['bitmap'], block_library=bl.bl_nonoverlapping_simple) for t in towers]
 
 print("Generated {} towers".format(len(worlds)))
-# %% [markdown]
-# ## Generate subgoal decompositon tree
 
-# %%
-MAX_LENGTH = 4 # maximum length of sequences to consider
+CUTOFF = 128
+print("Ignoring first {CUTOFF} towers")
+towers = towers[CUTOFF:]
+
+MAX_LENGTH = 3 # maximum length of sequences to consider
 
 initial_subgoals_dfs = [] #store the results
 
@@ -278,8 +279,11 @@ def get_initial_preferences(world_in):
     # %%
     subgoal_preferences, subgoal_depth_sequences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0.1, 1, 100))
 
+    print("Got subgoal preferences over lambda for world {}".format(world_index))
     # %%
     relative_subgoal_preferences = get_relative_subgoal_informativity(subgoal_preferences)
+    
+    print("Got relative subgoal preferences over lambda for world {}".format(world_index))
 
     # %%
     # lets put everything into a big dataframe
@@ -308,13 +312,15 @@ def get_initial_preferences(world_in):
     initial_subgoals_df['C'] = initial_subgoals_df['subgoal'].apply(lambda x: x.C)
     initial_subgoals_df['R'] = initial_subgoals_df['subgoal'].apply(lambda x: x.R())
 
+    print("Created dataframes & done for world {}".format(world_index))
+
     # %%
     return initial_subgoals_df, solved_sequences, w, world_index, subgoal_depth_sequences
 
 
 # actually run it
 # outs = map(get_initial_preferences, list(worlds)) # for debugging purposes
-outs = p_tqdm.p_map(get_initial_preferences, list(worlds))
+outs = p_tqdm.p_umap(get_initial_preferences, list(worlds))
 initial_subgoals_dfs = [out[0] for out in outs]
 solved_sequences = {out[3]: out[1] for out in outs}
 worlds = {out[3]: out[2] for out in outs}
