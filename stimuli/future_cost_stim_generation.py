@@ -32,7 +32,10 @@ sys.path.append(experiments_dir)
 df_dir = os.path.join(proj_dir, 'results/dataframes')
 stim_dir = os.path.join(proj_dir, 'stimuli')
 
-import tower_generator
+try:
+    import stimuli.tower_generator as tower_generator
+except:
+    import tower_generator
 
 from tqdm import tqdm
 import p_tqdm
