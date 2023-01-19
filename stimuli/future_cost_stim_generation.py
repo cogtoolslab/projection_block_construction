@@ -69,9 +69,9 @@ import utils.blockworld_library as bl
 
 
 SOFTMAX_K = 1
-MAX_LENGTH = 2 # maximum length of sequences to consider
+MAX_LENGTH = 3 # maximum length of sequences to consider
 # the generation parameters are in the executable section of the file below
-
+# TODO make these parameters rather than hard coded
 
 def get_initial_preferences(world_in):
     world_index, w = world_in
@@ -200,7 +200,7 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None):
             try:
                 softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
             except ZeroDivisionError:
-                softmax_val = 0
+                softmax_val = 1 if sg_V == max(total_best_Vs) else 0
             subgoal_preferences[subgoal_name][depth] = softmax_val
     return subgoal_preferences, subgoal_depth_sequences
 
