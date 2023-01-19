@@ -170,6 +170,11 @@ class Subgoal_sequence:
         score = sum([sg.R() for sg in self.subgoals])
         return score
 
+    def C(self):
+        """Cumulative cost of subgoals"""
+        score = sum([sg.C for sg in self.subgoals])
+        return score
+
     def visual_display(self, blocking=True, title=None):
         """Displays the sequence visually. See also Blockworld.State.visual_display()"""
         plt.close('all')
