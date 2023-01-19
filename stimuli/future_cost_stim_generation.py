@@ -70,6 +70,7 @@ import utils.blockworld_library as bl
 
 SOFTMAX_K = 1
 MAX_LENGTH = 3 # maximum length of sequences to consider
+LAMBDAS = np.linspace(0.1, 6., 100) # lambdas to marginalize over
 # the generation parameters are in the executable section of the file below
 # TODO make these parameters rather than hard coded
 
@@ -112,7 +113,7 @@ def get_initial_preferences(world_in):
     # 3. Over all sequences of a length, get list of V's for the first subgoal
     # 4. Use the list of V's to calculate preferences over the first subgoals
 
-    subgoal_preferences, subgoal_depth_sequences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, np.linspace(0.1, 1, 100))
+    subgoal_preferences, subgoal_depth_sequences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, LAMBDAS)
 
     print("Got subgoal preferences over lambda for world {}".format(world_index))
     relative_subgoal_preferences = get_relative_subgoal_informativity(subgoal_preferences)
