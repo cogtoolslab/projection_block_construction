@@ -31,6 +31,7 @@ class Simulated_Lookahead_Subgoal_Planning_Agent(Subgoal_Planning_Agent):
         if self.random_seed is None:
             self.random_seed = self.random_seed = randint(0,99999)
         self.note = note #just a label to keep track of the agent
+        self.label = note
     
     def set_parent_agent(self,parent_agent):
         self.parent_agent = parent_agent #the full decomposition agent we draw from
