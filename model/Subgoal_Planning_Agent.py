@@ -33,7 +33,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                  step_size=1,  # how many subgoals to act. Negative or zero to act from end of plan
                  # randomly sample n sequences. Use `None` to use all possible sequences
                  max_number_of_sequences=None,
-                 c_weight=1/1000,
+                 c_weight=1,
                  # Will keep retrying to solve subgoals until this cost is reached. Set to 1 for a single try (ie. deterministic algorithms)
                  max_cost=1,
                  lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
