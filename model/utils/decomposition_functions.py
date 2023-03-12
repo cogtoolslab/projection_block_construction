@@ -388,11 +388,20 @@ class Rectangular_Keyholes(Decomposition_Function):
                                             'name': 'x:{} y:{} w:{} h:{}'.format(x, y, w, h), 'x': x, 'y': y, 'w': w, 'h': h}]
         return decompositions
 
+class No_Subgoals(Decomposition_Function):
+    """Only returns the entire silhouette as a subgoal"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    def get_all_potential_decompositions(self):
+        x, y, w, h = 0, 0, self.silhouette.shape[1], self.silhouette.shape[0]
+        return [{'decomposition': self.silhouette, 'bitmap': np.ones_like(self.silhouette), 'name': 'x:{} y:{} w:{} h:{}'.format(x, y, w, h), 'x': x, 'y': y, 'w': w, 'h': h}]
+
 # CONDITIONS
 # Necessary conditions for SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (decomposition (with decomposition['decomposition] as bitmap), current state of the world)
 # subset of condition to implement __call__ so the object can be called like a function
-
 
 class Condition:
     def __init__(self):
