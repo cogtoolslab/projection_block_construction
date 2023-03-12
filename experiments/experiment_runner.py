@@ -133,7 +133,7 @@ def _run_single_experiment(experiment):
               "because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
         time.sleep(1000)
 
-    print('Running', agent.__str__(), '******', world.__str__())
+    # print('Running', agent.__str__(), '******', world.__str__())
     agent_parameters = agent.get_parameters()
     agent_parameters_w_o_random_seed = {
         key: value for key, value in agent_parameters.items() if key != 'random_seed'}
@@ -198,8 +198,8 @@ def _run_single_experiment(experiment):
             break
 
     # after we stop acting
-    print("Done with", agent.__str__(), '******', world_label, "in %s seconds with outcome " %
-          round((time.perf_counter() - start_time)), str(world_status))
+    # print("Done with", agent.__str__(), '******', world_label, "in %s seconds with outcome " %
+        #   round((time.perf_counter() - start_time)), str(world_status))
     # truncate df and return
     return r[r['run_ID'].notnull()]
 
