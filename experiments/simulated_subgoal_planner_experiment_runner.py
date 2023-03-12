@@ -41,6 +41,7 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         chunked_experiments.append(experiments[index:index+chunk_experiments_size])
         index = index+chunk_experiments_size
     print("Chunked experiments into",len(chunked_experiments),"chunks")
+    all_results = []
     for chunk_i,experiments in enumerate(chunked_experiments):
         chunk_i+=1 #since we don't count from 0
         print("Running experiment block",chunk_i,"of",len(chunked_experiments))
@@ -61,6 +62,7 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
             print("Got empty results")
         else:
             preprocess_df(results) #automatically fill in code relevant to analysis
+        all_results.append(results)
 
 
         if save is not False:
@@ -85,6 +87,8 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
             else:
                 results_wo_objects.to_csv(os.path.join(df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv"))
                 print("Saved to",df_dir,"Experiment "+str(datetime.datetime.today())+'_'+str(chunk_i)+"_of_"+str(len(chunked_experiments))+".csv")
+    return pd.concat(all_results).reset_index(drop = True)
+    
 
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
