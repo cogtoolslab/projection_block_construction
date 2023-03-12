@@ -29,7 +29,7 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
     # we want human readable labels for the dataframe
     if type(worlds) is not dict:
         # if worlds is list create dictionary
-        worlds = {w.__str__(): w for w in worlds}
+        worlds = {w.__str__()+f"_{i}": w for i,w in enumerate(worlds)}
     if type(agents) is dict:
         # if agents is dict flatten it and rely on informative agent __str__
         agents = [a for a in agents.values()]
@@ -87,7 +87,7 @@ def _run_single_experiment(experiment):
               "because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
         time.sleep(1000)
 
-    print('Running', agent.__str__(), '******', world.__str__())
+    # print('Running', agent.__str__(), '******', world.__str__())
     agent_parameters = agent.get_parameters()
     agent_parameters_w_o_random_seed = {
         key: value for key, value in agent_parameters.items() if key != 'random_seed'}
@@ -121,8 +121,8 @@ def _run_single_experiment(experiment):
         r[key] = [value]
     r['execution_time'] = [time.perf_counter() - start_time]
 
-    print("Done with", agent.__str__(), '******', world_label, "in", str(round(time.perf_counter() - start_time)),
-          "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
+    # print("Done with", agent.__str__(), '******', world_label, "in", str(round(time.perf_counter() - start_time)),
+        #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
     # return
     return r
