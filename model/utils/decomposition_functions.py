@@ -238,6 +238,10 @@ class Decomposition_Function:
         self.silhouette = silhouette
 
     def get_decompositions(self, state=None):
+        # if we don't have a silhouette set in the object, add it from the state
+        if self.silhouette is None:
+            self.silhouette = state.world.full_silhouette
+        assert np.all(self.silhouette == state.world.full_silhouette), "Silhouette of state and decomposition function don't match"
         decompositions = self.get_all_potential_decompositions()
         decompositions = [
             d for d in decompositions if self.check_necessary_conditions(d, state)]
