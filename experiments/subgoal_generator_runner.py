@@ -22,6 +22,7 @@ Generates all sequences of subgoals and saves them. Requires subgoal planner.
 """
 
 RAM_LIMIT = 100  # percentage of RAM usage over which a process doesn't run as to not run out of memory
+SAVE_INDIVIDUAL_RESULTS = True  # save the results of each experiment to a file
 
 
 def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1):
@@ -124,7 +125,13 @@ def _run_single_experiment(experiment):
     # print("Done with", agent.__str__(), '******', world_label, "in", str(round(time.perf_counter() - start_time)),
         #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
-    # return
+    if SAVE_INTERMEDIATE_RESULTS:
+        # get folder for experiment
+        exp_dir = os.path.join(df_dir, "Experiment "+str(datetime.datetime.today()))
+        if not os.path.isdir(exp_dir):
+            os.makedirs(exp_dir)
+        # save the results to a file.
+        r.to_pickle(os.path.join(exp_dir, run_ID+".pkl"))
     return r
 
 
