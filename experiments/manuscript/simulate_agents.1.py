@@ -28,13 +28,34 @@ if __name__=="__main__": #required for multiprocessing
     args = parser.parse_args()
     df_path = args.df_path
 
-    expname = df_path.split('/')[-1].split('.')[0] + "_simulated_subgoals"
+    if df_path is None:
+        # try to load the latest .pkl file from the results/dataframes directory
+        df_path = os.path.join(df_dir, sorted([f for f in os.listdir(df_dir) if f.endswith('.pkl')])[-1])
+        print("No dataframe path provided. Loading latest dataframe from results/dataframes: {}".format(df_path))
 
+    expname = df_path.split('/')[-1].split('.')[0] + "_simulated_subgoals"
 
     import time
     start_time = time.time()
 
     print("Running experiment....")
+
+    MAX_LENGTH = 3 # maximum length of sequences to consider
+    superset_decomposer = Rectangular_Keyholes(
+    sequence_length=MAX_LENGTH,
+    necessary_conditions=[
+        Area_larger_than(area=1), # ignore subgoals smaller than the smallest block
+        # Area_smaller_than(area=30),
+        # Mass_smaller_than(area=18),
+        No_edge_rows_or_columns(), # Trim the subgoals to remove empty space on the sides
+    ],
+    necessary_sequence_conditions=[
+        # Complete(), # only consider sequences that are complete—THIS NEEDS TO BE OFF FOR THE SUBGOAL GENERATOR
+        No_overlap(), # do not include overlapping subgoals
+        Supported(), # only consider sequences that could be buildable in theory
+    ]
+    )
+
 
     no_subgoals_decomposer = No_Subgoals()
 
