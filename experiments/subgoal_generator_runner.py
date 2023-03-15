@@ -22,7 +22,7 @@ Generates all sequences of subgoals and saves them. Requires subgoal planner.
 """
 
 RAM_LIMIT = 100  # percentage of RAM usage over which a process doesn't run as to not run out of memory
-SAVE_INDIVIDUAL_RESULTS = True  # save the results of each experiment to a file
+SAVE_INTERMEDIATE_RESULTS = True  # save the results of each experiment to a file
 
 
 def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1):
