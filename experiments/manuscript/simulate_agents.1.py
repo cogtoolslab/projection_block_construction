@@ -4,7 +4,6 @@ if __name__=="__main__": #required for multiprocessing
     import os
     import sys
     proj_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    print(proj_dir)
     sys.path.append(proj_dir)
     utils_dir = os.path.join(proj_dir,'utils')
     sys.path.append(utils_dir)
@@ -24,7 +23,7 @@ if __name__=="__main__": #required for multiprocessing
     # get path to dataframes as input
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--df_path', nargs='+', help='path to dataframe to load')
+    parser.add_argument('--df_path', help='path to dataframe to load')
     args = parser.parse_args()
     df_path = args.df_path
 
@@ -33,7 +32,9 @@ if __name__=="__main__": #required for multiprocessing
         df_path = os.path.join(df_dir, sorted([f for f in os.listdir(df_dir) if f.endswith('.pkl')])[-1])
         print("No dataframe path provided. Loading latest dataframe from results/dataframes: {}".format(df_path))
 
-    expname = df_path.split('/')[-1].split('.')[0] + "_simulated_subgoals"
+    print("Got path to dataframe: {}".format(df_path))
+
+    expname = os.path.basename(df_path).split('.')[0]
 
     import time
     start_time = time.time()
