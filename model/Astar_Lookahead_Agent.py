@@ -23,6 +23,7 @@ class FringeNode:
 class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
     """An agent implementing the A* algorithm. The algorithm uses a fixed cost (so it tries to find the shortest path to the goal) and a given scoring function as heuristic to distance to goal. The heuristic should include stability.
     An upper limit can be set to prevent endless in difficult problems. -1 for potentially endless search.
+    return_best: if true, the agent will return the best path found so far when it hits the upper limit. Otherwise, it will return None.
 
     The heuristic should be admissible: it should be an upper bound to the actual cost of reaching the goal. 
     The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. Penalties get represented as really large distances. 
@@ -32,7 +33,7 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
     This is a simplified implementation that doesn't take into account that the same state can be reached in multiple ways. However, because we defined the cost function as number of steps, every state can only be reached in the same number of steps (since taking more steps means placing more blocks, and different sizes of blocks lead to potentially different stability), and therefore there cannot be a better path to a node in open set, just an equivalently good one. 
     """
 
-    def __init__(self, world=None, heuristic=blockworld.recall, max_steps=10**6, only_improving_actions=False, dense_stability=False, random_seed=None, label="A* lookahead"):
+    def __init__(self, world=None, heuristic=blockworld.recall, max_steps=10**6, only_improving_actions=False, dense_stability=False, random_seed=None, label="A* lookahead", return_best=True):
         self.world = world
         self.heuristic = heuristic
         self.max_steps = max_steps
@@ -40,6 +41,7 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
         self.dense_stability = dense_stability
         self.random_seed = random_seed
         self.label = label
+        self.return_best = return_best
         if self.random_seed is None:
             self.random_seed = random.randint(0, 99999)
 
@@ -129,7 +131,10 @@ class Astar_Lookahead_Agent(BFS_Lookahead_Agent):
                       open_set.qsize(), "members")
         if verbose:
             print("A* unsuccessful after iteration ", i)
-        return backtrack(current_node), number_of_states_evaluated
+        if self.return_best: 
+            return backtrack(current_node), number_of_states_evaluated
+        else: 
+            return [], number_of_states_evaluated
 
     def f(self, node):
         """The combined cost function that takes into account the cost to get to the node (g) as well as the projected cost of reaching the goal (h).
