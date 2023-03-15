@@ -16,7 +16,6 @@ if __name__=="__main__": #required for multiprocessing
 
     import pandas as pd
     from model.Simulated_Subgoal_Agent import *
-    from model.Simulated_No_Subgoal_Planning_Agent import *
     from model.Subgoal_Planning_Agent import *
     from model.utils.decomposition_functions import *
     import utils.blockworld_library as bl
@@ -37,35 +36,48 @@ if __name__=="__main__": #required for multiprocessing
 
     print("Running experiment....")
 
+    no_subgoals_decomposer = No_Subgoals()
 
-    agents =  [
-        Simulated_Subgoal_Agent(
-            sequence_length=l,
-            include_subsequences=False,
-            c_weight=cw,
-            step_size = 1,
-            note = "Lookahead "+str(l-1)
-        )
-        for l in [1] for cw in np.linspace(0.,10.,100)
-        ]+ [
-            Simulated_Subgoal_Agent(
-            sequence_length=l,
-            include_subsequences=False,
-            c_weight=1,
-            step_size = -1,
-            note = "Full"
-        )
-        for l in [1]
-        ]+[
-            Simulated_No_Subgoal_Planning_Agent(
-                note = "Action level"
-            )
-        ]
+    myopic_decomposer = Rectangular_Keyholes(
+        sequence_length=1,
+        necessary_conditions=superset_decomposer.necessary_conditions,
+        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+    )
 
-    df_paths = [df_paths]
+    lookahead_1_decomposer = Rectangular_Keyholes(
+        sequence_length=1+1,
+        necessary_conditions=superset_decomposer.necessary_conditions,
+        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+    )
+
+    lookahead_2_decomposer = Rectangular_Keyholes(
+        sequence_length=1+2,
+        necessary_conditions=superset_decomposer.necessary_conditions,
+        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+    )
+
+    full_decomp_decomposer = Rectangular_Keyholes(
+        sequence_length=MAX_LENGTH,
+        necessary_conditions=superset_decomposer.necessary_conditions,
+        necessary_sequence_conditions=[
+            Complete(), # only consider sequences that are complete
+        ] + superset_decomposer.necessary_sequence_conditions
+    )
+
+    agents = [
+        Simulated_Subgoal_Agent(decomposer=no_subgoals_decomposer, label="No Subgoals"),
+        Simulated_Subgoal_Agent(decomposer=myopic_decomposer, label="Myopic"),
+        Simulated_Subgoal_Agent(decomposer=lookahead_1_decomposer, label="Lookahead 1"),
+        Simulated_Subgoal_Agent(decomposer=lookahead_2_decomposer, label="Lookahead 2"),
+        Simulated_Subgoal_Agent(decomposer=full_decomp_decomposer, label="Full Decomp", step_size=-1), # step size of -1 means use the full sequence
+    ]
+
+    df_paths = [df_path]
     # load all experiments as one dataframe
     df = pd.concat([pd.read_pickle(os.path.join(df_dir,l)) for l in df_paths])
     print("Dataframes loaded:",df_paths)
+
+    print("Results will be saved to:",expname)
 
     results = experiment_runner.run_experiment(df,agents,32,20,parallelized=FRACTION_OF_CPUS,save=expname,maxtasksperprocess = 256,chunk_experiments_size=2048)
 
