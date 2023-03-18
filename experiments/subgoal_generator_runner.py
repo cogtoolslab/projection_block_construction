@@ -25,8 +25,11 @@ RAM_LIMIT = 100  # percentage of RAM usage over which a process doesn't run as t
 SAVE_INTERMEDIATE_RESULTS = True  # save the results of each experiment to a file
 
 
-def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1):
-    """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use. Note that the system that reads in the dataframe needs identical or compatible versions of Python and it's modules for it to be able to read the dataframe back in again. Hint: `pip freeze > requirements.txt`"""
+def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1, collate_results=True):
+    """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use. Note that the system that reads in the dataframe needs identical or compatible versions of Python and it's modules for it to be able to read the dataframe back in again.
+    
+    For performance reasons, you might not want to store and collate the dataframe of the results. In that case, set collate_results to False.
+    """
     # we want human readable labels for the dataframe
     if type(worlds) is not dict:
         # if worlds is list create dictionary
@@ -36,7 +39,7 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
         agents = [a for a in agents.values()]
     # we need to copy the world and agent to reset them
     # create a list of experiments to run
-    experiments = [(copy.deepcopy(w), copy.deepcopy(a), steps, verbose, i, save)
+    experiments = [(copy.deepcopy(w), copy.deepcopy(a), steps, verbose, i, save, collate_results)
                    for i in range(per_exp) for a in agents for w in worlds.items()]
     # lets run the experiments
     if parallelized is not False:
@@ -47,7 +50,7 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
             _run_single_experiment, experiments), total=len(experiments))
         P.close()
     else:
-        results_mapped = list(map(_run_single_experiment, experiments))
+        results_mapped = list(map(_run_single_experiment, tqdm.tqdm(experiments)))
 
     results = pd.concat(results_mapped).reset_index(drop=True)
 
@@ -67,12 +70,13 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
             print("Saved to", df_dir, "Experiment " +
                   str(datetime.datetime.today())+".pkl")
 
-    return results
-
+    if collate_results: 
+        return results
+    else: return
 
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
-    world_dict, agent, steps, verbose, run_nr, save = experiment
+    world_dict, agent, steps, verbose, run_nr, save, return_result = experiment
     world_label = world_dict[0]
     world = world_dict[1]
     # if the agent has no random seed assigned yet, assign one now only for this run
@@ -125,12 +129,12 @@ def _run_single_experiment(experiment):
     # print("Done with", agent.__str__(), '******', world_label, "in", str(round(time.perf_counter() - start_time)),
         #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
-    if SAVE_INTERMEDIATE_RESULTS:
+    if SAVE_INTERMEDIATE_RESULTS or not return_result:
         if not type(save) is str:
             # save under the current date if no filename given
             save = datetime.datetime.now().strftime('%d-%m-%Y')
         # get folder for experiment
-        exp_dir = os.path.join(df_dir, "subgoal_generator_"+str(save)")
+        exp_dir = os.path.join(df_dir, "subgoal_generator_"+str(save))
         # make sure that the filename is not too long by truncating from the end
         filename = run_ID
         filename = filename[-125:] + ".pkl"
@@ -138,7 +142,7 @@ def _run_single_experiment(experiment):
             os.makedirs(exp_dir)
         # save the results to a file.
         r.to_pickle(os.path.join(exp_dir, filename))
-    return r
+    if return_result: return r
 
 
 class agent_para_dict(dict):
