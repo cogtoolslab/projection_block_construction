@@ -29,8 +29,8 @@ import experiments.simulated_subgoal_planner_experiment_runner as simulated_subg
 
 # set up the experiment
 EXP_NAME = "Simulated Subgoals on Best First Search Template"
-FRACTION_OF_CPUS = False # how many CPUs to use. False will turn off parallelization (for debugging). 1 will use all available CPUs, 0.5 will use half, etc.
-NUM_TOWERS = 10
+FRACTION_OF_CPUS = 1 # how many CPUs to use. False will turn off parallelization (for debugging). 1 will use all available CPUs, 0.5 will use half, etc.
+NUM_TOWERS = 4
 MAX_LENGTH = 3 # maximum length of sequences to consider
 
 # only execute the following code if this file is run directly, not during import or parallelization
@@ -75,7 +75,7 @@ if __name__=="__main__": #required for multiprocessing
     sga = Subgoal_Planning_Agent(lower_agent=Best_First_Search_Agent(),
                                         decomposer=superset_decomposer)
     # actually run it
-    superset_results = subgoal_generator_runner.run_experiment(worlds,[sga],1,1,verbose=False,parallelized=FRACTION_OF_CPUS,save=EXP_NAME+"_cached_superset",maxtasksperprocess = 1)
+    superset_results = subgoal_generator_runner.run_experiment(worlds,[sga],1,1,verbose=False,parallelized=FRACTION_OF_CPUS,save=EXP_NAME+"_cached_superset",maxtasksperprocess = 1, collate_results=True)
     print("Done in %s seconds" % (time.time() - start_time))
     print(f"Generated {len(superset_results)} lines of data from the parent agent(s))")
 
