@@ -36,7 +36,7 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
         agents = [a for a in agents.values()]
     # we need to copy the world and agent to reset them
     # create a list of experiments to run
-    experiments = [(copy.deepcopy(w), copy.deepcopy(a), steps, verbose, i)
+    experiments = [(copy.deepcopy(w), copy.deepcopy(a), steps, verbose, i, save)
                    for i in range(per_exp) for a in agents for w in worlds.items()]
     # lets run the experiments
     if parallelized is not False:
@@ -72,7 +72,7 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
 
 def _run_single_experiment(experiment):
     """Runs a single experiment. Returns complete dataframe with an entry for each action."""
-    world_dict, agent, steps, verbose, run_nr = experiment
+    world_dict, agent, steps, verbose, run_nr, save = experiment
     world_label = world_dict[0]
     world = world_dict[1]
     # if the agent has no random seed assigned yet, assign one now only for this run
@@ -126,11 +126,14 @@ def _run_single_experiment(experiment):
         #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
     if SAVE_INTERMEDIATE_RESULTS:
+        if not type(save) is str:
+            # save under the current date if no filename given
+            save = datetime.datetime.now().strftime('%d-%m-%Y')
         # get folder for experiment
-        exp_dir = os.path.join(df_dir, "Experiment "+str(datetime.datetime.today()))
-        filename = run_ID + ".pkl"
+        exp_dir = os.path.join(df_dir, "subgoal_generator_"+str(save)")
         # make sure that the filename is not too long by truncating from the end
-        filename = filename[-255:]
+        filename = run_ID
+        filename = filename[-125:] + ".pkl"
         if not os.path.isdir(exp_dir):
             os.makedirs(exp_dir)
         # save the results to a file.
