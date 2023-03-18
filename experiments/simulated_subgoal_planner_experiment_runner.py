@@ -104,10 +104,13 @@ def _run_single_experiment(experiment):
             agent.random_seed = random.randint(0,99999)
     except AttributeError:
         pass
-    run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | '+str(random.randint(0,9999))+'|'+str(unique_nr) #unique string representing the run
+    run_ID = world_label+'_'+agent.__str__()+str(run_nr)+'_'+str(random.randint(0,9999))+'_'+str(unique_nr) #unique string representing the run
+    sleep = 100
     while psutil.virtual_memory().percent > RAM_LIMIT:
-        print("Delaying running",agent.__str__(),'******',world_label,"because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
-        time.sleep(1000)
+        print("Delaying running",agent.__str__(),'******',world_label,f"because of RAM usage. Trying again in {sleep} seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
+        time.sleep(sleep)
+        # exponential backoff
+        sleep = sleep * 200
     
     #fill agent
     agent.set_parent_agent(copy.deepcopy(row['_agent']))

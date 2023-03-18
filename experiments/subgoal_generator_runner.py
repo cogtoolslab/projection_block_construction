@@ -87,11 +87,13 @@ def _run_single_experiment(experiment):
         pass
     run_ID = world_label+' | '+agent.__str__()+str(run_nr)+' | ' + \
         str(random.randint(0, 9999))  # unique string representing the run
+    sleep = 100
     while psutil.virtual_memory().percent > RAM_LIMIT:
-        print("Delaying running", agent.__str__(), '******', world_label,
-              "because of RAM usage. Trying again in 1000 seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
-        time.sleep(1000)
-
+        print("Delaying running",agent.__str__(),'******',world_label,f"because of RAM usage. Trying again in {sleep} seconds. RAM usage is "+str(psutil.virtual_memory().percent)+'%')
+        time.sleep(sleep)
+        # exponential backoff
+        sleep = sleep * 200
+        
     # print('Running', agent.__str__(), '******', world.__str__())
     agent_parameters = agent.get_parameters()
     agent_parameters_w_o_random_seed = {
