@@ -71,11 +71,16 @@ class Physics_Server:
         # self.keep_alive() # check if the server process still lives
         blocks = self.blocks_to_serializable(blocks)
         # send the request to the process via stdin
-        self._process.stdin.write(
-            (str(blocks).replace('\'', '"') + '\n').encode('utf-8'))
-        self._process.stdin.flush()
-        # read the result from the process
-        result = self._process.stdout.readline().decode('utf-8')
+        try:
+            self._process.stdin.write(
+                (str(blocks).replace('\'', '"') + '\n').encode('utf-8'))
+            self._process.stdin.flush()
+            # read the result from the process
+            result = self._process.stdout.readline().decode('utf-8')
+        except BrokenPipeError:
+            # if the process is dead, restart it
+            self.start_server()
+            return self.get_stability(blocks)
         # return the result
         return result == 'true\n'
 
