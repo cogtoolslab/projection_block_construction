@@ -1,4 +1,4 @@
-FRACTION_OF_CPUS = False
+FRACTION_OF_CPUS = 1
 FILE_BY_FILE = True # if true, only load the df needed to memory and save out incremental results
 PER_EXP = 16 # number of repetitions of each experiment
 STEPS = 20 # maximum number of steps to run the experiment for
@@ -105,7 +105,7 @@ if __name__=="__main__": #required for multiprocessing
 
     if FILE_BY_FILE:
         # load and run experiments one by one
-        for i,df_path in tqdm.tqdm(enumerate(df_paths)):
+        for i,df_path in tqdm(enumerate(df_paths)):
             df = pd.read_pickle(df_path)
             print("Dataframe loaded:",df_path)
 
