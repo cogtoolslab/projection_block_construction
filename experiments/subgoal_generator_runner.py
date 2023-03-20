@@ -30,6 +30,26 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
     
     For performance reasons, you might not want to store and collate the dataframe of the results. In that case, set collate_results to False.
     """
+    # some helpful printouts for where the data will be saved
+    if save != False and not type(save) is str:
+        # save under the current date if no filename given
+        save = datetime.datetime.now().strftime('%d-%m-%Y')
+        print("No name for the output given. Saving to", save)
+    if SAVE_INTERMEDIATE_RESULTS or not collate_results:
+        # if necessary, make folder
+        if not os.path.exists(os.path.join(df_dir, save)):
+            os.makedirs(os.path.join(df_dir, save))
+        # does the folder have dataframes in it already?
+        if len(os.listdir(os.path.join(df_dir, save))) > 0:
+            #increment the name until we find a folder or .pkl that doesn't exist
+            i = 1
+            while os.path.exists(os.path.join(df_dir, save + f"_{i}")) or os.path.exists(os.path.join(df_dir, save + f"_{i}.pkl")):
+                i += 1
+            save = save + f"_{i}"
+        print("For each run, a dataframe will be saved to the folder", os.path.join(df_dir, save))
+    if collate_results:
+        print("A single complete dataframe will be saved to", os.path.join(df_dir, save) + ".pkl")
+
     # we want human readable labels for the dataframe
     if type(worlds) is not dict:
         # if worlds is list create dictionary
@@ -52,23 +72,17 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
     else:
         results_mapped = list(map(_run_single_experiment, tqdm.tqdm(experiments)))
 
-    results = pd.concat(results_mapped).reset_index(drop=True)
 
     # preprocess_df(results) #automatically fill in code relevant to analysis
 
     if save is not False:
+        results = pd.concat(results_mapped).reset_index(drop=True)
         # check if results directory exists
         if not os.path.isdir(df_dir):
             os.makedirs(df_dir)
         # save the results to a file.
-        if type(save) is str:
-            results.to_pickle(os.path.join(df_dir, save+".pkl"))
-            print("Saved to", os.path.join(df_dir, save+".pkl"))
-        else:
-            results.to_pickle(os.path.join(
-                df_dir, "Experiment "+str(datetime.datetime.today())+".pkl"))
-            print("Saved to", df_dir, "Experiment " +
-                  str(datetime.datetime.today())+".pkl")
+        results.to_pickle(os.path.join(df_dir, save+".pkl"))
+        print("Saved to", os.path.join(df_dir, save+".pkl"))
 
     if collate_results: 
         return results
@@ -132,9 +146,6 @@ def _run_single_experiment(experiment):
         #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
     if SAVE_INTERMEDIATE_RESULTS or not return_result:
-        if not type(save) is str:
-            # save under the current date if no filename given
-            save = datetime.datetime.now().strftime('%d-%m-%Y')
         # get folder for experiment
         exp_dir = os.path.join(df_dir, "subgoal_generator_"+str(save))
         # make sure that the filename is not too long by truncating from the end

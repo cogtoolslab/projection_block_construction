@@ -44,6 +44,16 @@ if __name__=="__main__": #required for multiprocessing
         raise Exception("No dataframes found in folder {}".format(df_folder_path))
 
     expname = os.path.basename(df_folder_path).split('.')[0]
+    # clean up common prefixes
+    expname = expname.replace('dataframes','')
+    expname = expname.replace('subgoal_generator','')
+    expname = expname.replace('generator','')
+    expname = expname.replace('superset','')
+    expname = expname.replace('  ',' ')
+    if expname.startswith('_'):
+        expname = expname[1:]
+    expname = "simulated_subgoal_agents_" + expname
+    print("Experiment name: {}".format(expname))
 
     import time
     start_time = time.time()
@@ -122,3 +132,4 @@ if __name__=="__main__": #required for multiprocessing
         results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=expname,maxtasksperprocess = 256,chunk_experiments_size=2048)
 
     print("Done in %s seconds" % (time.time() - start_time))
+    print("Results saved to:",expname)
