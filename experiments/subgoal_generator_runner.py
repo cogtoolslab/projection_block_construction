@@ -35,20 +35,22 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
         # save under the current date if no filename given
         save = datetime.datetime.now().strftime('%d-%m-%Y')
         print("No name for the output given. Saving to", save)
-    if SAVE_INTERMEDIATE_RESULTS or not collate_results:
-        # if necessary, make folder
-        if not os.path.exists(os.path.join(df_dir, save)):
-            os.makedirs(os.path.join(df_dir, save))
-        # does the folder have dataframes in it already?
-        if len(os.listdir(os.path.join(df_dir, save))) > 0:
-            #increment the name until we find a folder or .pkl that doesn't exist
-            i = 1
-            while os.path.exists(os.path.join(df_dir, save + f"_{i}")) or os.path.exists(os.path.join(df_dir, save + f"_{i}.pkl")):
-                i += 1
-            save = save + f"_{i}"
-        print("For each run, a dataframe will be saved to the folder", os.path.join(df_dir, save))
-    if collate_results:
-        print("A single complete dataframe will be saved to", os.path.join(df_dir, save) + ".pkl")
+    if save != False:
+        save = "subgoal_generator_" + save
+        if SAVE_INTERMEDIATE_RESULTS or not collate_results:
+            # if necessary, make folder
+            if not os.path.exists(os.path.join(df_dir, save)):
+                os.makedirs(os.path.join(df_dir, save))
+            # does the folder have dataframes in it already?
+            if len(os.listdir(os.path.join(df_dir, save))) > 0:
+                #increment the name until we find a folder or .pkl that doesn't exist
+                i = 1
+                while os.path.exists(os.path.join(df_dir, save + f"_{i}")) or os.path.exists(os.path.join(df_dir, save + f"_{i}.pkl")):
+                    i += 1
+                save = save + f"_{i}"
+            print("For each run, a dataframe will be saved to the folder", os.path.join(df_dir, save))
+        if collate_results:
+            print("A single complete dataframe will be saved to", os.path.join(df_dir, save) + ".pkl")
 
     # we want human readable labels for the dataframe
     if type(worlds) is not dict:
@@ -147,7 +149,7 @@ def _run_single_experiment(experiment):
 
     if SAVE_INTERMEDIATE_RESULTS or not return_result:
         # get folder for experiment
-        exp_dir = os.path.join(df_dir, "subgoal_generator_"+str(save))
+        exp_dir = os.path.join(df_dir, save)
         # make sure that the filename is not too long by truncating from the end
         filename = run_ID
         filename = filename[-125:] + ".pkl"
