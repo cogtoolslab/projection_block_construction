@@ -69,11 +69,11 @@ class Physics_Server:
         Blocks until the result is known.
         """
         # self.keep_alive() # check if the server process still lives
-        blocks = self.blocks_to_serializable(blocks)
+        serialized_blocks = self.blocks_to_serializable(blocks)
         # send the request to the process via stdin
         try:
             self._process.stdin.write(
-                (str(blocks).replace('\'', '"') + '\n').encode('utf-8'))
+                (str(serialized_blocks).replace('\'', '"') + '\n').encode('utf-8'))
             self._process.stdin.flush()
             # read the result from the process
             result = self._process.stdout.readline().decode('utf-8')
