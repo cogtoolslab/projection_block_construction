@@ -14,59 +14,35 @@ import socket
 js_location = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), 'matter_server.js')
 
-pid_reference_manager = {}  # stores open process IDs
+# launch the server on import
+process = subprocess.Popen(
+            ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# print("Started matter physics server 🧱.")
 
+def check_process():
+    """Checks if the process is still running."""
+    global process
+    if process.poll() is not None:
+        process = subprocess.Popen(
+            ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # print("Restarted matter physics server 🧱.")
 
 class Physics_Server:
     def __init__(self, y_height=8) -> None:
         # if the height of the canvas differs, we need to subtract it to flip the y axis. 8 is default
         # self.start_server() # don't start the server here, rather lazily load it when physics is requested (since we often clone worlds but then not do anything with them)
         self.y_height = y_height
+        self.keep_alive()
 
     def __del__(self):
         """Called when the object is deleted."""
-        self.kill_server()
-
-    # def __deepcopy__(self, memo):
-    #     """Deep copy of the physics server—we keep the same socket and the same process"""
-    #     return Physics_Server(socket=self.socket, y_height=self.y_height, _process=self._process)
+        pass
+        # self.kill_server()
 
     def start_server(self):
         """Starts the matter physics server. Does not need to be called manually—server will be started lazily."""
-        # start the node process with stdin,stdout and stderr
-        self._process = subprocess.Popen(
-            ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # add the process to the reference manager
-        pid_reference_manager[self._process.pid] = 1
-
-    def kill_server(self, force=False):
-        """Kills the matter physics server."""
-        if force:
-            try:
-                del(pid_reference_manager[self._process.pid])
-                self._process.kill()
-            except:
-                pass
-            finally:
-                self._process = None
-                return
-        try:
-            if self._process is not None:
-                try:
-                    if pid_reference_manager[self._process.pid] == 1:
-                        # we're the last user of the node server, let's kill it
-                        del pid_reference_manager[self._process.pid]
-                        self._process.kill()
-                        self._process = None
-                    else:
-                        # there are more references around, but we're letting this one go
-                        pid_reference_manager[self._process.pid] -= 1
-                except:
-                    # the process is already dead
-                    self._process = None
-        except AttributeError:
-            # the process is already dead
-            self._process = None
+        check_process()
+        self._process = process
 
     def blocks_to_serializable(self, blocks):
         return [self.block_to_serializable(block) for block in blocks]
@@ -92,7 +68,7 @@ class Physics_Server:
         """Returns the stability of the given blocks.
         Blocks until the result is known.
         """
-        self.keep_alive()
+        # self.keep_alive() # check if the server process still lives
         blocks = self.blocks_to_serializable(blocks)
         # send the request to the process via stdin
         self._process.stdin.write(
@@ -116,5 +92,4 @@ copyreg.pickle(Physics_Server, pickle_physics_server)
 @atexit.register
 def killallprocesses():
     """Kills all the processes that are still running once we close the file (ie. are done with everything)."""
-    for pid in pid_reference_manager:
-        os.kill(pid, 9)
+    process.kill()
