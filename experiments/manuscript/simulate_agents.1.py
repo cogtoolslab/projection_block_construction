@@ -34,7 +34,7 @@ if __name__=="__main__": #required for multiprocessing
     if df_folder_path is None:
         # try to load the latest .pkl file from the results/dataframes directory
         # sort by date modified
-        df_folder_path = sorted([os.path.join(df_dir, f) for f in os.listdir(df_dir) if f.endswith('.pkl')], key=os.path.getmtime)[-1]
+        df_folder_path = sorted([os.path.join(df_dir, f) for f in os.listdir(df_dir) if os.path.isdir(os.path.join(df_dir, f))], key=os.path.getmtime)[-1]
         print("No dataframe path provided. Loading latest dataframe from results/dataframes: {}".format(df_folder_path))
 
     print("Got path to folder of dataframes: {}".format(df_folder_path))

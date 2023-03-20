@@ -18,7 +18,7 @@ import utils.blockworld as bw
 import utils.blockworld_library as bl
 import experiments.subgoal_generator_runner as experiment_runner
 
-EXP_NAME = "best first superset 1 small"
+EXP_NAME = "best first superset 1 limited budget"
 FRACTION_OF_CPUS = 1
 MAX_LENGTH = 3 # maximum length of sequences to consider
 
@@ -44,7 +44,7 @@ if __name__=="__main__": #required for multiprocessing
                                             )
 
     print("Generating towers")
-    NUM_TOWERS  = 24
+    NUM_TOWERS  = 128
     towers = []
     for i in tqdm(range(NUM_TOWERS)):
         tower = generator.generate()
@@ -73,7 +73,7 @@ if __name__=="__main__": #required for multiprocessing
         ]
 )
 
-    sga = Subgoal_Planning_Agent(lower_agent=(Best_First_Search_Agent()),
+    sga = Subgoal_Planning_Agent(lower_agent=Astar_Lookahead_Agent(max_steps=512,return_best=False),
                                         decomposer=superset_decomposer)
 
     agents = [sga]
