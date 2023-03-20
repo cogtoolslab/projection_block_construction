@@ -197,3 +197,5 @@ stdin.addListener("data", function (d) {
   console.log(stable);
   busy = false;
 });
+
+console.log("ready");
