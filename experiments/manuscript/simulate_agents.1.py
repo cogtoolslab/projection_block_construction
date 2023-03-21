@@ -55,6 +55,16 @@ if __name__=="__main__": #required for multiprocessing
     expname = "simulated_subgoal_agents_" + expname
     print("Experiment name: {}".format(expname))
 
+    # we want to save the results of each experiment to a separate file in expame folder. If that exists, append to it
+    exp_folder_path = os.path.join(df_dir, expname)
+    i = 0
+    while not os.path.exists(exp_folder_path):
+        try:
+            os.makedirs(exp_folder_path)
+        except FileExistsError:
+            i += 1
+            exp_folder_path = exp_folder_path + f"_{i}"
+
     import time
     start_time = time.time()
 
@@ -119,9 +129,9 @@ if __name__=="__main__": #required for multiprocessing
             df = pd.read_pickle(df_path)
             print("Dataframe loaded:",df_path)
 
-            print("Results will be saved to:",f"{expname}_{i}.pkl")
+            print("Results will be saved to:",os.path.join(exp_folder_path,f"{expname}_{i})")+".pkl")
 
-            results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=f"{expname}_{i}",maxtasksperprocess = 256,chunk_experiments_size=2048)
+            results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=os.path.join(exp_folder_path,f"{expname}_{i})"),maxtasksperprocess = 256,chunk_experiments_size=2048)
     else:
         # load all experiments as one dataframe
         df = pd.concat([pd.read_pickle(os.path.join(df_dir,l)) for l in df_paths])
