@@ -84,8 +84,11 @@ class Physics_Server:
         elif result == 'false\n':
             return False
         else:
-            raise ValueError(
-                f"Unexpected output from physics server: {result}")
+            # raise ValueError(
+                # f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}")
+            print(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}.\nRestarting server...")
+            self.start_server()
+            return self.get_stability(blocks)
 
 
 def pickle_physics_server(server):
