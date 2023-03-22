@@ -49,11 +49,12 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         if parallelized is not False:
             P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess) #restart process after a number of task is performed—slow for short runs, but fixes memory leak (hopefully)
             # results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
-            results_mapped = P.map(_run_single_experiment,experiments)
+            # results_mapped = P.map(_run_single_experiment,experiments)
+            results_mapped = tqdm.tqdm(P.imap_unordered(_run_single_experiment,experiments), total=len(experiments))
             P.close()
             P.join() #should run the garbage collector and prevent memory leaks
         else:
-            results_mapped =list(map(_run_single_experiment,experiments))
+            results_mapped = list(tqdm.tqdm(map(_run_single_experiment,experiments), total=len(experiments)))
 
         try:
             results = pd.concat(results_mapped).reset_index(drop = True)
