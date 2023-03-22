@@ -6,6 +6,7 @@ import subprocess
 import copyreg
 from random import randint
 import atexit
+import time
 
 import os
 import socket
@@ -19,7 +20,7 @@ def launch_process():
     process = subprocess.Popen(
             ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # wait for process to finish starting
-    process.stdout.readline() # the process prints "ready" when it's ready
+    out = process.stdout.readline() # the process prints "ready" when it's ready
     return process
 
 # launch the server on import
@@ -50,6 +51,13 @@ class Physics_Server:
         check_process()
         self._process = process
 
+    def kill_server(self):
+        """Kills the matter physics server."""
+        try:
+            self._process.kill()
+        except:
+            pass
+
     def blocks_to_serializable(self, blocks):
         return [self.block_to_serializable(block) for block in blocks]
 
@@ -66,16 +74,16 @@ class Physics_Server:
         """Returns the stability of the given blocks.
         Blocks until the result is known.
         """
-        serialized_blocks = self.blocks_to_serializable(blocks)
+        serialized_blocks = str(self.blocks_to_serializable(blocks)).replace('\'', '"') + '\n'
         # send the request to the process via stdin
         try:
-            self._process.stdin.write(
-                (str(serialized_blocks).replace('\'', '"') + '\n').encode('utf-8'))
+            self._process.stdin.write(serialized_blocks.encode('utf-8'))
             self._process.stdin.flush()
             # read the result from the process
             result = self._process.stdout.readline().decode('utf-8')
         except BrokenPipeError:
             # if the process is dead, restart it
+            self.kill_server()
             self.start_server()
             return self.get_stability(blocks)
         # return the result
@@ -83,11 +91,16 @@ class Physics_Server:
             return True
         elif result == 'false\n':
             return False
+        elif result == 'json_error\n':
+            raise ValueError(f"Physics server reports json error: {self._process.stderr.read().decode('utf-8')} Input was: {serialized_blocks}")
         else:
-            # raise ValueError(
-                # f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}")
-            print(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}.\nRestarting server...")
-            self.start_server()
+            raise ValueError(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}\nFull output: {self._process.stdout.read().decode('utf-8')}.")
+            # print(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}Full output: {self._process.stdout.read().decode('utf-8')}.")
+            # print("Restarting physics server...")
+            # self.kill_server()
+            # self.start_server()
+            # # wait a little while
+            # time.sleep(1)
             return self.get_stability(blocks)
 
 

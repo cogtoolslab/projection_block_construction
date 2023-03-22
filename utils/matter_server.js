@@ -187,8 +187,13 @@ function display() {
 var stdin = process.openStdin();
 stdin.addListener("data", function (d) {
   var msg = d;
-  var data = JSON.parse(msg);
-  var blocks = parseBlocks(data);
+  try{
+    var data = JSON.parse(msg);
+    var blocks = parseBlocks(data);
+  } catch (e) {
+    console.log("json_error");
+    return;
+  }
   while (busy) {} // wait for previous simulation to finish
   busy = true;
   setupWorldWithBlocks(blocks);
