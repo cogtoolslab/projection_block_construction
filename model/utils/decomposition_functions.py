@@ -388,15 +388,16 @@ class Rectangular_Keyholes(Decomposition_Function):
                                             'name': 'x:{} y:{} w:{} h:{}'.format(x, y, w, h), 'x': x, 'y': y, 'w': w, 'h': h}]
         return decompositions
 
-class No_Subgoals(Decomposition_Function):
+class No_Subgoals(Rectangular_Keyholes):
     """Only returns the entire silhouette as a subgoal"""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(sequence_length=1,
+        necessary_conditions=[],
+        necessary_sequence_conditions=[Complete()],)
     
     def get_all_potential_decompositions(self):
-        x, y, w, h = 0, 0, self.silhouette.shape[1], self.silhouette.shape[0]
-        return [{'decomposition': self.silhouette, 'bitmap': np.ones_like(self.silhouette), 'name': 'x:{} y:{} w:{} h:{}'.format(x, y, w, h), 'x': x, 'y': y, 'w': w, 'h': h}]
+        return super().get_all_potential_decompositions()
 
 # CONDITIONS
 # Necessary conditions for SUBGOALS
