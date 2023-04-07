@@ -150,12 +150,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                                                   number_of_sequences=self.max_number_of_sequences, verbose=verbose)
         if verbose:
             print("Got", len(sequences), "sequences:")
-            for sequence in sequences:
-                print([g.name for g in sequence])
+            if verbose > 1:
+                for sequence in sequences:
+                    print([g.name for g in sequence])
             # sample a few sequences and show them
-            for i, sequence in enumerate(random.sample(sequences, min(len(sequences), DISPLAY_N_SEQS))):
-                sequence.visual_display(
-                    blocking=True, title="Sequence {} of {} (showing {})".format(i+1, len(sequences), min(len(sequences), DISPLAY_N_SEQS)))
+            if verbose > 2:
+                for i, sequence in enumerate(random.sample(sequences, min(len(sequences), DISPLAY_N_SEQS))):
+                    sequence.visual_display(
+                        blocking=True, title="Sequence {} of {} (showing {})".format(i+1, len(sequences), min(len(sequences), DISPLAY_N_SEQS)))
         # we need to score each in sequence (as it depends on the state before)
         self.fill_subgoals_in_sequence(sequences, verbose=verbose)
         # now we need to find the sequences that maximizes the total value of the parts according to the formula $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$
@@ -192,7 +194,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             print("Chose sequence:", chosen_sequence.names(),
                   "with score", chosen_sequence.V(self.c_weight))
             # visually display
-            chosen_sequence.visual_display(
+            if verbose > 2: chosen_sequence.visual_display(
                 blocking=True, title="Chosen sequence")
         return chosen_sequence
 
