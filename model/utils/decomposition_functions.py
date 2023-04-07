@@ -282,6 +282,7 @@ class Decomposition_Function:
             num_permutations = int(sum([math.factorial(
                 len(subgoals))/math.factorial(len(subgoals)-l) for l in range(1, length+1)]))
             print("Predicted number of sequences:", num_permutations)
+            print("Checking necessary conditions...")
             for sequence in tqdm(sequences, total=num_permutations):
                 if self.check_necessary_sequence_conditions(sequence, state):
                     filtered_sequences.append(sequence)
@@ -399,6 +400,48 @@ class No_Subgoals(Rectangular_Keyholes):
     def get_all_potential_decompositions(self):
         return super().get_all_potential_decompositions()
 
+class Decomposition_Functions_Combined(Decomposition_Function):
+    """Pass a list of decomposition functions to this class to combine them. """
+
+    def __init__(self, decomposition_functions):
+        self.decomposition_functions = decomposition_functions
+    
+    def get_all_potential_decompositions(self):
+        decompositions = []
+        for decomposition_function in self.decomposition_functions:
+            decompositions += decomposition_function.get_all_potential_decompositions()
+        return decompositions
+
+    def get_sequences(self, state=None, length=None, number_of_sequences=None, verbose=False):
+        sequences = []
+        for decomposition_function in self.decomposition_functions:
+            sequences += decomposition_function.get_sequences(state=state, length=length, number_of_sequences=number_of_sequences, verbose=verbose)
+        return sequences
+
+    def get_decompositions(self, state=None):
+        decompositions = []
+        for decomposition_function in self.decomposition_functions:
+            decompositions += decomposition_function.get_decompositions(state=state)
+        return decompositions
+
+    def legal_next_subgoal(self, current_subgoal, next_subgoal):
+        return all([decomposition_function.legal_next_subgoal(current_subgoal, next_subgoal) for decomposition_function in self.decomposition_functions])
+
+    def get_necessary_conditions(self):
+        return [c for decomposition_function in self.decomposition_functions for c in decomposition_function.get_necessary_conditions()]
+
+    def get_necessary_sequence_conditions(self):
+        return [c for decomposition_function in self.decomposition_functions for c in decomposition_function.get_necessary_sequence_conditions()]
+
+    def get_necessary_conditions_for_length(self, length):
+        return [c for decomposition_function in self.decomposition_functions for c in decomposition_function.get_necessary_conditions_for_length(length)]
+
+    def __str__(self):
+        return "Combined(" + ", ".join([str(d) for d in self.decomposition_functions]) + ")"
+
+    def get_parameters(self):
+        return {str(d):d.get_parameters() for d in self.decomposition_functions}
+    
 # CONDITIONS
 # Necessary conditions for SUBGOALS
 # Necessary conditions is a list of functions that candidate keyholes must satisfy. They get passed (decomposition (with decomposition['decomposition] as bitmap), current state of the world)
