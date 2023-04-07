@@ -393,7 +393,7 @@ class No_Subgoals(Rectangular_Keyholes):
 
     def __init__(self, *args, **kwargs):
         super().__init__(sequence_length=1,
-        necessary_conditions=[],
+        necessary_conditions=[No_empty_rows_or_columns()],
         necessary_sequence_conditions=[Complete()],)
     
     def get_all_potential_decompositions(self):
