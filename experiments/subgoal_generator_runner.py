@@ -21,7 +21,7 @@ df_dir = os.path.join(results_dir, 'dataframes')
 Generates all sequences of subgoals and saves them. Requires subgoal planner.
 """
 
-RAM_LIMIT = 100  # percentage of RAM usage over which a process doesn't run as to not run out of memory
+RAM_LIMIT = 90  # percentage of RAM usage over which a process doesn't run as to not run out of memory
 SAVE_INTERMEDIATE_RESULTS = True  # save the results of each experiment to a file
 
 

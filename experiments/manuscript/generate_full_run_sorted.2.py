@@ -17,8 +17,8 @@ import utils.blockworld as bw
 import utils.blockworld_library as bl
 import experiments.subgoal_generator_runner as experiment_runner
 
-EXP_NAME = "best first superset 1"
-FRACTION_OF_CPUS = 0.8
+EXP_NAME = "best first superset sorted 2"
+FRACTION_OF_CPUS = .9
 MAX_LENGTH = 3 # maximum length of sequences to consider
 
 if __name__=="__main__": #required for multiprocessing
@@ -39,7 +39,7 @@ if __name__=="__main__": #required for multiprocessing
                                             block_library=block_library,
                                             seed=3,
                                             padding=(1, 0),
-                                            num_blocks=lambda: random.randint(6, 18), #  flat random interval of tower sizes (inclusive)
+                                            num_blocks=lambda: random.randint(6, 16), #  flat random interval of tower sizes (inclusive)
                                             )
 
     print("Generating towers")
@@ -49,20 +49,30 @@ if __name__=="__main__": #required for multiprocessing
         tower = generator.generate()
         towers.append(tower)
 
+    # sort the towers by size
+    towers = sorted(towers, key=lambda t: len(t['blocks']))
+
+    # save out the tower content to disk to a file
+    import pickle
+    with open(os.path.join('results/dataframes/',f'towers_{EXP_NAME}.pkl'), 'wb') as f:
+        pickle.dump(towers, f)
+        print("Saved towers to {}".format(f))
+    
+
     worlds = [bw.Blockworld(silhouette=t['bitmap'], block_library=bl.bl_nonoverlapping_simple) for t in towers]
 
     print("Generated {} towers".format(len(worlds)))
 
-
+    print("Tower sizes are {}".format([len(t['blocks']) for t in towers]))
 
     print("Running experiment....")
 
     superset_decomposer = Rectangular_Keyholes(
         sequence_length=MAX_LENGTH,
         necessary_conditions=[
-            Area_larger_than(area=1), # ignore subgoals smaller than the smallest block
+            Mass_larger_than(area=3), # ignore small subgoals
             # Area_smaller_than(area=30),
-            # Mass_smaller_than(area=18),
+            Mass_smaller_than(area=18),
             No_edge_rows_or_columns(), # Trim the subgoals to remove empty space on the sides
         ],
         necessary_sequence_conditions=[
@@ -70,10 +80,13 @@ if __name__=="__main__": #required for multiprocessing
             No_overlap(), # do not include overlapping subgoals
             Supported(), # only consider sequences that could be buildable in theory
         ]
-)
-
+    )
+    no_subgoal_decomposer = No_Subgoals()
+    decomposer = Decomposition_Functions_Combined(
+        [superset_decomposer, no_subgoal_decomposer])
+    
     sga = Subgoal_Planning_Agent(lower_agent=Best_First_Search_Agent(),
-                                        decomposer=superset_decomposer)
+                                        decomposer=decomposer)
 
     agents = [sga]
     

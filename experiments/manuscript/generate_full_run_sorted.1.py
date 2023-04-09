@@ -17,8 +17,8 @@ import utils.blockworld as bw
 import utils.blockworld_library as bl
 import experiments.subgoal_generator_runner as experiment_runner
 
-EXP_NAME = "best first superset 1"
-FRACTION_OF_CPUS = 0.8
+EXP_NAME = "best first superset sorted 1"
+FRACTION_OF_CPUS = .9
 MAX_LENGTH = 3 # maximum length of sequences to consider
 
 if __name__=="__main__": #required for multiprocessing
@@ -49,11 +49,21 @@ if __name__=="__main__": #required for multiprocessing
         tower = generator.generate()
         towers.append(tower)
 
+    # sort the towers by size
+    towers = sorted(towers, key=lambda t: len(t['blocks']))
+
+    # save out the tower content to disk to a file
+    import pickle
+    with open(os.path.join('results/dataframes/',f'towers_{EXP_NAME}.pkl'), 'wb') as f:
+        pickle.dump(towers, f)
+        print("Saved towers to {}".format(f))
+    
+
     worlds = [bw.Blockworld(silhouette=t['bitmap'], block_library=bl.bl_nonoverlapping_simple) for t in towers]
 
     print("Generated {} towers".format(len(worlds)))
 
-
+    print("Tower sizes are {}".format([len(t['blocks']) for t in towers]))
 
     print("Running experiment....")
 

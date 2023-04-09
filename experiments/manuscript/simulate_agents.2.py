@@ -1,9 +1,9 @@
 FRACTION_OF_CPUS = .5
 FILE_BY_FILE = True # if true, only load the df needed to memory and save out incremental results
 PER_EXP = 1#16 # number of repetitions of each experiment
-STEPS = 8 # maximum number of steps to run the experiment for
+STEPS = 6 # maximum number of steps to run the experiment for
 LAMBDAS = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0]
-CHUNK_SIZE = 64
+CHUNK_SIZE = 256
 
 if __name__=="__main__": #required for multiprocessing
     import os
@@ -75,12 +75,12 @@ if __name__=="__main__": #required for multiprocessing
     MAX_LENGTH = 3 # maximum length of sequences to consider
     superset_decomposer = Rectangular_Keyholes(
     sequence_length=MAX_LENGTH,
-    necessary_conditions=[
-        Area_larger_than(area=1), # ignore subgoals smaller than the smallest block
-        # Area_smaller_than(area=30),
-        # Mass_smaller_than(area=18),
-        No_edge_rows_or_columns(), # Trim the subgoals to remove empty space on the sides
-    ],
+        necessary_conditions=[
+            Mass_larger_than(area=3), # ignore small subgoals
+            # Area_smaller_than(area=30),
+            Mass_smaller_than(area=18),
+            No_edge_rows_or_columns(), # Trim the subgoals to remove empty space on the sides
+        ],
     necessary_sequence_conditions=[
         # Complete(), # only consider sequences that are complete—THIS NEEDS TO BE OFF FOR THE SUBGOAL GENERATOR
         No_overlap(), # do not include overlapping subgoals
@@ -103,11 +103,11 @@ if __name__=="__main__": #required for multiprocessing
         necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
     )
 
-    lookahead_2_decomposer = Rectangular_Keyholes(
-        sequence_length=1+2,
-        necessary_conditions=superset_decomposer.necessary_conditions,
-        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
-    )
+    # lookahead_2_decomposer = Rectangular_Keyholes( # sort of pointless
+    #     sequence_length=1+2,
+    #     necessary_conditions=superset_decomposer.necessary_conditions,
+    #     necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+    # )
 
     full_decomp_decomposer = Rectangular_Keyholes(
         sequence_length=MAX_LENGTH,
@@ -123,8 +123,9 @@ if __name__=="__main__": #required for multiprocessing
         l_agents = [
             Simulated_Subgoal_Agent(c_weight = l, decomposer=no_subgoals_decomposer, label="No Subgoals"),
         Simulated_Subgoal_Agent(c_weight = l, decomposer=myopic_decomposer, label="Myopic"),
-        Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_1_decomposer, label="Lookahead 1"),
-        Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_2_decomposer, label="Lookahead 2")]
+        Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_1_decomposer, label="Lookahead"),
+        # Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_2_decomposer, label="Lookahead 2")
+        ]
         agents += l_agents
 
     full_agents = [

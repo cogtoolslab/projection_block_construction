@@ -96,8 +96,22 @@ class Simulated_Subgoal_Agent(Subgoal_Planning_Agent):
             state = self.world.current_state
         #get sequences
         all_sequences = self.generate_sequences(state=state)
+        all_sequences_cost = sum([s.planning_cost() for s in all_sequences])
         #choose sequence
         chosen_seq = self.choose_sequence(all_sequences)
+        # if we cannot find a sequence
+        if chosen_seq is None:
+            return [], {
+                                'partial_solution_cost': None, #solutions cost of steps acted
+                                'solution_cost':None,
+                                'partial_planning_cost':None, #planning cost of steps
+                                'planning_cost':None,
+                                'all_sequences_planning_cost':all_sequences_cost, 
+                                'decomposed_silhouette': None,
+                                'chosen_sequence_names':None,
+                                'partial_chosen_sequence_names':None,
+                                '_all_subgoal_sequences': all_sequences,
+                                '_chosen_subgoal_sequence':chosen_seq}
         #execute actions
         # finally plan and build all subgoals in order
         cur_i = 0
@@ -120,7 +134,6 @@ class Simulated_Subgoal_Agent(Subgoal_Planning_Agent):
             solution_cost += sg.solution_cost
             partial_planning_cost += sg.planning_cost
             last_silhouette = sg.target
-        all_sequences_cost = sum([s.planning_cost() for s in all_sequences])
         return actions,{
                                 'partial_solution_cost':solution_cost, #solutions cost of steps acted
                                 'solution_cost':chosen_seq.solution_cost(),

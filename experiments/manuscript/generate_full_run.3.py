@@ -17,8 +17,8 @@ import utils.blockworld as bw
 import utils.blockworld_library as bl
 import experiments.subgoal_generator_runner as experiment_runner
 
-EXP_NAME = "best first superset 1"
-FRACTION_OF_CPUS = 0.8
+EXP_NAME = "best first superset 3"
+FRACTION_OF_CPUS = 0.6
 MAX_LENGTH = 3 # maximum length of sequences to consider
 
 if __name__=="__main__": #required for multiprocessing
@@ -39,11 +39,11 @@ if __name__=="__main__": #required for multiprocessing
                                             block_library=block_library,
                                             seed=3,
                                             padding=(1, 0),
-                                            num_blocks=lambda: random.randint(6, 18), #  flat random interval of tower sizes (inclusive)
+                                            num_blocks=lambda: random.randint(6, 14), #  flat random interval of tower sizes (inclusive)
                                             )
 
     print("Generating towers")
-    NUM_TOWERS  = 256
+    NUM_TOWERS  = 128
     towers = []
     for i in tqdm(range(NUM_TOWERS)):
         tower = generator.generate()
