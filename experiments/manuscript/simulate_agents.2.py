@@ -1,7 +1,7 @@
-FRACTION_OF_CPUS = .5
+FRACTION_OF_CPUS = 1
 FILE_BY_FILE = True # if true, only load the df needed to memory and save out incremental results
 PER_EXP = 1#16 # number of repetitions of each experiment
-STEPS = 6 # maximum number of steps to run the experiment for
+STEPS = 64 # maximum number of actions to take
 LAMBDAS = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0]
 CHUNK_SIZE = 256
 
@@ -47,25 +47,29 @@ if __name__=="__main__": #required for multiprocessing
 
     expname = os.path.basename(df_folder_path).split('.')[0]
     # clean up common prefixes
-    expname = expname.replace('dataframes','')
-    expname = expname.replace('subgoal_generator','')
-    expname = expname.replace('generator','')
-    expname = expname.replace('superset','')
-    expname = expname.replace('  ',' ')
+    expname = expname.replace('dataframes', '')
+    expname = expname.replace('subgoal_generator', '')
+    expname = expname.replace('generator', '')
+    expname = expname.replace('superset', '')
+    expname = expname.replace('  ', ' ')
     if expname.startswith('_'):
         expname = expname[1:]
     expname = "simulated_subgoal_agents_" + expname
-    print("Experiment name: {}".format(expname))
 
     # we want to save the results of each experiment to a separate file in expame folder. If that exists, append to it
     exp_folder_path = os.path.join(df_dir, expname)
     i = 0
-    while not os.path.exists(exp_folder_path):
-        try:
-            os.makedirs(exp_folder_path)
-        except FileExistsError:
-            i += 1
-            exp_folder_path = exp_folder_path + f"_{i}"
+    while True:
+        if not os.path.exists(exp_folder_path):
+            try:
+                os.makedirs(exp_folder_path)
+                break
+            except FileExistsError:
+                pass
+        i += 1
+        exp_folder_path = os.path.join(df_dir, f"{expname}_{i}")
+
+    print("Experiment name: {}_{i}".format(expname, i))
 
     import time
     start_time = time.time()
