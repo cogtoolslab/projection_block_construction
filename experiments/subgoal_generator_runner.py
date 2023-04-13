@@ -1,10 +1,11 @@
 # set up directories
 import tqdm
-import multiprocessing
+import os
+from functools import partial
+from multiprocessing import Pool
 import random
 import time
 import psutil
-import traceback
 import datetime
 import copy
 import numpy as np
@@ -64,13 +65,16 @@ def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True,
     experiments = [(copy.deepcopy(w), copy.deepcopy(a), steps, verbose, i, save, collate_results)
                    for i in range(per_exp) for a in agents for w in worlds.items()]
     # lets run the experiments
-    if parallelized is not False:
-        # restart process after a single task is performed—slow for short runs, but fixes memory leak (hopefully)
-        P = multiprocessing.Pool(int(multiprocessing.cpu_count(
-        )*parallelized), maxtasksperchild=maxtasksperprocess)
-        results_mapped = tqdm.tqdm(P.imap_unordered(
-            _run_single_experiment, experiments), total=len(experiments))
-        P.close()
+    if parallelized:
+    # Set up the process pool and limit the number of tasks per process to avoid memory leaks
+        num_cpus = os.cpu_count()
+        num_processes = int(num_cpus * parallelized)
+        with Pool(processes=num_processes, maxtasksperchild=maxtasksperprocess) as pool:
+            run_single_experiment_partial = partial(_run_single_experiment)
+            results_mapped = list(tqdm.tqdm(pool.imap_unordered(run_single_experiment_partial, experiments),
+                                            total=len(experiments),
+                                            desc="Running subgoal agents",
+                                            dynamic_ncols=True))
     else:
         results_mapped = list(map(_run_single_experiment, tqdm.tqdm(experiments)))
 
