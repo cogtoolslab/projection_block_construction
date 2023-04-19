@@ -26,7 +26,7 @@ RAM_LIMIT = 90  # percentage of RAM usage over which a process doesn't run as to
 SAVE_INTERMEDIATE_RESULTS = True  # save the results of each experiment to a file
 
 
-def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1, collate_results=True):
+def run_experiment(worlds, agents, per_exp=1, steps=1, verbose=False, save=True, parallelized=True, maxtasksperprocess=1, collate_results=False):
     """Runs x experiments on the given worlds with the given agents for up to 100 steps while keeping logging values to a dataframe. Pass blockworlds as named dictionary for readability of results. Pass agents as a list: the __str__ function of an agent will take care of it. The world is assigned to the agent later, so it makes sense to pass none. You can pass negative numbers steps to run until the agent is finished. Pass a float to parallelized to set the fraction of CPUs to use. Note that the system that reads in the dataframe needs identical or compatible versions of Python and it's modules for it to be able to read the dataframe back in again.
     
     For performance reasons, you might not want to store and collate the dataframe of the results. In that case, set collate_results to False.
@@ -151,7 +151,7 @@ def _run_single_experiment(experiment):
     # print("Done with", agent.__str__(), '******', world_label, "in", str(round(time.perf_counter() - start_time)),
         #   "seconds. Found", str(len(solved_sequences)), "solutions to", str(len(all_sequences)), "sequences.")
 
-    if SAVE_INTERMEDIATE_RESULTS or not return_result:
+    if save and (SAVE_INTERMEDIATE_RESULTS or not return_result):
         # get folder for experiment
         exp_dir = os.path.join(df_dir, save)
         # make sure that the filename is not too long by truncating from the end
@@ -161,6 +161,8 @@ def _run_single_experiment(experiment):
             os.makedirs(exp_dir)
         # save the results to a file.
         r.to_pickle(os.path.join(exp_dir, filename))
+        # garbage collect to avoid memory leaks
+        del(r)
     if return_result: return r
 
 
