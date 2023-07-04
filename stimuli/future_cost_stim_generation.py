@@ -291,8 +291,8 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
                     k = int(how.removeprefix('top_').removesuffix('p'))
                 except:
                     raise Exception(f"The how method must contain an integer, but instead was {how}")
-                k = int(k/100)
-                other_Vs = [np.mean(sorted(vs, reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)]) for vs in subgoal_depth_Vs[depth].values()]
+                k = float(k/100)
+                other_Vs = [np.mean(sorted(vs, reverse=True)[0:int(len(vs)*k)]) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)])
             elif how.startswith('top_') and how.endswith('c'):
                 # we want the top k elements
