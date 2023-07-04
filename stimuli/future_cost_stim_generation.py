@@ -227,17 +227,25 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
     # generate subsequences
     length_sequences = {}
     for length in list(range(1, MAX_LENGTH+1)):
-        length_sequences[length] = []
+        matched_sequences = []
         for seq in solved_sequences: # needs to be solved sequences to ensure that they're all solvable and result in the full decompositon (make sure the proper flag is set above)
             if len(seq) <= length:
-                length_sequences[length].append(seq)
+                matched_sequences.append(seq)
             elif len(seq) > length:
                 # generate a truncated sequence
                 shortenend_seq = Subgoal_sequence(seq.subgoals[0:length])
-                length_sequences[length].append(shortenend_seq)
+                matched_sequences.append(shortenend_seq)
         # clear out duplicates according to subgoals
+        unique_length_sequences = []
         seen = set()
-        length_sequences[length] = [x for x in length_sequences[length] if not (x.names() in seen or seen.add(x.names()))] # I assume that a tuple of the same objects is the same even when recreated
+        for seq in matched_sequences:
+            # have we seen this sequence before?
+            if str(seq.names()) in seen:
+                continue
+            # we haven't seen this
+            seen.add(str(seq.names()))
+            unique_length_sequences.append(seq)
+        length_sequences[length] = unique_length_sequences
 
     subgoals = {}
     # get first subgoal V's (as well as other measures for later analysis)
@@ -291,7 +299,7 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
                     k = int(how.removeprefix('top_').removesuffix('p'))
                 except:
                     raise Exception(f"The how method must contain an integer, but instead was {how}")
-                k = float(k/100)
+                k = float(k/100.0)
                 other_Vs = [np.mean(sorted(vs, reverse=True)[0:int(len(vs)*k)]) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)])
             elif how.startswith('top_') and how.endswith('c'):
