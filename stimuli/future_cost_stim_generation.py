@@ -151,10 +151,79 @@ def get_initial_preferences(world_in):
     return initial_subgoals_df, solved_sequences, w, world_index, subgoal_depth_sequences
 
 
-def get_subgoal_choice_preferences(solved_sequences,c_weight=None):
+# def get_subgoal_choice_preferences(solved_sequences,c_weight=None): # this is the original old version fixed to best
+#     """Get a dict with choice prefernece for each initial subgoal of the form:
+#     {subgoal: [preference for the ith depth agent]}
+#     Set lambda in the agent itself"""
+#     # generate subsequences
+#     length_sequences = {}
+#     for length in list(range(1, MAX_LENGTH+1)):
+#         length_sequences[length] = []
+#         for seq in solved_sequences: # needs to be solved sequences to ensure that they're all solvable and result in the full decompositon (make sure the proper flag is set above)
+#             if len(seq) <= length:
+#                 length_sequences[length].append(seq)
+#             elif len(seq) > length:
+#                 # generate a truncated sequence
+#                 shortenend_seq = Subgoal_sequence(seq.subgoals[0:length])
+#                 length_sequences[length].append(shortenend_seq)
+#         # clear out duplicates according to subgoals
+#         seen = set()
+#         length_sequences[length] = [x for x in length_sequences[length] if not (x.names() in seen or seen.add(x.names()))] # I assume that a tuple of the same objects is the same even when recreated
+
+#     subgoals = {}
+#     # get first subgoal V's (as well as other measures for later analysis)
+#     subgoal_depth_Vs = {}
+#     subgoal_depth_sequences = {} # dict with {initial subgoal: {depth: [sequence objects]}}
+#     for depth in length_sequences:
+#         subgoal_depth_Vs[depth] = {}
+#         for seq in length_sequences[depth]: 
+#             V = seq.V(c_weight) if c_weight is not None else seq.V()
+#             if seq.subgoals[0].name not in subgoal_depth_sequences:
+#                 subgoal_depth_sequences[seq.subgoals[0].name] = {}
+#             if seq.subgoals[0].name in subgoal_depth_Vs[depth]:
+#                 subgoal_depth_Vs[depth][seq.subgoals[0].name] += [V]
+#                 subgoal_depth_sequences[seq.subgoals[0].name][depth] += [seq]
+#             else:
+#                 subgoal_depth_Vs[depth][seq.subgoals[0].name] = [V]
+#                 subgoal_depth_sequences[seq.subgoals[0].name][depth] = [seq]
+#             if seq.subgoals[0].name not in subgoals:
+#                 subgoals[seq.subgoals[0].name] = seq.subgoals[0]
+
+#     # get list of preferences for depth per subgoal
+#     subgoal_preferences = {}
+#     for subgoal_name in subgoals.keys():
+#         subgoal_preferences[subgoal_name] = {}
+#         for depth in length_sequences:
+#             # get subgoal preference for depth
+#             # using softmax with K defined above
+#             total_best_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
+#             sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
+#             try:
+#                 softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
+#             except ZeroDivisionError:
+#                 softmax_val = 1 if sg_V == max(total_best_Vs) else 0
+#             subgoal_preferences[subgoal_name][depth] = softmax_val
+#     return subgoal_preferences, subgoal_depth_sequences
+
+def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
     """Get a dict with choice prefernece for each initial subgoal of the form:
     {subgoal: [preference for the ith depth agent]}
-    Set lambda in the agent itself"""
+    Set lambda in the agent itself
+    
+    Unlike the previous function which only uses the best sequence of subgoals following the past one, this one uses different methods to aggregate over the other sequences that could follow the first one. 
+
+    The methods are:
+    * a function object: any function that operates on a list of numerical values
+    * 'mean': mean of the cost of all sequences
+    * 'best': best cost of all sequences (that is the behavior of the previous function)
+    * 'median': median of the cost of all sequences
+    * 'sum': sum of the cost of all sequences
+    * 'count': count of the number of sequences (Ie. we want to maximize the number of sequences that can follow the first one)
+    * 'var': the variance of the costs
+    * 'top_kp': mean of the top k% of the sequences
+    * 'top_kc': mean of the top k sequences
+    """
+    # print("Computing subgoal preferences over all sequences using", how)
     # generate subsequences
     length_sequences = {}
     for length in list(range(1, MAX_LENGTH+1)):
@@ -190,18 +259,64 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None):
                 subgoals[seq.subgoals[0].name] = seq.subgoals[0]
 
     # get list of preferences for depth per subgoal
+    # this is the only part that changes from the previous function
     subgoal_preferences = {}
     for subgoal_name in subgoals.keys():
         subgoal_preferences[subgoal_name] = {}
         for depth in length_sequences:
-            # get subgoal preference for depth
-            # using softmax with K defined above
-            total_best_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
-            sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
+            if callable(how):
+                other_Vs = [how(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = how(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'mean':
+                other_Vs = [np.mean(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = np.mean(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'best':
+                other_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'median':
+                other_Vs = [np.median(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = np.median(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'sum':
+                other_Vs = [sum(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = sum(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'count':
+                other_Vs = [len(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = len(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == 'var':
+                other_Vs = [np.var(vs) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = np.var(subgoal_depth_Vs[depth][subgoal_name])
+            elif how.startswith('top_') and how.endswith('p'):
+                # we want the top p percent of elements
+                try: 
+                    k = int(how.removeprefix('top_').removesuffix('p'))
+                except:
+                    raise Exception(f"The how method must contain an integer, but instead was {how}")
+                k = int(k/100)
+                other_Vs = [np.mean(sorted(vs, reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)]) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)])
+            elif how.startswith('top_') and how.endswith('c'):
+                # we want the top k elements
+                try: 
+                    k = int(how.removeprefix('top_').removesuffix('c'))
+                except:
+                    raise Exception(f"The how method must contain an integer, but instead was {how}")
+                other_Vs = [np.mean(sorted(vs, reverse=True)[0:k]) for vs in subgoal_depth_Vs[depth].values()]
+                sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:k])
+            else:
+                raise Exception(f"How method '{how}' is not implemented.")
             try:
-                softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
+                # Modified part for log-sum-exp trick
+                max_other_V = max(other_Vs)
+                softmax_val = math.exp(SOFTMAX_K * sg_V - max_other_V) / sum([math.exp(SOFTMAX_K * v - max_other_V) for v in other_Vs])
             except ZeroDivisionError:
-                softmax_val = 1 if sg_V == max(total_best_Vs) else 0
+                softmax_val = 1 if sg_V == max(other_Vs) else 0
+            except OverflowError:
+                # Fallback in case of numerical instability
+                max_val = max(sg_V, max(other_Vs))
+                if max_val == sg_V:
+                    softmax_val = 1.0
+                else:
+                    softmax_val = 0.0
             subgoal_preferences[subgoal_name][depth] = softmax_val
     return subgoal_preferences, subgoal_depth_sequences
 
