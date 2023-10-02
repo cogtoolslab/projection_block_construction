@@ -1,4 +1,3 @@
-import utils.display_world as display_world
 import utils.blockworld_helpers as blockworld_helpers
 import utils.matter_server as matter_server
 from random import randint
@@ -57,6 +56,7 @@ class Blockworld(World):
         self.physics = physics  # turn physics on or off?
         if physics:
             if physics_provider == "box2d":
+                from utils.display_world import test_world_stability
                 self.physics_provider = "box2d"
             elif type(physics_provider) == matter_server.Physics_Server:
                 self.physics_provider = physics_provider
@@ -318,7 +318,7 @@ class Blockworld(World):
             # we actually need to run the physics engine
             if self.world.physics_provider == "box2d":
                 bwworld = self.state_to_bwworld()
-                self._stable = display_world.test_world_stability(
+                self._stable = test_world_stability(
                     bwworld, RENDER=visual_display) == 'stable'
                 pass
             else:

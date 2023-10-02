@@ -1,7 +1,10 @@
 import numpy as np
 import argparse
 import random
-from Box2D import *
+try:
+    from Box2D import *
+except ImportError:
+    print("Box2D not installed. Legacy physics engine will not work.")
 import utils.blockworld_helpers as bw
 import json
 
