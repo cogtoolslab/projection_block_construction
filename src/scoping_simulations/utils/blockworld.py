@@ -2,8 +2,6 @@ import copy
 import os
 import sys
 
-# import scoping_simulations.utils.matter_server as matter_server
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import pyplot
@@ -11,6 +9,9 @@ from matplotlib import pyplot
 import scoping_simulations.utils.blockworld_helpers as blockworld_helpers
 from scoping_simulations.utils import matter_server
 from scoping_simulations.utils.world import World
+
+# import scoping_simulations.utils.matter_server as matter_server
+
 
 proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
@@ -67,7 +68,6 @@ class Blockworld(World):
         self.physics = physics  # turn physics on or off?
         if physics:
             if physics_provider == "box2d":
-
                 self.physics_provider = "box2d"
             elif type(physics_provider) == matter_server.Physics_Server:
                 self.physics_provider = physics_provider

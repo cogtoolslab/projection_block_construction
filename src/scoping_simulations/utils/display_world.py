@@ -120,9 +120,7 @@ def display_blocks(
     )
 
     for block in world.blocks:
-        add_block_to_world(
-            block, b2world, SIZE_FACTOR=SIZE_FACTOR, Y_SHIFT=Y_SHIFT
-        )
+        add_block_to_world(block, b2world, SIZE_FACTOR=SIZE_FACTOR, Y_SHIFT=Y_SHIFT)
 
     step = 0
 
@@ -207,9 +205,7 @@ def test_world_stability(
 
     # blocks added to world with vertical offset
     for block in world.blocks:
-        add_block_to_world(
-            block, b2world, SIZE_FACTOR=SIZE_FACTOR, Y_SHIFT=Y_SHIFT
-        )
+        add_block_to_world(block, b2world, SIZE_FACTOR=SIZE_FACTOR, Y_SHIFT=Y_SHIFT)
 
     step = 0
 

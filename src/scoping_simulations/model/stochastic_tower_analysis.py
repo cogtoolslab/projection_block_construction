@@ -36,7 +36,6 @@ import p_tqdm
 import pandas as pd
 from tqdm import tqdm
 
-
 # we need those imports for main
 from scoping_simulations.utils.blockworld import *
 

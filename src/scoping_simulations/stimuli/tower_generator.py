@@ -9,9 +9,7 @@ proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 from scoping_simulations.utils.blockworld import *
-from scoping_simulations.utils.blockworld_library import (
-    bl_nonoverlapping_simple,
-)
+from scoping_simulations.utils.blockworld_library import bl_nonoverlapping_simple
 
 
 def _default_size():

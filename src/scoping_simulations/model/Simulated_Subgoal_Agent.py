@@ -1,7 +1,5 @@
 from scoping_simulations.model.Subgoal_Planning_Agent import *
-from scoping_simulations.model.utils.decomposition_functions import (
-    Subgoal_sequence,
-)
+from scoping_simulations.model.utils.decomposition_functions import Subgoal_sequence
 
 
 class Simulated_Subgoal_Agent(Subgoal_Planning_Agent):

@@ -1,7 +1,6 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
 import textwrap
 
-
 import analysis.utils.trajectory as trajectory
 from analysis.utils.analysis_helper import *
 

@@ -42,7 +42,6 @@ sns.set_style("darkgrid")
 
 import warnings
 
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
@@ -51,7 +50,6 @@ warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 import plotly.graph_objects as go
 import scoring
 from scipy.stats import entropy
-
 
 
 def agentdf_to_dfic(df):

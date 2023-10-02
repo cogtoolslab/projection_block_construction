@@ -4,7 +4,6 @@ import random
 import sys
 from random import choice, randint
 
-
 from scoping_simulations.model.BFS_Lookahead_Agent import *
 from scoping_simulations.stimuli.subgoal_tree import *
 

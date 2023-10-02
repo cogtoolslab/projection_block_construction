@@ -11,7 +11,6 @@ import numpy as np
 from scipy import ndimage
 from tqdm import tqdm
 
-
 SUBGOAL_COLORS = [
     "red",
     "green",
