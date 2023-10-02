@@ -60,17 +60,17 @@ import pandas as pd
 import scipy.stats as stats
 from scipy.stats import sem as sem
 
-from utils.blockworld_library import *
-from utils.blockworld import *
+from scoping_simulations.utils.blockworld_library import *
+from scoping_simulations.utils.blockworld import *
 
-from model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
-from model.BFS_Agent import BFS_Agent
-from model.Astar_Agent import Astar_Agent
-from model.Best_First_Search_Agent import Best_First_Search_Agent
-from model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
+from scoping_simulations.model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
+from scoping_simulations.model.BFS_Agent import BFS_Agent
+from scoping_simulations.model.Astar_Agent import Astar_Agent
+from scoping_simulations.model.Best_First_Search_Agent import Best_First_Search_Agent
+from scoping_simulations.model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
 
-from model.utils.decomposition_functions import *
-import utils.blockworld_library as bl
+from scoping_simulations.model.utils.decomposition_functions import *
+import scoping_simulations.utils.blockworld_library as bl
 
 
 

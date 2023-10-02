@@ -16,8 +16,8 @@ utils_dir = os.path.join(proj_dir,'utils')
 sys.path.append(utils_dir)
 
 #setup
-import blockworld as bw
-import blockworld_library as bl
+import scoping_simulations.utils.blockworld as bw
+import scoping_simulations.utils.blockworld_library as bl
 import math
 import itertools
 import numpy as np

@@ -62,7 +62,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
-import blockworld_helpers as utils
+import scoping_simulations.utils.blockworld_helpers as utils
 import importlib
 import scoring
 
@@ -92,7 +92,7 @@ def agentdf_to_dfic(df):
 #        'hand_selected_012', 'hand_selected_016']
 #adopted from experiment running code
 # - [ ] Include passing the silhouette, not the name
-import blockworld_library as bl
+import scoping_simulations.utils.blockworld_library as bl
 silhouette8 = [14,11,3,13,12,1,15,5]
 silhouettes = {i : bl.load_interesting_structure(i) for i in bl.SILHOUETTE8}
 worlds_silhouettes = {'int_struct_'+str(i) : s for i,s in silhouettes.items()}

@@ -17,14 +17,14 @@ if __name__=="__main__": #required for multiprocessing
     df_dir = os.path.join(proj_dir,'results/dataframes')
 
     import pandas as pd
-    from model.Simulated_Lookahead_Subgoal_Planning_Agent import *
-    from model.Simulated_No_Subgoal_Planning_Agent import *
-    from model.Subgoal_Planning_Agent import *
-    from model.utils.decomposition_functions import *
-    from model.BFS_Agent import BFS_Agent
-    import utils.blockworld as bw
-    import utils.blockworld_library as bl
-    import experiments.simulated_lookahead_subgoal_planner_experiment_runner as experiment_runner
+    from scoping_simulations.model.Simulated_Lookahead_Subgoal_Planning_Agent import *
+    from scoping_simulations.model.Simulated_No_Subgoal_Planning_Agent import *
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+    from scoping_simulations.model.BFS_Agent import BFS_Agent
+    import scoping_simulations.utils.blockworld as bw
+    import scoping_simulations.utils.blockworld_library as bl
+    import scoping_simulations.experiments.simulated_lookahead_subgoal_planner_experiment_runner as experiment_runner
 
     import time
     start_time = time.time()

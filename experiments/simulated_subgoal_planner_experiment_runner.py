@@ -16,14 +16,14 @@ import time
 import random
 import multiprocessing
 import tqdm
-from experiments.experiment_runner import get_blockmaps,agent_para_dict
+from scoping_simulations.experiments.experiment_runner import get_blockmaps,agent_para_dict
 
 """
 Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found.
 """
 
 DF_COLS = ['run_ID','agent','world','step','planning_step','states_evaluated','action','_action','action_x','action_block_width','action_block_height','blocks','_blocks','blockmap','_world','legal_action_space','fast_failure','execution_time','world_status','world_failure_reason','agent_attributes']
-RAM_LIMIT = 100 # percentage of RAM usage over which a process doesn't run as to not run out of memory
+RAM_LIMIT = 90 # percentage of RAM usage over which a process doesn't run as to not run out of memory
 
 def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=True,maxtasksperprocess=1,chunk_experiments_size=2048):
     """Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found."""
@@ -47,11 +47,18 @@ def run_experiment(parent_df,agents,per_exp=100,steps=40,save=True,parallelized=
         print("Running experiment block",chunk_i,"of",len(chunked_experiments))
         # lets run the experiments
         if parallelized is not False:
-            ctx = multiprocessing.get_context('spawn') # ensures that we get a progress bar.
-            P = ctx.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess)
-            results_mapped = list(tqdm.tqdm(P.imap_unordered(_run_single_experiment, experiments), total=len(experiments)))
-            P.close()
-            P.join()
+            # ctx = multiprocessing.get_context('spawn') # ensures that we get a progress bar.
+            # P = ctx.Pool(int(multiprocessing.cpu_count()*parallelized),maxtasksperchild=maxtasksperprocess)
+            P = multiprocessing.Pool(int(multiprocessing.cpu_count()*parallelized), maxtasksperchild=maxtasksperprocess)
+            try:
+                results_mapped = list(tqdm.tqdm(P.imap_unordered(_run_single_experiment, experiments), total=len(experiments)))
+            except KeyboardInterrupt:
+                P.terminate()
+                P.join()
+                sys.exit(1)
+            else:
+                P.close()
+                P.join()
         else:
             results_mapped = list(tqdm.tqdm(map(_run_single_experiment, experiments), total=len(experiments)))
         try:

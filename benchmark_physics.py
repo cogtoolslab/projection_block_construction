@@ -1,8 +1,8 @@
 import numpy as np
 import random
-from utils.blockworld import Blockworld
-from utils.matter_server import Physics_Server
-import utils.matter_server as Matter_Server
+from scoping_simulations.utils.blockworld import Blockworld
+from scoping_simulations.utils.matter_server import Physics_Server
+import scoping_simulations.utils.matter_server as Matter_Server
 import os
 import sys
 import time

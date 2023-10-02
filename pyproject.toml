@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scoping_simulations"
+version = "2.0.0"
+description = "Simulation Environment for Visual Scoping"
+authors = [{ name = "Felix Binder", email = "me@felixbinder.net" }]
+
+[options]
+package_dir = "src"
+

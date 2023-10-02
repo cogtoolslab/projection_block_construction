@@ -1,9 +1,9 @@
 FRACTION_OF_CPUS = 1
-FILE_BY_FILE = True # if true, only load the df needed to memory and save out incremental results
+FILE_BY_FILE = 4 # false to load all files, integer to load n files at a time
 PER_EXP = 1#16 # number of repetitions of each experiment
 STEPS = 64 # maximum number of actions to take
 LAMBDAS = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0]
-CHUNK_SIZE = 256
+CHUNK_SIZE = 512
 
 if __name__=="__main__": #required for multiprocessing
     import os
@@ -20,11 +20,11 @@ if __name__=="__main__": #required for multiprocessing
 
     import pandas as pd
     import tqdm
-    from model.Simulated_Subgoal_Agent import *
-    from model.Subgoal_Planning_Agent import *
-    from model.utils.decomposition_functions import *
-    import utils.blockworld_library as bl
-    import experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
+    from scoping_simulations.model.Simulated_Subgoal_Agent import *
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+    import scoping_simulations.utils.blockworld_library as bl
+    import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
 
     # get path to dataframes as input
     import argparse
@@ -69,7 +69,7 @@ if __name__=="__main__": #required for multiprocessing
         i += 1
         exp_folder_path = os.path.join(df_dir, f"{expname}_{i}")
 
-    print("Experiment name: {}_{i}".format(expname, i))
+    print("Experiment name: {}_{}".format(expname, i))
 
     import time
     start_time = time.time()
@@ -125,7 +125,6 @@ if __name__=="__main__": #required for multiprocessing
     agents = []
     for l in LAMBDAS:
         l_agents = [
-            Simulated_Subgoal_Agent(c_weight = l, decomposer=no_subgoals_decomposer, label="No Subgoals"),
         Simulated_Subgoal_Agent(c_weight = l, decomposer=myopic_decomposer, label="Myopic"),
         Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_1_decomposer, label="Lookahead"),
         # Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_2_decomposer, label="Lookahead 2")
@@ -133,6 +132,7 @@ if __name__=="__main__": #required for multiprocessing
         agents += l_agents
 
     full_agents = [
+        Simulated_Subgoal_Agent(decomposer=no_subgoals_decomposer, label="No Subgoals", step_size=-1), # step size of -1 means use the full sequence
         Simulated_Subgoal_Agent(decomposer=full_decomp_decomposer, label="Full Decomp", step_size=-1), # step size of -1 means use the full sequence
         ]
     agents += full_agents
@@ -140,12 +140,14 @@ if __name__=="__main__": #required for multiprocessing
     print(f"Created {len(agents)} agents")
 
     if FILE_BY_FILE:
-        # load and run experiments one by one
-        for i,df_path in tqdm(enumerate(df_paths), total = len(df_paths)):
-            df = pd.read_pickle(df_path)
-            print("Dataframe loaded:",df_path)
-
-            print("Results will be saved to:",os.path.join(exp_folder_path,f"{expname}_{i})")+".pkl")
+        # load and run experiments
+        # bunch into chunks of FILE_BY_FILE
+        dfs_paths = []
+        for i in range(0,len(df_paths),FILE_BY_FILE):
+            dfs_paths.append(df_paths[i:i+FILE_BY_FILE])
+        for i,dfs_path in tqdm(enumerate(dfs_paths), total = len(dfs_paths)):
+            df = pd.concat([pd.read_pickle(p) for p in dfs_path])
+            print(f"Loaded {len(df)} dataframes. Results will be saved to:",os.path.join(exp_folder_path,f"{expname}_{i})")+".pkl")
 
             results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=os.path.join(exp_folder_path,f"{expname}_{i})"),maxtasksperprocess = 256,chunk_experiments_size=CHUNK_SIZE)
     else:

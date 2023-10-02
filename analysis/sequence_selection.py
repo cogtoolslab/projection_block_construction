@@ -15,7 +15,7 @@ sys.path.append(analysis_utils_dir)
 experiments_dir = os.path.join(proj_dir,'experiments')
 sys.path.append(experiments_dir)
 
-from model.utils.decomposition_functions import *
+from scoping_simulations.model.utils.decomposition_functions import *
 
 from itertools import permutations as permutate
 from collections import OrderedDict

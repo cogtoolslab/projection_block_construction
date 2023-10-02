@@ -20,11 +20,11 @@ if __name__=="__main__": #required for multiprocessing
 
     import pandas as pd
     import tqdm
-    from model.Simulated_Subgoal_Agent import *
-    from model.Subgoal_Planning_Agent import *
-    from model.utils.decomposition_functions import *
-    import utils.blockworld_library as bl
-    import experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
+    from scoping_simulations.model.Simulated_Subgoal_Agent import *
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+    import scoping_simulations.utils.blockworld_library as bl
+    import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
 
     # get path to dataframes as input
     import argparse

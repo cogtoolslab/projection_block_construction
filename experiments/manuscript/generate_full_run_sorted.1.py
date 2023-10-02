@@ -9,13 +9,13 @@ sys.path.append(agent_dir)
 agent_util_dir = os.path.join(agent_dir,'utils')
 sys.path.append(agent_util_dir)
 
-from model.utils.decomposition_functions import *
-from model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
-from model.Best_First_Search_Agent import Best_First_Search_Agent
-import stimuli
-import utils.blockworld as bw
-import utils.blockworld_library as bl
-import experiments.subgoal_generator_runner as experiment_runner
+from scoping_simulations.model.utils.decomposition_functions import *
+from scoping_simulations.model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
+from scoping_simulations.model.Best_First_Search_Agent import Best_First_Search_Agent
+import scoping_simulations.stimuli
+import scoping_simulations.utils.blockworld as bw
+import scoping_simulations.utils.blockworld_library as bl
+import scoping_simulations.experiments.subgoal_generator_runner as experiment_runner
 
 EXP_NAME = "best first superset sorted 1"
 FRACTION_OF_CPUS = .9
@@ -24,7 +24,7 @@ MAX_LENGTH = 3 # maximum length of sequences to consider
 if __name__=="__main__": #required for multiprocessing
 
     try:
-        import stimuli.tower_generator as tower_generator
+        import scoping_simulations.stimuli.tower_generator as tower_generator
     except:
         import tower_generator
 

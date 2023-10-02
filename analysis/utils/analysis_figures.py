@@ -1,6 +1,6 @@
 """Contains code for generating figures and more complicated visualizations"""
 
-from utils import world
+from scoping_simulations.utils import world
 from analysis.utils.analysis_graphs import *
 import imageio
 

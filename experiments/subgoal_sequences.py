@@ -4,9 +4,9 @@ import sys
 proj_dir =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0,proj_dir)
 
-from model.Resource_Rational_Subgoal_Planning_Agent import *
-import utils.blockworld as bw
-import utils.blockworld_library as bl
+from scoping_simulations.model.Resource_Rational_Subgoal_Planning_Agent import *
+import scoping_simulations.utils.blockworld as bw
+import scoping_simulations.utils.blockworld_library as bl
 
 import pandas as pd
 

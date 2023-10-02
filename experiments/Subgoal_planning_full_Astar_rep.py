@@ -1,4 +1,4 @@
-from utils.blockworld import F1score
+from scoping_simulations.utils.blockworld import F1score
 
 
 if __name__=="__main__": #required for multiprocessing
@@ -13,13 +13,13 @@ if __name__=="__main__": #required for multiprocessing
     agent_util_dir = os.path.join(agent_dir,'utils')
     sys.path.append(agent_util_dir)
 
-    from model.Subgoal_Planning_Agent import *
-    from model.utils.decomposition_functions import *
-    from model.BFS_Agent import BFS_Agent
-    from model.Astar_Agent import Astar_Agent
-    import utils.blockworld as bw
-    import utils.blockworld_library as bl
-    import experiments.subgoal_generator_runner as experiment_runner
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+    from scoping_simulations.model.BFS_Agent import BFS_Agent
+    from scoping_simulations.model.Astar_Agent import Astar_Agent
+    import scoping_simulations.utils.blockworld as bw
+    import scoping_simulations.utils.blockworld_library as bl
+    import scoping_simulations.experiments.subgoal_generator_runner as experiment_runner
 
     import time
     start_time = time.time()

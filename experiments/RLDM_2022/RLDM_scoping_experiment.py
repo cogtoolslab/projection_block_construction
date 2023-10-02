@@ -15,16 +15,16 @@ if __name__ == "__main__":  # required for multiprocessing
     stim_dir = os.path.join(proj_dir, 'stimuli')
     sys.path.append(stim_dir)
 
-    from model.Subgoal_Planning_Agent import *
-    from model.utils.decomposition_functions import *
-    from model.BFS_Agent import BFS_Agent
-    from model.Astar_Agent import Astar_Agent
-    from model.Best_First_Search_Agent import Best_First_Search_Agent
-    import utils.blockworld as bw
-    import utils.blockworld_library as bl
-    import experiments.experiment_runner as experiment_runner
-    import experiments.subgoal_generator_runner as subgoal_generator_runner
-    import stimuli.tower_generator
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+    from scoping_simulations.model.BFS_Agent import BFS_Agent
+    from scoping_simulations.model.Astar_Agent import Astar_Agent
+    from scoping_simulations.model.Best_First_Search_Agent import Best_First_Search_Agent
+    import scoping_simulations.utils.blockworld as bw
+    import scoping_simulations.utils.blockworld_library as bl
+    import scoping_simulations.experiments.experiment_runner as experiment_runner
+    import scoping_simulations.experiments.subgoal_generator_runner as subgoal_generator_runner
+    import scoping_simulations.stimuli.tower_generator
     import tqdm
 
     import pickle

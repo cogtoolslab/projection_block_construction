@@ -86,3 +86,7 @@ stimuli/tower_generate_main.py
 list/*
 node_modules
 package-lock.json
+src/scoping_simulations.egg-info/dependency_links.txt
+src/scoping_simulations.egg-info/PKG-INFO
+src/scoping_simulations.egg-info/SOURCES.txt
+src/scoping_simulations.egg-info/top_level.txt

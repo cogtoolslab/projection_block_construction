@@ -1,10 +1,10 @@
 import unittest
 
-import utils.matter_server as ms
+import scoping_simulations.utils.matter_server as ms
 
-from utils.blockworld_library import bl_nonoverlapping_simple, bl_nonoverlapping_simple_named
+from scoping_simulations.utils.blockworld_library import bl_nonoverlapping_simple, bl_nonoverlapping_simple_named
 
-from utils.blockworld import Blockworld
+from scoping_simulations.utils.blockworld import Blockworld
 
 blsn = bl_nonoverlapping_simple_named
 
