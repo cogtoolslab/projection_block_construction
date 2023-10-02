@@ -1,18 +1,20 @@
-from statistics import mean
-from typing import Any
-from dataclasses import dataclass, field
 import heapq
-import random
-import scoping_simulations.utils.blockworld as blockworld
-from scoping_simulations.model.utils.Search_Tree import *
-from scoping_simulations.model.BFS_Agent import BFS_Agent
 import os
+import random
 import sys
+from dataclasses import dataclass, field
+from typing import Any
+
+import scoping_simulations.utils.blockworld as blockworld
+from scoping_simulations.model.BFS_Agent import BFS_Agent
+from scoping_simulations.model.utils.Search_Tree import *
+
 proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 
 # class for the priority queue
+
 
 @dataclass(order=True)
 class FringeNode:
@@ -24,11 +26,18 @@ class Astar_Agent(BFS_Agent):
     """An agent implementing the A* algorithm. The algorithm uses a fixed cost (so it tries to find the shortest path to the goal) and a given scoring function as heuristic to distance to goal. The heuristic should include stability.
     An upper limit can be set to prevent endless in difficult problems. -1 for potentially endless search.
 
-    The heuristic should be admissible: it should be an upper bound to the actual cost of reaching the goal. 
-    The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. Penalties get represented as really large distances. 
+    The heuristic should be admissible: it should be an upper bound to the actual cost of reaching the goal.
+    The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. Penalties get represented as really large distances.
     """
 
-    def __init__(self, world=None, heuristic=blockworld.recall, only_improving_actions=False, random_seed=None, label="A*"):
+    def __init__(
+        self,
+        world=None,
+        heuristic=blockworld.recall,
+        only_improving_actions=False,
+        random_seed=None,
+        label="A*",
+    ):
         self.world = world
         self.heuristic = heuristic
         self.only_improving_actions = only_improving_actions
@@ -39,34 +48,43 @@ class Astar_Agent(BFS_Agent):
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' heuristic: '+self.heuristic.__name__+' random seed: '+str(self.random_seed) + ' label: '+str(self.label)
+        return (
+            self.__class__.__name__
+            + " heuristic: "
+            + self.heuristic.__name__
+            + " random seed: "
+            + str(self.random_seed)
+            + " label: "
+            + str(self.label)
+        )
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {
-            'agent_type': self.__class__.__name__,
-            'heuristic': self.heuristic.__name__,
-            'random_seed': self.random_seed,
-            'label': self.label
+            "agent_type": self.__class__.__name__,
+            "heuristic": self.heuristic.__name__,
+            "random_seed": self.random_seed,
+            "label": self.label,
         }
 
     def act(self, steps=None, verbose=False):
         """By default performs a full iteration of A*, then acts all the steps."""
         # check if we even can act
-        if self.world.status()[0] != 'Ongoing':
+        if self.world.status()[0] != "Ongoing":
             print("Can't act with world in status", self.world.status())
             return
         # preload values needed for heuristic
         # the number of cells in the silhouette
         self._silhouette_size = self.world.silhouette.sum()
         self._max_block_size = max(
-            [block.width * block.height for block in self.world.block_library])
+            [block.width * block.height for block in self.world.block_library]
+        )
         if steps is not None:
             print(
-                "Limited number of steps selected. This is not lookahead, are you sure?")
+                "Limited number of steps selected. This is not lookahead, are you sure?"
+            )
         # run A* search
-        actions, states_evaluated = self.search(
-            self.world.current_state, verbose)
+        actions, states_evaluated = self.search(self.world.current_state, verbose)
         # extract the steps to take. None gives complete list
         actions = actions[0:steps]
         if verbose:
@@ -80,15 +98,14 @@ class Astar_Agent(BFS_Agent):
         if verbose:
             print("Done, reached world status: ", self.world.status())
         # only returns however many steps we actually acted, not the entire sequence
-        return actions, {'states_evaluated': states_evaluated}
+        return actions, {"states_evaluated": states_evaluated}
 
     def search(self, root, verbose=False):
         """Performs A* search"""
         i = 0  # iterations
         states_evaluated = 0  # track number of states evaluated
         # initialize open set
-        open_set = open_set = Stochastic_Priority_Queue(
-            random_seed=self.random_seed)
+        open_set = open_set = Stochastic_Priority_Queue(random_seed=self.random_seed)
         # put in root node
         open_set.put(FringeNode(self.f(root), Node(root, [])))
         while not open_set.empty():
@@ -103,7 +120,7 @@ class Astar_Agent(BFS_Agent):
             states_evaluated += 1
             # check for stability
             if not node.state.stability():
-                continue # can't do anything with this node, try the next best one
+                continue  # can't do anything with this node, try the next best one
             if node.state.is_win():
                 # found winning node
                 if verbose:
@@ -113,12 +130,18 @@ class Astar_Agent(BFS_Agent):
             actions = node.state.possible_actions()  # get possible actions
             for action in actions:
                 child = node.state.transition(action)
-                open_set.put(FringeNode(self.f(child), Node(
-                    child, node.actions+[action])))
+                open_set.put(
+                    FringeNode(self.f(child), Node(child, node.actions + [action]))
+                )
             # if verbose: print("added",len(actions),"new states at",i) #DEBUG
             if verbose and i % 1000 == 0:
-                print(i, "iterations, got open set of size",
-                      open_set.qsize(), "with cost", states_evaluated)
+                print(
+                    i,
+                    "iterations, got open set of size",
+                    open_set.qsize(),
+                    "with cost",
+                    states_evaluated,
+                )
         if verbose:
             print("Evaluated all states and found nothing after", states_evaluated)
         return [], states_evaluated
@@ -136,10 +159,10 @@ class Astar_Agent(BFS_Agent):
 
     def h(self, state):
         """Estimated cost to get from current state to goal state.
-        The heuristic should be admissible: it should be a lower bound to the actual cost of reaching the goal. The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal. 
+        The heuristic should be admissible: it should be a lower bound to the actual cost of reaching the goal. The h function estimates distance to goal by taking a heuristic, which should return degree of completion between 0 and 1, calculated the number of cells left to fill out and takes the average size of blocks in the library to provice an estimation of steps left to goal.
         """
         heur = self.heuristic(state)
-        out = -(heur-1) * self._silhouette_size / self._max_block_size
+        out = -(heur - 1) * self._silhouette_size / self._max_block_size
         # return 0 if the cost to goal is less than 0 (which doesn't make sense)
         return max(0, out)
 
@@ -180,10 +203,10 @@ class Stochastic_Priority_Queue:
                 break
         random.seed(self.random_seed)  # fix random seed
         # index of element to return
-        ret_index = random.randint(0, len(elems)-1)
+        ret_index = random.randint(0, len(elems) - 1)
         ret_item = elems[ret_index]
         # push the non returned items back onto the heap
-        for elem in elems[0:ret_index] + elems[ret_index+1:] + [last_elem]:
+        for elem in elems[0:ret_index] + elems[ret_index + 1 :] + [last_elem]:
             if elem is not None:
                 heapq.heappush(self.heap, elem)
         return ret_item.node

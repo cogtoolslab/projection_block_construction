@@ -1,13 +1,13 @@
 # # Cost of future subgoals model preference elicitation
-# 
+#
 # This notebook contains the code used to generate the subgoal pairs and data for analysis for the third human study.
-# 
-# In this study, we want to see if people are sensitive to the computational costs of future subgoals. 
-# 
+#
+# In this study, we want to see if people are sensitive to the computational costs of future subgoals.
+#
 # For each tower, we
 # * generate a tree of subgoal decompositions
 # * get the preferences over hte first subgoals across planners directly from the tree
-# 
+#
 # Tower generation code is taken from `Future_costs_stim_generation.ipynb`
 
 # ## Setup
@@ -15,64 +15,52 @@
 # set up imports
 import os
 import sys
+
 __file__ = os.getcwd()
 proj_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(proj_dir)
-utils_dir = os.path.join(proj_dir, 'utils')
+utils_dir = os.path.join(proj_dir, "utils")
 sys.path.append(utils_dir)
-analysis_dir = os.path.join(proj_dir, 'analysis')
-analysis_utils_dir = os.path.join(analysis_dir, 'utils')
+analysis_dir = os.path.join(proj_dir, "analysis")
+analysis_utils_dir = os.path.join(analysis_dir, "utils")
 sys.path.append(analysis_utils_dir)
-agent_dir = os.path.join(proj_dir, 'model')
+agent_dir = os.path.join(proj_dir, "model")
 sys.path.append(agent_dir)
-agent_util_dir = os.path.join(agent_dir, 'utils')
+agent_util_dir = os.path.join(agent_dir, "utils")
 sys.path.append(agent_util_dir)
-experiments_dir = os.path.join(proj_dir, 'experiments')
+experiments_dir = os.path.join(proj_dir, "experiments")
 sys.path.append(experiments_dir)
-df_dir = os.path.join(proj_dir, 'results/dataframes')
-stim_dir = os.path.join(proj_dir, 'stimuli')
+df_dir = os.path.join(proj_dir, "results/dataframes")
+stim_dir = os.path.join(proj_dir, "stimuli")
 
 try:
     import scoping_simulations.stimuli.tower_generator as tower_generator
 except:
     import tower_generator
 
-from tqdm import tqdm
-import p_tqdm
-
 import datetime
-
+import math
 import pickle
 
-import math
-
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import p_tqdm
 import pandas as pd
-
-import scipy.stats as stats
 from scipy.stats import sem as sem
+from tqdm import tqdm
 
-from scoping_simulations.utils.blockworld_library import *
-from scoping_simulations.utils.blockworld import *
-
-from scoping_simulations.model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
-from scoping_simulations.model.BFS_Agent import BFS_Agent
-from scoping_simulations.model.Astar_Agent import Astar_Agent
+import scoping_simulations.utils.blockworld_library as bl
 from scoping_simulations.model.Best_First_Search_Agent import Best_First_Search_Agent
 from scoping_simulations.model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
-
 from scoping_simulations.model.utils.decomposition_functions import *
-import scoping_simulations.stimuli.subgoal_tree
-import scoping_simulations.utils.blockworld_library as bl
-
+from scoping_simulations.utils.blockworld import *
+from scoping_simulations.utils.blockworld_library import *
 
 SOFTMAX_K = 1
-MAX_LENGTH = 3 # maximum length of sequences to consider
-LAMBDAS = np.linspace(0.1, 6., 100) # lambdas to marginalize over
+MAX_LENGTH = 3  # maximum length of sequences to consider
+LAMBDAS = np.linspace(0.1, 6.0, 100)  # lambdas to marginalize over
 # the generation parameters are in the executable section of the file below
 # TODO make these parameters rather than hard coded
+
 
 def get_initial_preferences(world_in):
     world_index, w = world_in
@@ -89,11 +77,12 @@ def get_initial_preferences(world_in):
             Complete(),
             No_overlap(),
             Supported(),
-        ]
+        ],
     )
 
-    sga = Subgoal_Planning_Agent(lower_agent=Best_First_Search_Agent(),
-                                    decomposer=decomposer)
+    sga = Subgoal_Planning_Agent(
+        lower_agent=Best_First_Search_Agent(), decomposer=decomposer
+    )
 
     sga.set_world(w)
 
@@ -103,8 +92,12 @@ def get_initial_preferences(world_in):
 
     _, all_sequences, solved_sequences = sga.plan_subgoals(verbose=False)
 
-    print("Done generating sequences for world {}, found {} solved sequences out of {}".format(world_index, len(solved_sequences), len(all_sequences)))
-   
+    print(
+        "Done generating sequences for world {}, found {} solved sequences out of {}".format(
+            world_index, len(solved_sequences), len(all_sequences)
+        )
+    )
+
     # ## Generate sequences of different length
 
     # 1. Use the tree to generate sequences of subgoals up to a certain length
@@ -113,42 +106,71 @@ def get_initial_preferences(world_in):
     # 3. Over all sequences of a length, get list of V's for the first subgoal
     # 4. Use the list of V's to calculate preferences over the first subgoals
 
-    subgoal_preferences, subgoal_depth_sequences = get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, LAMBDAS)
+    (
+        subgoal_preferences,
+        subgoal_depth_sequences,
+    ) = get_marginalized_subgoal_choice_preferences_over_lambda(
+        solved_sequences, LAMBDAS
+    )
 
     print("Got subgoal preferences over lambda for world {}".format(world_index))
-    relative_subgoal_preferences = get_relative_subgoal_informativity(subgoal_preferences)
-    
-    print("Got relative subgoal preferences over lambda for world {}".format(world_index))
+    relative_subgoal_preferences = get_relative_subgoal_informativity(
+        subgoal_preferences
+    )
+
+    print(
+        "Got relative subgoal preferences over lambda for world {}".format(world_index)
+    )
 
     # lets put everything into a big dataframe
-    initial_subgoals_df = pd.DataFrame.from_dict(subgoal_preferences, orient='index')
+    initial_subgoals_df = pd.DataFrame.from_dict(subgoal_preferences, orient="index")
     # add in absolute in col names
-    initial_subgoals_df.columns = [str(col) + '_abs' for col in initial_subgoals_df.columns]
+    initial_subgoals_df.columns = [
+        str(col) + "_abs" for col in initial_subgoals_df.columns
+    ]
     # add in relative preferences
-    relative_subgoals_df = pd.DataFrame.from_dict(relative_subgoal_preferences, orient='index')
+    relative_subgoals_df = pd.DataFrame.from_dict(
+        relative_subgoal_preferences, orient="index"
+    )
     # add in relative in col names
-    relative_subgoals_df.columns = [str(col) + '_rel' for col in relative_subgoals_df.columns]
+    relative_subgoals_df.columns = [
+        str(col) + "_rel" for col in relative_subgoals_df.columns
+    ]
     # merge
-    initial_subgoals_df = pd.merge(initial_subgoals_df, relative_subgoals_df, left_index=True, right_index=True)
+    initial_subgoals_df = pd.merge(
+        initial_subgoals_df, relative_subgoals_df, left_index=True, right_index=True
+    )
     # add in subgoalts themselves
     # add the current world index
-    initial_subgoals_df['world'] = world_index
+    initial_subgoals_df["world"] = world_index
     # we need to recover them from the solved_sequences
     subgoals = []
     for sequence in solved_sequences:
         if sequence.subgoals[0].name not in subgoals:
             subgoals.append(sequence.subgoals[0])
     # add in according to subgoal name
-    subgoals_df = pd.DataFrame.from_dict({subgoal.name: subgoal for subgoal in subgoals}, orient='index', columns=['subgoal'])
+    subgoals_df = pd.DataFrame.from_dict(
+        {subgoal.name: subgoal for subgoal in subgoals},
+        orient="index",
+        columns=["subgoal"],
+    )
     # merge with initial_subgoals_df
-    initial_subgoals_df = pd.merge(initial_subgoals_df, subgoals_df, left_index=True, right_index=True)
+    initial_subgoals_df = pd.merge(
+        initial_subgoals_df, subgoals_df, left_index=True, right_index=True
+    )
     # add in additional subgoal info
-    initial_subgoals_df['C'] = initial_subgoals_df['subgoal'].apply(lambda x: x.C)
-    initial_subgoals_df['R'] = initial_subgoals_df['subgoal'].apply(lambda x: x.R())
+    initial_subgoals_df["C"] = initial_subgoals_df["subgoal"].apply(lambda x: x.C)
+    initial_subgoals_df["R"] = initial_subgoals_df["subgoal"].apply(lambda x: x.R())
 
     print("Created dataframes & done for world {}".format(world_index))
 
-    return initial_subgoals_df, solved_sequences, w, world_index, subgoal_depth_sequences
+    return (
+        initial_subgoals_df,
+        solved_sequences,
+        w,
+        world_index,
+        subgoal_depth_sequences,
+    )
 
 
 # def get_subgoal_choice_preferences(solved_sequences,c_weight=None): # this is the original old version fixed to best
@@ -176,7 +198,7 @@ def get_initial_preferences(world_in):
 #     subgoal_depth_sequences = {} # dict with {initial subgoal: {depth: [sequence objects]}}
 #     for depth in length_sequences:
 #         subgoal_depth_Vs[depth] = {}
-#         for seq in length_sequences[depth]: 
+#         for seq in length_sequences[depth]:
 #             V = seq.V(c_weight) if c_weight is not None else seq.V()
 #             if seq.subgoals[0].name not in subgoal_depth_sequences:
 #                 subgoal_depth_sequences[seq.subgoals[0].name] = {}
@@ -205,12 +227,13 @@ def get_initial_preferences(world_in):
 #             subgoal_preferences[subgoal_name][depth] = softmax_val
 #     return subgoal_preferences, subgoal_depth_sequences
 
-def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
+
+def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     """Get a dict with choice prefernece for each initial subgoal of the form:
     {subgoal: [preference for the ith depth agent]}
     Set lambda in the agent itself
-    
-    Unlike the previous function which only uses the best sequence of subgoals following the past one, this one uses different methods to aggregate over the other sequences that could follow the first one. 
+
+    Unlike the previous function which only uses the best sequence of subgoals following the past one, this one uses different methods to aggregate over the other sequences that could follow the first one.
 
     The methods are:
     * a function object: any function that operates on a list of numerical values
@@ -226,9 +249,13 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
     # print("Computing subgoal preferences over all sequences using", how)
     # generate subsequences
     length_sequences = {}
-    for length in list(range(1, MAX_LENGTH+1)):
+    for length in list(range(1, MAX_LENGTH + 1)):
         matched_sequences = []
-        for seq in solved_sequences: # needs to be solved sequences to ensure that they're all solvable and result in the full decompositon (make sure the proper flag is set above)
+        for (
+            seq
+        ) in (
+            solved_sequences
+        ):  # needs to be solved sequences to ensure that they're all solvable and result in the full decompositon (make sure the proper flag is set above)
             if len(seq) <= length:
                 matched_sequences.append(seq)
             elif len(seq) > length:
@@ -250,10 +277,12 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
     subgoals = {}
     # get first subgoal V's (as well as other measures for later analysis)
     subgoal_depth_Vs = {}
-    subgoal_depth_sequences = {} # dict with {initial subgoal: {depth: [sequence objects]}}
+    subgoal_depth_sequences = (
+        {}
+    )  # dict with {initial subgoal: {depth: [sequence objects]}}
     for depth in length_sequences:
         subgoal_depth_Vs[depth] = {}
-        for seq in length_sequences[depth]: 
+        for seq in length_sequences[depth]:
             V = seq.V(c_weight) if c_weight is not None else seq.V()
             if seq.subgoals[0].name not in subgoal_depth_sequences:
                 subgoal_depth_sequences[seq.subgoals[0].name] = {}
@@ -275,47 +304,65 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
             if callable(how):
                 other_Vs = [how(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = how(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'mean':
+            elif how == "mean":
                 other_Vs = [np.mean(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.mean(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'best':
+            elif how == "best":
                 other_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'median':
+            elif how == "median":
                 other_Vs = [np.median(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.median(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'sum':
+            elif how == "sum":
                 other_Vs = [sum(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = sum(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'count':
+            elif how == "count":
                 other_Vs = [len(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = len(subgoal_depth_Vs[depth][subgoal_name])
-            elif how == 'var':
+            elif how == "var":
                 other_Vs = [np.var(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.var(subgoal_depth_Vs[depth][subgoal_name])
-            elif how.startswith('top_') and how.endswith('p'):
+            elif how.startswith("top_") and how.endswith("p"):
                 # we want the top p percent of elements
-                try: 
-                    k = int(how.removeprefix('top_').removesuffix('p'))
+                try:
+                    k = int(how.removeprefix("top_").removesuffix("p"))
                 except:
-                    raise Exception(f"The how method must contain an integer, but instead was {how}")
-                k = float(k/100.0)
-                other_Vs = [np.mean(sorted(vs, reverse=True)[0:int(len(vs)*k)]) for vs in subgoal_depth_Vs[depth].values()]
-                sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:int(len(subgoal_depth_Vs[depth][subgoal_name])*k)])
-            elif how.startswith('top_') and how.endswith('c'):
+                    raise Exception(
+                        f"The how method must contain an integer, but instead was {how}"
+                    )
+                k = float(k / 100.0)
+                other_Vs = [
+                    np.mean(sorted(vs, reverse=True)[0 : int(len(vs) * k)])
+                    for vs in subgoal_depth_Vs[depth].values()
+                ]
+                sg_V = np.mean(
+                    sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[
+                        0 : int(len(subgoal_depth_Vs[depth][subgoal_name]) * k)
+                    ]
+                )
+            elif how.startswith("top_") and how.endswith("c"):
                 # we want the top k elements
-                try: 
-                    k = int(how.removeprefix('top_').removesuffix('c'))
+                try:
+                    k = int(how.removeprefix("top_").removesuffix("c"))
                 except:
-                    raise Exception(f"The how method must contain an integer, but instead was {how}")
-                other_Vs = [np.mean(sorted(vs, reverse=True)[0:k]) for vs in subgoal_depth_Vs[depth].values()]
-                sg_V = np.mean(sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:k])
+                    raise Exception(
+                        f"The how method must contain an integer, but instead was {how}"
+                    )
+                other_Vs = [
+                    np.mean(sorted(vs, reverse=True)[0:k])
+                    for vs in subgoal_depth_Vs[depth].values()
+                ]
+                sg_V = np.mean(
+                    sorted(subgoal_depth_Vs[depth][subgoal_name], reverse=True)[0:k]
+                )
             else:
                 raise Exception(f"How method '{how}' is not implemented.")
             try:
                 # Modified part for log-sum-exp trick
                 max_other_V = max(other_Vs)
-                softmax_val = math.exp(SOFTMAX_K * sg_V - max_other_V) / sum([math.exp(SOFTMAX_K * v - max_other_V) for v in other_Vs])
+                softmax_val = math.exp(SOFTMAX_K * sg_V - max_other_V) / sum(
+                    [math.exp(SOFTMAX_K * v - max_other_V) for v in other_Vs]
+                )
             except ZeroDivisionError:
                 softmax_val = 1 if sg_V == max(other_Vs) else 0
             except OverflowError:
@@ -328,34 +375,52 @@ def get_subgoal_choice_preferences(solved_sequences,c_weight=None, how='mean'):
             subgoal_preferences[subgoal_name][depth] = softmax_val
     return subgoal_preferences, subgoal_depth_sequences
 
+
 def get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas):
     """Generates dict with {$\lambda$: {subgoal: [preference for the ith depth agent]}}
 
-    Also returns dict with all sequences of a certain length. Note that this is only returned for a single value of $\lambda$, so be careful with running V() on it."""
+    Also returns dict with all sequences of a certain length. Note that this is only returned for a single value of $\lambda$, so be careful with running V() on it.
+    """
     subgoal_preferences_over_lambda = {}
     for l in lambdas:
-        subgoal_preferences_over_lambda[l], subgoal_depth_sequences = get_subgoal_choice_preferences(solved_sequences,l)
+        (
+            subgoal_preferences_over_lambda[l],
+            subgoal_depth_sequences,
+        ) = get_subgoal_choice_preferences(solved_sequences, l)
     return subgoal_preferences_over_lambda, subgoal_depth_sequences
+
 
 # We'll need to marginalize over lambda
 
+
 def get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas):
-    subgoal_preferences_over_lambda, subgoal_depth_sequences = get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas)
+    (
+        subgoal_preferences_over_lambda,
+        subgoal_depth_sequences,
+    ) = get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas)
     # marginalize over lambda
     subgoal_preferences = {}
     for subgoal_name in subgoal_preferences_over_lambda[lambdas[0]].keys():
         subgoal_preferences[subgoal_name] = {}
         for depth in subgoal_preferences_over_lambda[lambdas[0]][subgoal_name].keys():
-            subgoal_preferences[subgoal_name][depth] = np.mean([subgoal_preferences_over_lambda[l][subgoal_name][depth] for l in lambdas])
+            subgoal_preferences[subgoal_name][depth] = np.mean(
+                [
+                    subgoal_preferences_over_lambda[l][subgoal_name][depth]
+                    for l in lambdas
+                ]
+            )
     return subgoal_preferences, subgoal_depth_sequences
 
+
 # That gives us the absolute choice preference of the planner. We also want the relative choice preference, which is the ratio in entropy of the distribution over the first subgoals with and without the planner included. The higher the difference, the more the planner is preferred. This indicates the relative to the entropy of the other planners introducing the new one reduces entropy by a certain amount.
+
 
 def entropy(p):
     try:
         return -sum([p_i * math.log(p_i) for p_i in p])
     except ValueError:
         return 0
+
 
 def get_relative_subgoal_informativity(subgoal_preferences):
     """Returns dict with {subgoal: informativeness of subgoal}"""
@@ -364,14 +429,21 @@ def get_relative_subgoal_informativity(subgoal_preferences):
         subgoal_relative_preferences[subgoal_name] = {}
         entropy_all = entropy(subgoal_preferences[subgoal_name].values())
         for depth in subgoal_preferences[subgoal_name].keys():
-            other_entropy = entropy([subgoal_preferences[subgoal_name][d] for d in subgoal_preferences[subgoal_name].keys() if d != depth])
+            other_entropy = entropy(
+                [
+                    subgoal_preferences[subgoal_name][d]
+                    for d in subgoal_preferences[subgoal_name].keys()
+                    if d != depth
+                ]
+            )
             try:
-                subgoal_relative_preferences[subgoal_name][depth] = (entropy_all)/(other_entropy)
+                subgoal_relative_preferences[subgoal_name][depth] = (entropy_all) / (
+                    other_entropy
+                )
             except ZeroDivisionError:
                 subgoal_relative_preferences[subgoal_name][depth] = 0
         subgoal_relative_preferences
     return subgoal_relative_preferences
-
 
 
 if __name__ == "__main__":
@@ -381,28 +453,35 @@ if __name__ == "__main__":
     # Usually we would fix the random seeds here, but the agents are being run with fixed random seeds, so this is not necessary here.
 
     # show all columns in dataframe
-    pd.set_option('display.max_columns', None)
+    pd.set_option("display.max_columns", None)
 
     # ## Generating towers
-    # 
+    #
 
     block_library = bl_nonoverlapping_simple
 
-    generator = tower_generator.TowerGenerator(8, 8,
-                                            block_library=block_library,
-                                            seed=3,
-                                            padding=(1, 0),
-                                            num_blocks=lambda: random.randint(6, 18), #  flat random interval of tower sizes (inclusive)
-                                            )
+    generator = tower_generator.TowerGenerator(
+        8,
+        8,
+        block_library=block_library,
+        seed=3,
+        padding=(1, 0),
+        num_blocks=lambda: random.randint(
+            6, 18
+        ),  #  flat random interval of tower sizes (inclusive)
+    )
 
     print("Generating towers")
-    NUM_TOWERS  = 128*2
+    NUM_TOWERS = 128 * 2
     towers = []
     for i in tqdm(range(NUM_TOWERS)):
         tower = generator.generate()
         towers.append(tower)
 
-    worlds = [Blockworld(silhouette=t['bitmap'], block_library=bl.bl_nonoverlapping_simple) for t in towers]
+    worlds = [
+        Blockworld(silhouette=t["bitmap"], block_library=bl.bl_nonoverlapping_simple)
+        for t in towers
+    ]
 
     print("Generated {} towers".format(len(worlds)))
 
@@ -411,10 +490,9 @@ if __name__ == "__main__":
     print("Ignoring first {CUTOFF} towers")
     towers = towers[CUTOFF:]
 
-    initial_subgoals_dfs = [] #store the results
+    initial_subgoals_dfs = []  # store the results
 
     worlds = zip(range(len(worlds)), worlds)
-
 
     # actually run it
     # outs = map(get_initial_preferences, list(worlds)) # for debugging purposes
@@ -429,18 +507,22 @@ if __name__ == "__main__":
     combined_df = pd.concat(initial_subgoals_dfs)
 
     # save out initial_subgoals_df
-    combined_df.to_csv('initial_subgoals_df_' + date + '.csv')
+    combined_df.to_csv("initial_subgoals_df_" + date + ".csv")
     # also to pickle
-    with open('initial_subgoals_df_' + date + '.pkl', 'wb') as f:
+    with open("initial_subgoals_df_" + date + ".pkl", "wb") as f:
         pickle.dump(combined_df, f)
     # save the sequences organized by subgoal and depth
-    with open('subgoal_depth_sequences_' + date + '.pkl', 'wb') as f:
+    with open("subgoal_depth_sequences_" + date + ".pkl", "wb") as f:
         pickle.dump(subgoal_depth_sequencess, f)
     # save the solved sequences
-    with open('solved_sequences_' + date + '.pkl', 'wb') as f:
+    with open("solved_sequences_" + date + ".pkl", "wb") as f:
         pickle.dump(solved_sequences, f)
     # save the worlds
-    with open('worlds_' + date + '.pkl', 'wb') as f:
+    with open("worlds_" + date + ".pkl", "wb") as f:
         pickle.dump(worlds, f)
 
-    print("Saved to {} and corresponding files".format('initial_subgoals_df_' + date + '.csv'))
+    print(
+        "Saved to {} and corresponding files".format(
+            "initial_subgoals_df_" + date + ".csv"
+        )
+    )

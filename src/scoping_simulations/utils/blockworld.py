@@ -1,26 +1,25 @@
-import scoping_simulations.utils.blockworld_helpers as blockworld_helpers
-from scoping_simulations.utils import matter_server
-# import scoping_simulations.utils.matter_server as matter_server
-from random import randint
 import copy
-import matplotlib.patches as patches
-from matplotlib.path import Path
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-from matplotlib import pylab, mlab, pyplot
-from PIL import Image
-import numpy as np
-from scoping_simulations.utils.world import World
 import os
 import sys
+
+# import scoping_simulations.utils.matter_server as matter_server
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import pyplot
+
+import scoping_simulations.utils.blockworld_helpers as blockworld_helpers
+from scoping_simulations.utils import matter_server
+from scoping_simulations.utils.world import World
+
 proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
 
 class Blockworld(World):
-    """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter. 
+    """This class implements the blockworld as defined in https://github.com/cogtoolslab/block_construction. It manages state, allows for transition and scoring function of states both by F1 score and stability. Stability is calculated using the box2d as opposed to matter in the browser version. The stable/unstable distinction in the cases here is simple enough that differences between physics engines should not matter.
 
-    Fast failure means ending returning failure for states in which the agent has built outside the silhouette or left holes that can't be filled. Enable this to spare the agent the misery of having to fill the map with blocks if it can't win anymore. 
+    Fast failure means ending returning failure for states in which the agent has built outside the silhouette or left holes that can't be filled. Enable this to spare the agent the misery of having to fill the map with blocks if it can't win anymore.
 
     `legal_action_space` returns only legal (meaning block fully in silhouette, but not necessarily stable) action rather than all possible blocks that can be placed. Note that this is the default: if agents should reason about all possible block placements, use `False`.
 
@@ -33,10 +32,21 @@ class Blockworld(World):
     Physics provider should either be "box2d" (legacy) or "matter" or an instantiated matter_server.Physics_Server with a socket to a running physics server which uses matter.js for compatibility with the human experiments (see `matter_server.js`).
     """
 
-    def __init__(self, dimension=(8, 8), silhouette=None, block_library=None, fast_failure=False, legal_action_space=True, physics=True, physics_provider="matter"):
+    def __init__(
+        self,
+        dimension=(8, 8),
+        silhouette=None,
+        block_library=None,
+        fast_failure=False,
+        legal_action_space=True,
+        physics=True,
+        physics_provider="matter",
+    ):
         self.dimension = dimension
         # Defines dimensions of possible blocks.
-        if block_library is None:  # the default block library is the one from the silhouette 2 study
+        if (
+            block_library is None
+        ):  # the default block library is the one from the silhouette 2 study
             block_library = [
                 BaseBlock(1, 2),
                 BaseBlock(2, 1),
@@ -57,17 +67,19 @@ class Blockworld(World):
         self.physics = physics  # turn physics on or off?
         if physics:
             if physics_provider == "box2d":
-                from scoping_simulations.utils.display_world import test_world_stability
+
                 self.physics_provider = "box2d"
             elif type(physics_provider) == matter_server.Physics_Server:
                 self.physics_provider = physics_provider
             elif physics_provider == "matter":
                 # we create the physics provider ourself
                 self.physics_provider = matter_server.Physics_Server(
-                    y_height=self.dimension[0])
+                    y_height=self.dimension[0]
+                )
             else:
                 raise Exception(
-                    "Physics provider must be either 'box2d' or 'matter' or a zeromq socket to a running physics server")
+                    "Physics provider must be either 'box2d' or 'matter' or a zeromq socket to a running physics server"
+                )
 
     def __str__(self):
         """String representation of the world"""
@@ -76,7 +88,7 @@ class Blockworld(World):
     def reset(self):
         """Restore empty state"""
         self.current_state = Blockworld.State(self, [])
-        
+
     def copy(self):
         return copy.deepcopy(self)
 
@@ -85,7 +97,7 @@ class Blockworld(World):
         if state is None:
             state = self.current_state
         # if action not in self.possible_actions(state): #this might be slow and could be taken out for performance sake
-            # print("Action is not in possible actions")
+        # print("Action is not in possible actions")
         # determine where the new block would land
         baseblock, x = action  # unpacking the action
         if baseblock is None:
@@ -97,10 +109,16 @@ class Blockworld(World):
         # determine y coordinates of block
         # find the lowest free row in the tower
         try:
-            y = int(
-                np.where(state.blockmap[:, x:x+baseblock.width].any(axis=1))[0][0]) - 1
+            y = (
+                int(
+                    np.where(state.blockmap[:, x : x + baseblock.width].any(axis=1))[0][
+                        0
+                    ]
+                )
+                - 1
+            )
         except IndexError:
-            y = self.dimension[0]-1
+            y = self.dimension[0] - 1
         # create new block
         new_block = Block(baseblock, x, y)
         # create new state
@@ -112,7 +130,7 @@ class Blockworld(World):
         if self.is_win():
             return "Win", "None"
         if self.is_fail():
-            if self.stability() == False:
+            if self.stability() is False:
                 return "Fail", "Unstable"
             if self.current_state.possible_actions() == []:
                 return "Fail", "Full"
@@ -150,8 +168,7 @@ class Blockworld(World):
         if not force:
             if action not in self.current_state.possible_actions(legal=False):
                 raise Exception("Action not possible")
-        self.current_state = self.transition(
-            action, self.current_state, force=force)
+        self.current_state = self.transition(action, self.current_state, force=force)
 
     def is_fail(self, state=None):
         if state is None:
@@ -218,9 +235,10 @@ class Blockworld(World):
             state = self.current_state
         return state.stability()
 
-    class State():
+    class State:
         """This subclass contains a (possible or current) state of the world and implements a range of functions to score it, namely for F1 (how much of the figure are we filling out) and physical stability. It also generates possible actions. The blockworld classes wrap around this class.
-        Hashes of this class are orderinvariant as to the order the blocks were placed (but not their positions). Use 'order_sensitive_hash' for an hash that takes placement order of blocks into account."""
+        Hashes of this class are orderinvariant as to the order the blocks were placed (but not their positions). Use 'order_sensitive_hash' for an hash that takes placement order of blocks into account.
+        """
 
         def __init__(self, world, blocks):
             self.world = world
@@ -228,8 +246,7 @@ class Blockworld(World):
             self.world_width = self.world.dimension[1]
             self.world_height = self.world.dimension[0]
             # bitmap for placement of blocks
-            self.blockmap = np.zeros(
-                (self.world_height, self.world_width), dtype=int)
+            self.blockmap = np.zeros((self.world_height, self.world_width), dtype=int)
             # read the blocks into the blockmap
             self._update_map_with_blocks(blocks)
             self._stable = None
@@ -254,11 +271,11 @@ class Blockworld(World):
             self._legal_actions = None
             self._possible_actions = None
             try:
-                del(self._F1score)
+                del self._F1score
             except:
                 pass
             try:
-                del(self._cached_hash)
+                del self._cached_hash
             except:
                 pass
             # self._update_map_with_blocks(self.blocks)
@@ -270,15 +287,19 @@ class Blockworld(World):
 
         def order_invariant_blocks(self):
             """Returns ordered list of blocks that have been placed to ensure the same order in the list even if they have been placed in a different order."""
+
             def _block_key(block):
                 """Helper function returns a float to sort blocks by y location first, then x location."""
-                return float(block.y + .5/(block.x+1))
+                return float(block.y + 0.5 / (block.x + 1))
+
             return sorted(self.blocks, key=_block_key, reverse=True)
 
         def order_invariant_hash(self):
             """String of order invariant blockmap"""
             if self._cached_hash is None:  # create hash if necessary
-                self._cached_hash = self.order_invariant_blockmap().tostring()  # Long hex string
+                self._cached_hash = (
+                    self.order_invariant_blockmap().tostring()
+                )  # Long hex string
                 # self._cached_hash = self.order_invariant_blockmap().__str__() #Slower, but human readable
             return self._cached_hash
 
@@ -289,23 +310,24 @@ class Blockworld(World):
             """Fills the blockmap with increasing numbers for each block. 0 is empty space. Original blockmap behavior can be achieved by blockmap > 0."""
             self._cached_hash = None  # invalidate the hash
             for b in blocks:
-                new_number = 0 if delete else (
-                    np.max(self.blockmap)+1)  # numbers increase
-                self.blockmap[(b.y-b.height)+1: b.y+1,
-                              b.x:(b.x+b.width)] = new_number
+                new_number = (
+                    0 if delete else (np.max(self.blockmap) + 1)
+                )  # numbers increase
+                self.blockmap[
+                    (b.y - b.height) + 1 : b.y + 1, b.x : (b.x + b.width)
+                ] = new_number
 
         def _get_new_map_from_blocks(self, blocks):
             """Same as _update_map_with_blocks, only that it returns a new blockmap without touching the blockmap of the state."""
-            blockmap = np.zeros(
-                (self.world_height, self.world_width), dtype=int)
+            blockmap = np.zeros((self.world_height, self.world_width), dtype=int)
             i = 0
             for b in blocks:
                 i += 1
-                blockmap[(b.y-b.height)+1: b.y+1, b.x:(b.x+b.width)] = i
+                blockmap[(b.y - b.height) + 1 : b.y + 1, b.x : (b.x + b.width)] = i
             return blockmap
 
         def score(self, scoring_function):
-            """Returns the score according to the the scoring function that is passed. """
+            """Returns the score according to the the scoring function that is passed."""
             return scoring_function(self)
 
         def stability(self, visual_display=False):
@@ -319,13 +341,15 @@ class Blockworld(World):
             # we actually need to run the physics engine
             if self.world.physics_provider == "box2d":
                 bwworld = self.state_to_bwworld()
-                self._stable = test_world_stability(
-                    bwworld, RENDER=visual_display) == 'stable'
+                self._stable = (
+                    test_world_stability(bwworld, RENDER=visual_display) == "stable"
+                )
                 pass
             else:
-                assert type(self.world.physics_provider).__name__ == 'Physics_Server', "Physics provider must be a Physics_Server object"
-                self._stable = self.world.physics_provider.get_stability(
-                    self.blocks)
+                assert (
+                    type(self.world.physics_provider).__name__ == "Physics_Server"
+                ), "Physics provider must be a Physics_Server object"
+                self._stable = self.world.physics_provider.get_stability(self.blocks)
             return self._stable
 
         def is_win(self):
@@ -335,8 +359,9 @@ class Blockworld(World):
             return self.world.is_fail(state=self)
 
         def possible_actions(self, legal=None):
-            """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds. 
-            Format of action is (BaseBlock from block_library, x location of lower left)."""
+            """Generates all actions that are possible in this state independent of whether the block is stable or within the silhouette. Simply checks whether the block is in bounds.
+            Format of action is (BaseBlock from block_library, x location of lower left).
+            """
             if legal is None:
                 legal = self.world.legal_action_space
             if legal:  # return legal actions instead
@@ -346,9 +371,16 @@ class Blockworld(World):
             possible_actions = []
             for base_block in self.world.block_library:
                 # starting coordinate is bottom left. The block can't possible overlap the right side.
-                for x in range(self.world_width-base_block.width+1):
+                for x in range(self.world_width - base_block.width + 1):
                     # and whether it overlaps the top boundary by simply looking if the block at the top is free
-                    if np.sum(self.blockmap[0: base_block.height, x: x+base_block.width]) == 0:
+                    if (
+                        np.sum(
+                            self.blockmap[
+                                0 : base_block.height, x : x + base_block.width
+                            ]
+                        )
+                        == 0
+                    ):
                         possible_actions.append((base_block, x))
             self._possible_actions = possible_actions
             return possible_actions
@@ -357,16 +389,25 @@ class Blockworld(World):
             """Returns the subset of possible actions where the placed block is fully within the silhouette. Returns [] if the current state is already non-legal."""
             if self._legal_actions is not None:
                 return self._legal_actions
-            legal_actions = [a for a in self.possible_actions(legal=False) if legal(
-                self.transition(a))]  # need legal false here to prevent infinite recursion
+            legal_actions = [
+                a
+                for a in self.possible_actions(legal=False)
+                if legal(self.transition(a))
+            ]  # need legal false here to prevent infinite recursion
             return legal_actions
 
         def visual_display(self, blocking=False, silhouette=None):
             """Shows the state in a pretty way. Silhouette is shown as dotted outline."""
-            pyplot.close('all')
+            pyplot.close("all")
             plt.figure(figsize=(4, 4))
-            pyplot.pcolor(self.blockmap[::-1], cmap='hot_r',
-                          vmin=0, vmax=20, linewidth=0, edgecolor='none')
+            pyplot.pcolor(
+                self.blockmap[::-1],
+                cmap="hot_r",
+                vmin=0,
+                vmax=20,
+                linewidth=0,
+                edgecolor="none",
+            )
             if silhouette is None:  # try to get silhouette
                 try:
                     silhouette = self.world.silhouette
@@ -374,18 +415,30 @@ class Blockworld(World):
                     pass
             if silhouette is not None:
                 # we print the target silhouette as transparent overlay
-                pyplot.pcolor(silhouette[::-1], cmap='binary', alpha=.8, linewidth=2, facecolor='none',
-                              edgecolor='black', capstyle='round', joinstyle='round', linestyle=':')
+                pyplot.pcolor(
+                    silhouette[::-1],
+                    cmap="binary",
+                    alpha=0.8,
+                    linewidth=2,
+                    facecolor="none",
+                    edgecolor="black",
+                    capstyle="round",
+                    joinstyle="round",
+                    linestyle=":",
+                )
             pyplot.show(block=blocking)
 
         def state_to_bwworld(self):
             """converts state to Blockworld.world.
-                Helper function for block_construction/stimuli/blockworld_helpers.py testing code"""
+            Helper function for block_construction/stimuli/blockworld_helpers.py testing code
+            """
             wh = self.world.dimension[0]  # world height
             bwworld = blockworld_helpers.World(
-                world_height=self.world.dimension[0], world_width=self.world.dimension[1])
+                world_height=self.world.dimension[0],
+                world_width=self.world.dimension[1],
+            )
             for b in self.blocks:
-                bwworld.add_block(b.width, b.height, b.x, wh-b.y-1)
+                bwworld.add_block(b.width, b.height, b.x, wh - b.y - 1)
             return bwworld
 
         def is_improvement(self, action):
@@ -398,13 +451,13 @@ class Blockworld(World):
 
 
 class Block:
-    '''
-        Adapted from block_construction/stimuli/blockworld_helpers.py
-        Creates Block objects that are instantiated in a world
-        x and y define the position of the BOTTOM LEFT corner of the block
+    """
+    Adapted from block_construction/stimuli/blockworld_helpers.py
+    Creates Block objects that are instantiated in a world
+    x and y define the position of the BOTTOM LEFT corner of the block
 
-        Defines functions to calculate relational properties between blocks
-    '''
+    Defines functions to calculate relational properties between blocks
+    """
 
     def __init__(self, base_block, x, y):
         self.base_block = base_block  # defines height, width and other functions
@@ -416,7 +469,12 @@ class Block:
         self.verts = base_block.translate(base_block.base_verts, x, y)
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.height == other.height and self.width == other.width
+        return (
+            self.x == other.x
+            and self.y == other.y
+            and self.height == other.height
+            and self.width == other.width
+        )
 
     def __str__(self):
         """width, height at (x,y)"""
@@ -424,160 +482,167 @@ class Block:
 
     # Block Relational Properties
     def above(self, other):
-        ''' Test whether this block is fully above another block.
+        """Test whether this block is fully above another block.
 
-            Returns true iff the height of the bottom face of this block 
-            is greater than or equal to the top face of other block.
-        '''
-        return (self.y >= other.y + other.height)
+        Returns true iff the height of the bottom face of this block
+        is greater than or equal to the top face of other block.
+        """
+        return self.y >= other.y + other.height
 
     def below(self, other):
-        ''' Test whether this block is fully below another block.
+        """Test whether this block is fully below another block.
 
-            Returns true iff the height of the top face of this block 
-            is less than or equal to the bottom face of other block.
-        '''
-        return (self.y + self.height <= other.y)
+        Returns true iff the height of the top face of this block
+        is less than or equal to the bottom face of other block.
+        """
+        return self.y + self.height <= other.y
 
     def leftof(self, other):
-        ''' Test whether this block is fully to the left of another block
+        """Test whether this block is fully to the left of another block
 
-            Returns true iff the height of the bottom face of this block 
-            is greater than or equal to the top face of other block.
-        '''
-        return (self.x + self.width <= other.x)
+        Returns true iff the height of the bottom face of this block
+        is greater than or equal to the top face of other block.
+        """
+        return self.x + self.width <= other.x
 
     def rightof(self, other):
-        ''' Test whether this block is fully to the right of another block.
+        """Test whether this block is fully to the right of another block.
 
-            Returns true iff the height of the top face of this block 
-            is less than or equal to the bottom face of other block.
-        '''
-        return (self.x >= other.x + other.width)
+        Returns true iff the height of the top face of this block
+        is less than or equal to the bottom face of other block.
+        """
+        return self.x >= other.x + other.width
 
     def sides_touch(self, other):
-        ''' Test to see whether this block sits touching sides of another block.
-            Corner to corner treated as not touching.
-        '''
+        """Test to see whether this block sits touching sides of another block.
+        Corner to corner treated as not touching.
+        """
         y_overlap = not self.above(other) and not self.below(other)
-        buttressing_side = self.x == other.x + \
-            other.width or other.x == self.x + self.width
+        buttressing_side = (
+            self.x == other.x + other.width or other.x == self.x + self.width
+        )
         return y_overlap and buttressing_side
 
     def vertical_touch(self, other):
-        ''' Test to see whether this block sits top to bottom against other block or bottom to top against other block.
-            Corner to corner treated as not touching.
-        '''
+        """Test to see whether this block sits top to bottom against other block or bottom to top against other block.
+        Corner to corner treated as not touching.
+        """
         x_overlap = not self.leftof(other) and not self.rightof(other)
-        buttressing_up = self.y == other.y + \
-            other.height or other.y == self.y + self.height
-        buttressing_down = self.y == other.y - \
-            other.height or other.y == self.y - self.height
+        buttressing_up = (
+            self.y == other.y + other.height or other.y == self.y + self.height
+        )
+        buttressing_down = (
+            self.y == other.y - other.height or other.y == self.y - self.height
+        )
         buttressing = buttressing_down or buttressing_up
         return x_overlap and buttressing
 
     def touching(self, other):
-        ''' Test to see if this block is touching another block.
-            Corner to corner treated as not touching.
-        '''
+        """Test to see if this block is touching another block.
+        Corner to corner treated as not touching.
+        """
         return self.sides_touch(other) or self.vertical_touch(other)
 
     def abs_overlap(self, other, horizontal_overlap=True):
-        ''' horizontal- are we measuring horizontal overlap?
-        '''
+        """horizontal- are we measuring horizontal overlap?"""
         if horizontal_overlap and self.vertical_touch(other):
-            return min([abs(self.x + self.width - other.x), abs(other.x + other.width - self.x)])
+            return min(
+                [
+                    abs(self.x + self.width - other.x),
+                    abs(other.x + other.width - self.x),
+                ]
+            )
         elif not horizontal_overlap and self.sides_touch(other):
-            return min([abs(self.y + self.height - other.y), abs(other.y + other.height - self.y)])
+            return min(
+                [
+                    abs(self.y + self.height - other.y),
+                    abs(other.y + other.height - self.y),
+                ]
+            )
         else:
             return 0
 
     def partially_supported_by(self, other):
-        ''' True if the base of this block is touching the top of the other block 
-        '''
+        """True if the base of this block is touching the top of the other block"""
         return self.above(other) and (self.abs_overlap(other) > 0)
 
     def completely_supported_by(self, other):
-        ''' True if the whole of the base of this block is touching the top of the other block 
-        '''
+        """True if the whole of the base of this block is touching the top of the other block"""
         return self.above(other) and (self.abs_overlap(other) == self.width)
 
     def dual_supported(self, block_a, block_b):
-        ''' Is this block partially supported by both blocks a and b?
-        '''
+        """Is this block partially supported by both blocks a and b?"""
         return self.partially_supported(block_a) and self.partially_supported(block_b)
 
-    '''
+    """
     Other useful properties:
     - 
     
-    '''
+    """
 
 
 class BaseBlock:
-    '''
-    Base Block class for defining a block object with attributes.             
+    """
+    Base Block class for defining a block object with attributes.
     Adapted from block_construction/stimuli/blockworld_helpers.py
-    '''
+    """
 
-    def __init__(self, width=1, height=1, shape='rectangle', color='gray'):
-        self.base_verts = np.array([(0, 0),
-                                    (0, 1 * height),
-                                    (1 * width, 1 * height),
-                                    (1 * width, 0),
-                                    (0, 0)])
+    def __init__(self, width=1, height=1, shape="rectangle", color="gray"):
+        self.base_verts = np.array(
+            [(0, 0), (0, 1 * height), (1 * width, 1 * height), (1 * width, 0), (0, 0)]
+        )
         self.width = width
         self.height = height
         self.shape = shape
         self.color = color
 
     def __str__(self):
-        return('('+str(self.width) + 'x' + str(self.height)+')')
+        return "(" + str(self.width) + "x" + str(self.height) + ")"
 
     def init(self):
         self.corners = self.get_corners(self.base_verts)
         self.area = self.get_area(shape=self.shape)
 
     def translate(self, base_verts, dx, dy):
-        '''
+        """
         input:
-            base_verts: array or list of (x,y) vertices of convex polygon. 
+            base_verts: array or list of (x,y) vertices of convex polygon.
                     last vertex = first vertex, so len(base_verts) is num_vertices + 1
             dx, dy: distance to translate in each direction
         output:
             new vertices
-        '''
+        """
         new_verts = copy.deepcopy(base_verts)
         new_verts[:, 0] = base_verts[:, 0] + dx
         new_verts[:, 1] = base_verts[:, 1] + dy
         return new_verts
 
     def get_corners(self, base_verts):
-        '''
+        """
         input: list or array of block vertices in absolute coordinates
         output: absolute coordinates of top_left, bottom_left, bottom_right, top_right
-        '''
+        """
         corners = {}
-        corners['bottom_left'] = base_verts[0]
-        corners['top_left'] = base_verts[1]
-        corners['top_right'] = base_verts[2]
-        corners['bottom_right'] = base_verts[3]
+        corners["bottom_left"] = base_verts[0]
+        corners["top_left"] = base_verts[1]
+        corners["top_right"] = base_verts[2]
+        corners["bottom_right"] = base_verts[3]
         return corners
 
-    def get_area(self, shape='rectangle'):
-        '''
-        input: w = width 
-            h = height           
+    def get_area(self, shape="rectangle"):
+        """
+        input: w = width
+            h = height
             shape = ['rectangle', 'square', 'triangle']
         output
-        '''
+        """
         # extract width and height from dims dictionary
-        if shape in ['rectangle', 'square']:
-            area = self.width*self.height
-        elif shape == 'triangle':
-            area = self.width*self.height*0.5
+        if shape in ["rectangle", "square"]:
+            area = self.width * self.height
+        elif shape == "triangle":
+            area = self.width * self.height * 0.5
         else:
-            print('Shape type not recognized. Please use recognized shape type.')
+            print("Shape type not recognized. Please use recognized shape type.")
         return area
 
 
@@ -587,16 +652,17 @@ class BaseBlock:
 def F1score(state, force=False):
     """Returns the F1 score relative to the target silhouette defined in the corresponding world. If the silhouette is empty, this produces division by 0 errors and returns NaN.
 
-    By default, the F1 score is cached for performance. Use force if the blockmap has been manually changed."""
-    if hasattr(state, '_F1score') and not force:
+    By default, the F1 score is cached for performance. Use force if the blockmap has been manually changed.
+    """
+    if hasattr(state, "_F1score") and not force:
         return state._F1score
     # smallest possible float to prevent division by zero. Not the prettiest of hacks
     s = sys.float_info[3]
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    precision = np.sum(built & target)/(np.sum(built) + s)
-    recall = np.sum(built & target)/(np.sum(target) + s)
-    F1score = 2 * (precision * recall)/(precision + recall + s)
+    precision = np.sum(built & target) / (np.sum(built) + s)
+    recall = np.sum(built & target) / (np.sum(target) + s)
+    F1score = 2 * (precision * recall) / (precision + recall + s)
     state._F1score = F1score
     return F1score
 
@@ -606,7 +672,7 @@ def precision(state):
     s = sys.float_info[3]
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    return np.sum(built & target)/(np.sum(built) + s)
+    return np.sum(built & target) / (np.sum(built) + s)
 
 
 def recall(state):
@@ -614,12 +680,14 @@ def recall(state):
     s = sys.float_info[3]
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    return np.sum(built & target)/(np.sum(target) + s)
+    return np.sum(built & target) / (np.sum(target) + s)
 
 
 def weighted_precision_recall(state, precision_weight=1):
     """Simply the weighted average of precision and recall. GIve a higher weigth to precision discourage building outside the structure."""
-    return (precision(state) * precision_weight + recall(state))/(precision_weight+1)
+    return (precision(state) * precision_weight + recall(state)) / (
+        precision_weight + 1
+    )
 
 
 def filled_inside(state):
@@ -633,7 +701,7 @@ def filled_outside(state):
     """Returns the number of cells built outside the silhouette"""
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    return np.sum(built & (1-target))
+    return np.sum(built & (1 - target))
 
 
 def silhouette_score(state):
@@ -641,8 +709,8 @@ def silhouette_score(state):
     target = state.world.silhouette > 0
     built = state.blockmap > 0
     ssize = np.sum(target)
-    reward = np.sum(built & target)/ssize
-    penalty = np.sum(built & (1-target))/ssize
+    reward = np.sum(built & target) / ssize
+    penalty = np.sum(built & (1 - target)) / ssize
     return reward + penalty * state.world.fail_penalty
 
 
@@ -650,7 +718,7 @@ def random_scoring(state):
     """Implements the random agent. Returns 1 for every block placement that is in the silhouette and -1 otherwise."""
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    if np.sum((1-target) & built) > 1:
+    if np.sum((1 - target) & built) > 1:
         return -1
     else:
         return 1
@@ -660,7 +728,7 @@ def legal(state):
     """Returns True if the current blockmap is legal and false otherwise."""
     target = state.world.silhouette > 0
     built = state.blockmap > 0
-    if np.sum((1-target) & built) > 0:
+    if np.sum((1 - target) & built) > 0:
         return False
     else:
         return True
@@ -673,10 +741,10 @@ def holes(state):
     mapped = target + built
     holes = 0
     for x in range(built.shape[1]):  # we don't need to check the bottom
-        for y in range(built.shape[0]-1):
+        for y in range(built.shape[0] - 1):
             if mapped[y, x] == 3:  # if we have a cell with blck and in silhouette
                 # if blocks below is not built and in silhouette
-                holes = holes + np.sum(mapped[y+1:, x] == 1)
+                holes = holes + np.sum(mapped[y + 1 :, x] == 1)
                 break  # since we're going through from the top, we don't need to iterate further
     return holes
 
@@ -693,7 +761,9 @@ def F1_stability_score(state):
 
 def silhouette_hole_stability_score(state):
     """Silhouette & hole heuristics with stability"""
-    return silhouette_hole_score(state) + state.world.fail_penalty * (1 - state.stability())
+    return silhouette_hole_score(state) + state.world.fail_penalty * (
+        1 - state.stability()
+    )
 
 
 def sparse(state):

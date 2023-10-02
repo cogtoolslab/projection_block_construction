@@ -1,31 +1,32 @@
 # This file contains helper functions for the matter physics server
 
-from asyncio import start_server
-from re import A
-import subprocess
-import copyreg
-from random import randint
 import atexit
-import time
-
+import copyreg
 import os
-import socket
+import subprocess
 
+js_location = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "matter_server.js"
+)
 
-js_location = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), 'matter_server.js')
 
 def launch_process():
     """Launches the matter physics server and return a handle to the process."""
     process = subprocess.Popen(
-            ['node', js_location], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ["node", js_location],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     # wait for process to finish starting
-    out = process.stdout.readline() # the process prints "ready" when it's ready
+    process.stdout.readline()  # the process prints "ready" when it's ready
     return process
+
 
 # launch the server on import
 process = launch_process()
 # print("Started matter physics server 🧱.")
+
 
 def check_process():
     """Checks if the process is still running and restarts if not."""
@@ -33,6 +34,7 @@ def check_process():
     if process.poll() is not None:
         process = launch_process()
         # print("Restarted matter physics server 🧱.")
+
 
 class Physics_Server:
     def __init__(self, y_height=8) -> None:
@@ -64,37 +66,43 @@ class Physics_Server:
     def block_to_serializable(self, block):
         """Returns a serializable version of the block."""
         return {
-            'x': float(block.x),
-            'y': float(self.y_height - 1 - block.y),
-            'w': float(block.width),
-            'h': float(block.height),
+            "x": float(block.x),
+            "y": float(self.y_height - 1 - block.y),
+            "w": float(block.width),
+            "h": float(block.height),
         }
 
     def get_stability(self, blocks):
         """Returns the stability of the given blocks.
         Blocks until the result is known.
         """
-        serialized_blocks = str(self.blocks_to_serializable(blocks)).replace('\'', '"') + '\n'
+        serialized_blocks = (
+            str(self.blocks_to_serializable(blocks)).replace("'", '"') + "\n"
+        )
         # send the request to the process via stdin
         try:
-            self._process.stdin.write(serialized_blocks.encode('utf-8'))
+            self._process.stdin.write(serialized_blocks.encode("utf-8"))
             self._process.stdin.flush()
             # read the result from the process
-            result = self._process.stdout.readline().decode('utf-8')
+            result = self._process.stdout.readline().decode("utf-8")
         except BrokenPipeError:
             # if the process is dead, restart it
             self.kill_server()
             self.start_server()
             return self.get_stability(blocks)
         # return the result
-        if result == 'true\n':
+        if result == "true\n":
             return True
-        elif result == 'false\n':
+        elif result == "false\n":
             return False
-        elif result == 'json_error\n':
-            raise ValueError(f"Physics server reports json error: {self._process.stderr.read().decode('utf-8')} Input was: {serialized_blocks}")
+        elif result == "json_error\n":
+            raise ValueError(
+                f"Physics server reports json error: {self._process.stderr.read().decode('utf-8')} Input was: {serialized_blocks}"
+            )
         else:
-            raise ValueError(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}\nFull output: {self._process.stdout.read().decode('utf-8')}.")
+            raise ValueError(
+                f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}\nFull output: {self._process.stdout.read().decode('utf-8')}."
+            )
             # print(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}Full output: {self._process.stdout.read().decode('utf-8')}.")
             # print("Restarting physics server...")
             # self.kill_server()

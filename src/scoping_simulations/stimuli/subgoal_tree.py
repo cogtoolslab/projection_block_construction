@@ -1,12 +1,11 @@
 """This class contains a class for a tree of subgoals that culminates in a full decomposition. This is for the human experiments involving A/B choice between subgoals"""
 
-from nis import match
-from typing import Dict
-import scoping_simulations.model.utils.decomposition_functions as dcf
 import random
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+import scoping_simulations.model.utils.decomposition_functions as dcf
 from scoping_simulations.utils.blockworld import Blockworld
 
 
@@ -21,8 +20,7 @@ class SubgoalTree:
         for subgoal in sequence:
             # is the subgoal in the current children?
             matches = [c for c in current_node.children if c.__eq__(subgoal)]
-            assert len(
-                matches) < 2, "Subgoal entered as children should be unique"
+            assert len(matches) < 2, "Subgoal entered as children should be unique"
             if len(matches) == 1:
                 # great, nothing to do here
                 current_node = matches[0]
@@ -44,8 +42,7 @@ class SubgoalTree:
             sequences.append(sequence)
         else:
             for child in node.children:
-                self.get_all_sequences_helper(
-                    child, sequence + [child], sequences)
+                self.get_all_sequences_helper(child, sequence + [child], sequences)
 
     def get_full_sequences(self):
         """Returns all sequences of subgoals that lead to the full decomposition"""
@@ -101,7 +98,7 @@ class SubgoalTree:
                 worst_cost = cost
         return worst_sequence
 
-    def get_most_divergent_pairs_of_subgoals(self, n = None):
+    def get_most_divergent_pairs_of_subgoals(self, n=None):
         """Returns the n most divergent pairs of subgoals in the tower as tuples. Each pair is based on the same node. Returns a sorted list of tuples (best, worst) of nodes."""
         open_set = [self.root]
         best_worst_pairs = []
@@ -109,15 +106,21 @@ class SubgoalTree:
             current_node = open_set.pop()
             best_child = current_node.best_child()
             worst_child = current_node.worst_child()
-            if best_child is not None and worst_child is not None and best_child.cost != worst_child.cost: # only add if we truly have different subgoals
+            if (
+                best_child is not None
+                and worst_child is not None
+                and best_child.cost != worst_child.cost
+            ):  # only add if we truly have different subgoals
                 best_worst_pairs.append((best_child, worst_child))
             for child in current_node.children:
                 open_set.append(child)
         if n is None:
             n = len(best_worst_pairs)
-        return sorted(best_worst_pairs, key=lambda x: x[1].cost - x[0].cost)[:min(n, len(best_worst_pairs))]
-    
-    def get_most_divergent_matching_pairs_of_subgoals(self, n = None):
+        return sorted(best_worst_pairs, key=lambda x: x[1].cost - x[0].cost)[
+            : min(n, len(best_worst_pairs))
+        ]
+
+    def get_most_divergent_matching_pairs_of_subgoals(self, n=None):
         """Returns the n most divergent pairs of subgoals that have the same mass of the tower in the tower as tuples. Each pair is based on the same node. Returns a sorted list of tuples (best, worst) of nodes."""
         open_set = [self.root]
         best_worst_pairs = []
@@ -135,9 +138,13 @@ class SubgoalTree:
             if len(children) > 1:
                 # find the most divergent pair of children for that mass
                 children = sorted(children, key=lambda x: x.subgoal.solution_cost)
-                if children[0].subgoal.solution_cost != children[-1].subgoal.solution_cost:
+                if (
+                    children[0].subgoal.solution_cost
+                    != children[-1].subgoal.solution_cost
+                ):
                     best_worst_pairs.append((children[0], children[-1]))
         return best_worst_pairs
+
 
 class SubgoalTreeNode:
     """Holds a particular configuration of the building environment. A node in the tree."""
@@ -167,35 +174,45 @@ class SubgoalTreeNode:
 
     def best_child(self):
         """Returns the best (cheapest) child of the node."""
-        if self.is_leaf(): # no children for leaf nodes
+        if self.is_leaf():  # no children for leaf nodes
             return None
         try:
-            min_cost = min([child.cost for child in self.children if child.cost is not None])
+            min_cost = min(
+                [child.cost for child in self.children if child.cost is not None]
+            )
         except ValueError:
             # no children with a cost found
             return None
         # we do random choice between equally good subgoals here
-        return random.choice([child for child in self.children if child.cost == min_cost])
+        return random.choice(
+            [child for child in self.children if child.cost == min_cost]
+        )
 
     def worst_child(self):
         """Returns the worst (most expensive) child of the node."""
-        if self.is_leaf(): # no children for leaf nodes
+        if self.is_leaf():  # no children for leaf nodes
             return None
         try:
-            max_cost = max([child.cost for child in self.children if child.cost is not None])
+            max_cost = max(
+                [child.cost for child in self.children if child.cost is not None]
+            )
         except ValueError:
             # no children with a cost found
             return None
         # we do random choice between equally good subgoals here
-        return random.choice([child for child in self.children if child.cost == max_cost])
+        return random.choice(
+            [child for child in self.children if child.cost == max_cost]
+        )
 
-    def visualize(self, block_color = None):
+    def visualize(self, block_color=None):
         """Plots current subgoal and the children"""
         fig = plt.figure()
         if self.subgoal is not None:
-            self.subgoal.visualize(title="Node subgoal", fig=fig, block_color = block_color)
-        for i,child in enumerate(self.children):
-            child.visualize(title="Child {}".format(i), fig=fig, block_color = block_color)
+            self.subgoal.visualize(
+                title="Node subgoal", fig=fig, block_color=block_color
+            )
+        for i, child in enumerate(self.children):
+            child.visualize(
+                title="Child {}".format(i), fig=fig, block_color=block_color
+            )
         plt.show()
-
-            

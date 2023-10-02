@@ -1,58 +1,97 @@
 FRACTION_OF_CPUS = 1
-FILE_BY_FILE = 4 # false to load all files, integer to load n files at a time
-PER_EXP = 1#16 # number of repetitions of each experiment
-STEPS = 64 # maximum number of actions to take
-LAMBDAS = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0]
+FILE_BY_FILE = 4  # false to load all files, integer to load n files at a time
+PER_EXP = 1  # 16 # number of repetitions of each experiment
+STEPS = 64  # maximum number of actions to take
+LAMBDAS = [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    10.0,
+    20.0,
+    50.0,
+    100.0,
+]
 CHUNK_SIZE = 512
 
-if __name__=="__main__": #required for multiprocessing
+if __name__ == "__main__":  # required for multiprocessing
     import os
     import sys
-    proj_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    sys.path.append(proj_dir)
-    utils_dir = os.path.join(proj_dir,'utils')
-    sys.path.append(utils_dir)
-    agent_dir = os.path.join(proj_dir,'model')
-    sys.path.append(agent_dir)
-    agent_util_dir = os.path.join(agent_dir,'utils')
-    sys.path.append(agent_util_dir)
-    df_dir = os.path.join(proj_dir,'results/dataframes')
 
-    import pandas as pd
-    import tqdm
-    from scoping_simulations.model.Simulated_Subgoal_Agent import *
-    from scoping_simulations.model.Subgoal_Planning_Agent import *
-    from scoping_simulations.model.utils.decomposition_functions import *
-    import scoping_simulations.utils.blockworld_library as bl
-    import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
+    proj_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    )
+    sys.path.append(proj_dir)
+    utils_dir = os.path.join(proj_dir, "utils")
+    sys.path.append(utils_dir)
+    agent_dir = os.path.join(proj_dir, "model")
+    sys.path.append(agent_dir)
+    agent_util_dir = os.path.join(agent_dir, "utils")
+    sys.path.append(agent_util_dir)
+    df_dir = os.path.join(proj_dir, "results/dataframes")
 
     # get path to dataframes as input
     import argparse
+
+    import pandas as pd
+    import tqdm
+
+    import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as experiment_runner
+    from scoping_simulations.model.Simulated_Subgoal_Agent import *
+    from scoping_simulations.model.Subgoal_Planning_Agent import *
+    from scoping_simulations.model.utils.decomposition_functions import *
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--df_path', help='path to dataframe to load')
+    parser.add_argument("--df_path", help="path to dataframe to load")
     args = parser.parse_args()
     df_folder_path = args.df_path
 
     if df_folder_path is None:
         # try to load the latest .pkl file from the results/dataframes directory
         # sort by date modified
-        df_folder_path = sorted([os.path.join(df_dir, f) for f in os.listdir(df_dir) if os.path.isdir(os.path.join(df_dir, f))], key=os.path.getmtime)[-1]
-        print("No dataframe path provided. Loading latest dataframe from results/dataframes: {}".format(df_folder_path))
+        df_folder_path = sorted(
+            [
+                os.path.join(df_dir, f)
+                for f in os.listdir(df_dir)
+                if os.path.isdir(os.path.join(df_dir, f))
+            ],
+            key=os.path.getmtime,
+        )[-1]
+        print(
+            "No dataframe path provided. Loading latest dataframe from results/dataframes: {}".format(
+                df_folder_path
+            )
+        )
 
     print("Got path to folder of dataframes: {}".format(df_folder_path))
-    df_paths = [os.path.join(df_folder_path, f) for f in os.listdir(df_folder_path) if f.endswith('.pkl')]
+    df_paths = [
+        os.path.join(df_folder_path, f)
+        for f in os.listdir(df_folder_path)
+        if f.endswith(".pkl")
+    ]
     print("Found {} dataframes in folder".format(len(df_paths)))
     if len(df_paths) == 0:
         raise Exception("No dataframes found in folder {}".format(df_folder_path))
 
-    expname = os.path.basename(df_folder_path).split('.')[0]
+    expname = os.path.basename(df_folder_path).split(".")[0]
     # clean up common prefixes
-    expname = expname.replace('dataframes', '')
-    expname = expname.replace('subgoal_generator', '')
-    expname = expname.replace('generator', '')
-    expname = expname.replace('superset', '')
-    expname = expname.replace('  ', ' ')
-    if expname.startswith('_'):
+    expname = expname.replace("dataframes", "")
+    expname = expname.replace("subgoal_generator", "")
+    expname = expname.replace("generator", "")
+    expname = expname.replace("superset", "")
+    expname = expname.replace("  ", " ")
+    if expname.startswith("_"):
         expname = expname[1:]
     expname = "simulated_subgoal_agents_" + expname
 
@@ -72,39 +111,39 @@ if __name__=="__main__": #required for multiprocessing
     print("Experiment name: {}_{}".format(expname, i))
 
     import time
+
     start_time = time.time()
 
     print("Running experiment....")
 
-    MAX_LENGTH = 3 # maximum length of sequences to consider
+    MAX_LENGTH = 3  # maximum length of sequences to consider
     superset_decomposer = Rectangular_Keyholes(
-    sequence_length=MAX_LENGTH,
+        sequence_length=MAX_LENGTH,
         necessary_conditions=[
-            Mass_larger_than(area=3), # ignore small subgoals
+            Mass_larger_than(area=3),  # ignore small subgoals
             # Area_smaller_than(area=30),
             Mass_smaller_than(area=18),
-            No_edge_rows_or_columns(), # Trim the subgoals to remove empty space on the sides
+            No_edge_rows_or_columns(),  # Trim the subgoals to remove empty space on the sides
         ],
-    necessary_sequence_conditions=[
-        # Complete(), # only consider sequences that are complete—THIS NEEDS TO BE OFF FOR THE SUBGOAL GENERATOR
-        No_overlap(), # do not include overlapping subgoals
-        Supported(), # only consider sequences that could be buildable in theory
-    ]
+        necessary_sequence_conditions=[
+            # Complete(), # only consider sequences that are complete—THIS NEEDS TO BE OFF FOR THE SUBGOAL GENERATOR
+            No_overlap(),  # do not include overlapping subgoals
+            Supported(),  # only consider sequences that could be buildable in theory
+        ],
     )
-
 
     no_subgoals_decomposer = No_Subgoals()
 
     myopic_decomposer = Rectangular_Keyholes(
         sequence_length=1,
         necessary_conditions=superset_decomposer.necessary_conditions,
-        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions,
     )
 
     lookahead_1_decomposer = Rectangular_Keyholes(
-        sequence_length=1+1,
+        sequence_length=1 + 1,
         necessary_conditions=superset_decomposer.necessary_conditions,
-        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions
+        necessary_sequence_conditions=superset_decomposer.necessary_sequence_conditions,
     )
 
     # lookahead_2_decomposer = Rectangular_Keyholes( # sort of pointless
@@ -117,24 +156,33 @@ if __name__=="__main__": #required for multiprocessing
         sequence_length=MAX_LENGTH,
         necessary_conditions=superset_decomposer.necessary_conditions,
         necessary_sequence_conditions=[
-            Complete(), # only consider sequences that are complete
-        ] + superset_decomposer.necessary_sequence_conditions
+            Complete(),  # only consider sequences that are complete
+        ]
+        + superset_decomposer.necessary_sequence_conditions,
     )
 
     # create agents for each lambda
     agents = []
     for l in LAMBDAS:
         l_agents = [
-        Simulated_Subgoal_Agent(c_weight = l, decomposer=myopic_decomposer, label="Myopic"),
-        Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_1_decomposer, label="Lookahead"),
-        # Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_2_decomposer, label="Lookahead 2")
+            Simulated_Subgoal_Agent(
+                c_weight=l, decomposer=myopic_decomposer, label="Myopic"
+            ),
+            Simulated_Subgoal_Agent(
+                c_weight=l, decomposer=lookahead_1_decomposer, label="Lookahead"
+            ),
+            # Simulated_Subgoal_Agent(c_weight = l, decomposer=lookahead_2_decomposer, label="Lookahead 2")
         ]
         agents += l_agents
 
     full_agents = [
-        Simulated_Subgoal_Agent(decomposer=no_subgoals_decomposer, label="No Subgoals", step_size=-1), # step size of -1 means use the full sequence
-        Simulated_Subgoal_Agent(decomposer=full_decomp_decomposer, label="Full Decomp", step_size=-1), # step size of -1 means use the full sequence
-        ]
+        Simulated_Subgoal_Agent(
+            decomposer=no_subgoals_decomposer, label="No Subgoals", step_size=-1
+        ),  # step size of -1 means use the full sequence
+        Simulated_Subgoal_Agent(
+            decomposer=full_decomp_decomposer, label="Full Decomp", step_size=-1
+        ),  # step size of -1 means use the full sequence
+    ]
     agents += full_agents
 
     print(f"Created {len(agents)} agents")
@@ -143,21 +191,42 @@ if __name__=="__main__": #required for multiprocessing
         # load and run experiments
         # bunch into chunks of FILE_BY_FILE
         dfs_paths = []
-        for i in range(0,len(df_paths),FILE_BY_FILE):
-            dfs_paths.append(df_paths[i:i+FILE_BY_FILE])
-        for i,dfs_path in tqdm(enumerate(dfs_paths), total = len(dfs_paths)):
+        for i in range(0, len(df_paths), FILE_BY_FILE):
+            dfs_paths.append(df_paths[i : i + FILE_BY_FILE])
+        for i, dfs_path in tqdm(enumerate(dfs_paths), total=len(dfs_paths)):
             df = pd.concat([pd.read_pickle(p) for p in dfs_path])
-            print(f"Loaded {len(df)} dataframes. Results will be saved to:",os.path.join(exp_folder_path,f"{expname}_{i})")+".pkl")
+            print(
+                f"Loaded {len(df)} dataframes. Results will be saved to:",
+                os.path.join(exp_folder_path, f"{expname}_{i})") + ".pkl",
+            )
 
-            results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=os.path.join(exp_folder_path,f"{expname}_{i})"),maxtasksperprocess = 256,chunk_experiments_size=CHUNK_SIZE)
+            results = experiment_runner.run_experiment(
+                df,
+                agents,
+                PER_EXP,
+                STEPS,
+                parallelized=FRACTION_OF_CPUS,
+                save=os.path.join(exp_folder_path, f"{expname}_{i})"),
+                maxtasksperprocess=256,
+                chunk_experiments_size=CHUNK_SIZE,
+            )
     else:
         # load all experiments as one dataframe
-        df = pd.concat([pd.read_pickle(os.path.join(df_dir,l)) for l in df_paths])
-        print("Dataframes loaded:",df_paths)
+        df = pd.concat([pd.read_pickle(os.path.join(df_dir, l)) for l in df_paths])
+        print("Dataframes loaded:", df_paths)
 
-        print("Results will be saved to:",expname)
+        print("Results will be saved to:", expname)
 
-        results = experiment_runner.run_experiment(df,agents,PER_EXP,STEPS,parallelized=FRACTION_OF_CPUS,save=expname,maxtasksperprocess = 256,chunk_experiments_size=CHUNK_SIZE)
+        results = experiment_runner.run_experiment(
+            df,
+            agents,
+            PER_EXP,
+            STEPS,
+            parallelized=FRACTION_OF_CPUS,
+            save=expname,
+            maxtasksperprocess=256,
+            chunk_experiments_size=CHUNK_SIZE,
+        )
 
     print("Done in %s seconds" % (time.time() - start_time))
-    print("Results saved to:",expname)
+    print("Results saved to:", expname)

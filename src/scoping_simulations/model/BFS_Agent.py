@@ -1,10 +1,10 @@
+import os
+import random
+import sys
+
 from scoping_simulations.model.Agent import Agent
 from scoping_simulations.model.utils.Search_Tree import *
-import scoping_simulations.utils.blockworld as blockworld
-from itertools import repeat
-import random
-import os
-import sys
+
 proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, proj_dir)
 
@@ -20,15 +20,23 @@ class BFS_Agent(Agent):
 
     def __str__(self):
         """Yields a string representation of the agent"""
-        return self.__class__.__name__+' shuffle:'+str(self.shuffle)+' random seed: '+str(self.random_seed) + ' label: ' + self.label
+        return (
+            self.__class__.__name__
+            + " shuffle:"
+            + str(self.shuffle)
+            + " random seed: "
+            + str(self.random_seed)
+            + " label: "
+            + self.label
+        )
 
     def get_parameters(self):
         """Returns dictionary of agent parameters."""
         return {
-            'agent_type': self.__class__.__name__,
-            'shuffle': self.shuffle,
-            'random_seed': self.random_seed,
-            'label': self.label
+            "agent_type": self.__class__.__name__,
+            "shuffle": self.shuffle,
+            "random_seed": self.random_seed,
+            "label": self.label,
         }
 
     def search(self, current_nodes):
@@ -40,10 +48,10 @@ class BFS_Agent(Agent):
         next_nodes = []  # holds the nodes we get from the current expansion step
         for node in current_nodes:  # expand current nodes
             possible_actions = node.state.possible_actions()
-            children = []
             for action in possible_actions:
-                child = Node(node.state.transition(action),
-                             node.actions+[action])  # generate new node
+                child = Node(
+                    node.state.transition(action), node.actions + [action]
+                )  # generate new node
                 # check if child node is winning
                 cost += 1
                 # check stability
@@ -62,26 +70,27 @@ class BFS_Agent(Agent):
         if self.random_seed is None:
             self.random_seed = random.randint(0, 99999)
         # check if we even can act
-        if self.world.status()[0] != 'Ongoing':
+        if self.world.status()[0] != "Ongoing":
             print("Can't act with world in status", self.world.status())
-            return [], {'states_evaluated': states_evaluated}
+            return [], {"states_evaluated": states_evaluated}
         if steps is not None:
             print(
-                "Limited number of steps selected. This is not lookahead, are you sure?")
+                "Limited number of steps selected. This is not lookahead, are you sure?"
+            )
         # perform BFS search
         # initialize root node
         current_nodes = [Node(self.world.current_state, [])]
         result = "Ongoing"
         while current_nodes != [] and result == "Ongoing":
             # keep expanding until solution is found or there are no further states to expand
-            result, out, cost = self.search(
-                current_nodes)  # run expansion step
+            result, out, cost = self.search(current_nodes)  # run expansion step
             states_evaluated += cost
             if result != "Winning":
-                current_nodes = out  # we have no solution, just the next states to expand
+                current_nodes = (
+                    out  # we have no solution, just the next states to expand
+                )
                 if verbose:
-                    print("Found", len(current_nodes),
-                          "to evaluate at cost", cost)
+                    print("Found", len(current_nodes), "to evaluate at cost", cost)
         # if we've found a solution
         if result == "Winning":
             actions = out.actions
@@ -99,4 +108,4 @@ class BFS_Agent(Agent):
             actions = []
             if verbose:
                 print("Found no solution")
-        return actions, {'states_evaluated': states_evaluated}
+        return actions, {"states_evaluated": states_evaluated}
