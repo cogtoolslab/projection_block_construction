@@ -1,13 +1,8 @@
-import os
 import random
-import sys
 
 import scoping_simulations.utils.blockworld as blockworld
 from scoping_simulations.model.Astar_Agent import Astar_Agent
 from scoping_simulations.model.utils.Search_Tree import *
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class Best_First_Search_Agent(Astar_Agent):

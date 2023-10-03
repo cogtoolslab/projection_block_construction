@@ -1,21 +1,15 @@
 # Various imports
 
 import os
-import sys
 
 # go up one folder until we find the project folder
 while os.path.basename(os.getcwd()) != "tools_block_construction":
     os.chdir("..")
 # add the project folder to the path
-proj_dir = os.getcwd()
-sys.path.append(proj_dir)
+PROJ_DIR = os.getcwd()
+
 # get relevant other directories
-utils_dir = os.path.join(proj_dir, "utils")
-sys.path.append(utils_dir)
-agent_dir = os.path.join(proj_dir, "model")
-sys.path.append(agent_dir)
-agent_util_dir = os.path.join(agent_dir, "utils")
-sys.path.append(agent_util_dir)
+
 
 import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as simulated_subgoal_planner_experiment_runner
 import scoping_simulations.experiments.subgoal_generator_runner as subgoal_generator_runner
@@ -156,6 +150,6 @@ if __name__ == "__main__":  # required for multiprocessing
     print(f"Generated {len(results)} lines of data from the simulated subgoal agents")
     print(
         "Files saved to {} with postfixes".format(
-            os.path.join(proj_dir, "experiments", "results", EXP_NAME)
+            os.path.join(PROJ_DIR, "experiments", "results", EXP_NAME)
         )
     )

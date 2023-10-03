@@ -1,9 +1,3 @@
-import os
-import sys
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
-
 from scoping_simulations.model.Resource_Rational_Subgoal_Planning_Agent import *
 
 

@@ -1,12 +1,7 @@
-import os
 import random
-import sys
 
 from scoping_simulations.model.Agent import Agent
 from scoping_simulations.model.utils.Search_Tree import *
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class BFS_Agent(Agent):

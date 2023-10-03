@@ -1,15 +1,9 @@
 import copy
-import os
 import random
-import sys
 from random import choice, randint
 
 from scoping_simulations.model.BFS_Lookahead_Agent import *
 from scoping_simulations.stimuli.subgoal_tree import *
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
-
 
 MAX_STEPS = 20
 DISPLAY_N_SEQS = 5  # how many sequences to display at most

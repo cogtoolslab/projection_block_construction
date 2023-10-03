@@ -1,9 +1,3 @@
-import os
-import sys
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
-
 from random import choice, randint, random, seed
 
 import scoping_simulations.utils.blockworld as blockworld

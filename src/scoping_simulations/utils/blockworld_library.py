@@ -8,9 +8,9 @@ from io import open
 import numpy as np
 
 import scoping_simulations.utils.blockworld as blockworld
+from scoping_simulations.utils.directories import PROJ_DIR
 
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-stimuli_dir = os.path.join(proj_dir, "stimuli")
+stimuli_dir = os.path.join(PROJ_DIR, "stimuli")
 
 
 # the selection of interesting structures used in McCarthy 2020

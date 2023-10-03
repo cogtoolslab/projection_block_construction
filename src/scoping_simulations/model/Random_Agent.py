@@ -1,11 +1,5 @@
-import os
-import sys
-
 from scoping_simulations.model.BFS_Lookahead_Agent import BFS_Lookahead_Agent
 from scoping_simulations.utils.blockworld import random_scoring
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class Random_Agent(BFS_Lookahead_Agent):

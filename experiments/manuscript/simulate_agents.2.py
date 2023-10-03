@@ -27,19 +27,12 @@ CHUNK_SIZE = 512
 
 if __name__ == "__main__":  # required for multiprocessing
     import os
-    import sys
 
-    proj_dir = os.path.dirname(
+    PROJ_DIR = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     )
-    sys.path.append(proj_dir)
-    utils_dir = os.path.join(proj_dir, "utils")
-    sys.path.append(utils_dir)
-    agent_dir = os.path.join(proj_dir, "model")
-    sys.path.append(agent_dir)
-    agent_util_dir = os.path.join(agent_dir, "utils")
-    sys.path.append(agent_util_dir)
-    df_dir = os.path.join(proj_dir, "results/dataframes")
+
+    DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
 
     # get path to dataframes as input
     import argparse
@@ -62,9 +55,9 @@ if __name__ == "__main__":  # required for multiprocessing
         # sort by date modified
         df_folder_path = sorted(
             [
-                os.path.join(df_dir, f)
-                for f in os.listdir(df_dir)
-                if os.path.isdir(os.path.join(df_dir, f))
+                os.path.join(DF_DIR, f)
+                for f in os.listdir(DF_DIR)
+                if os.path.isdir(os.path.join(DF_DIR, f))
             ],
             key=os.path.getmtime,
         )[-1]
@@ -96,7 +89,7 @@ if __name__ == "__main__":  # required for multiprocessing
     expname = "simulated_subgoal_agents_" + expname
 
     # we want to save the results of each experiment to a separate file in expame folder. If that exists, append to it
-    exp_folder_path = os.path.join(df_dir, expname)
+    exp_folder_path = os.path.join(DF_DIR, expname)
     i = 0
     while True:
         if not os.path.exists(exp_folder_path):
@@ -106,7 +99,7 @@ if __name__ == "__main__":  # required for multiprocessing
             except FileExistsError:
                 pass
         i += 1
-        exp_folder_path = os.path.join(df_dir, f"{expname}_{i}")
+        exp_folder_path = os.path.join(DF_DIR, f"{expname}_{i}")
 
     print("Experiment name: {}_{}".format(expname, i))
 
@@ -212,7 +205,7 @@ if __name__ == "__main__":  # required for multiprocessing
             )
     else:
         # load all experiments as one dataframe
-        df = pd.concat([pd.read_pickle(os.path.join(df_dir, l)) for l in df_paths])
+        df = pd.concat([pd.read_pickle(os.path.join(DF_DIR, l)) for l in df_paths])
         print("Dataframes loaded:", df_paths)
 
         print("Results will be saved to:", expname)

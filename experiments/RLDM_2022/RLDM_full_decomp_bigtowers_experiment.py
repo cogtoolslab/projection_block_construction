@@ -1,20 +1,6 @@
 """This experiment is meant to annontate the generated towers with the scoping/no scoping cost."""
 
 if __name__ == "__main__":  # required for multiprocessing
-    import os
-    import sys
-
-    proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    sys.path.append(proj_dir)
-    utils_dir = os.path.join(proj_dir, "utils")
-    sys.path.append(utils_dir)
-    agent_dir = os.path.join(proj_dir, "model")
-    sys.path.append(agent_dir)
-    agent_util_dir = os.path.join(agent_dir, "utils")
-    sys.path.append(agent_util_dir)
-    stim_dir = os.path.join(proj_dir, "stimuli")
-    sys.path.append(stim_dir)
-
     import time
 
     import tqdm
@@ -36,7 +22,7 @@ if __name__ == "__main__":  # required for multiprocessing
 
     # # loading towers from disk
     # PATH_TO_TOWERS = os.path.join(
-    #     stim_dir, 'generated_towers_bl_nonoverlapping_simple.pkl')
+    #     STIM_DIR, 'generated_towers_bl_nonoverlapping_simple.pkl')
     # # load towers
     # with open(PATH_TO_TOWERS, 'rb') as f:
     #     towers = pickle.load(f)

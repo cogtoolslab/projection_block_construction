@@ -1,15 +1,9 @@
-import os
-import sys
-
 import scoping_simulations.utils.blockworld as blockworld
 from scoping_simulations.model.BFS_Lookahead_Agent import (
     Ast_edge,
     Ast_node,
     BFS_Lookahead_Agent,
 )
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class Beam_Search_Lookahead_Agent(BFS_Lookahead_Agent):

@@ -5,18 +5,9 @@ THis file reads in the rows that have missing data from the analysis notebook, a
 This is very much a hack, and should be removed once the data is re-run.
 """
 
-import os
-import sys
 
 import pandas as pd
 import tqdm
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.append(proj_dir)
-agent_dir = os.path.join(proj_dir, "model")
-sys.path.append(agent_dir)
-agent_util_dir = os.path.join(agent_dir, "utils")
-sys.path.append(agent_util_dir)
 
 import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as simulated_subgoal_planner_experiment_runner
 import scoping_simulations.experiments.subgoal_generator_runner as subgoal_generator_runner

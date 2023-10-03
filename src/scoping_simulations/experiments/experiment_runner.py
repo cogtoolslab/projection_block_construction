@@ -1,8 +1,6 @@
 import copy
 import datetime
 import multiprocessing
-
-# set up directories
 import os
 import random
 import time
@@ -13,11 +11,11 @@ import pandas as pd
 import psutil
 import tqdm
 
-from analysis.utils.analysis_helper import preprocess_df
+from scoping_simulations.analysis.utils.analysis_helper import preprocess_df
+from scoping_simulations.utils.directories import PROJ_DIR
 
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-results_dir = os.path.join(proj_dir, "results")
-df_dir = os.path.join(results_dir, "dataframes")
+RESULTS_DIR = os.path.join(PROJ_DIR, "results")
+DF_DIR = os.path.join(RESULTS_DIR, "dataframes")
 
 
 """
@@ -125,21 +123,21 @@ def run_experiment(
 
     if save is not False:
         # check if results directory exists
-        if not os.path.isdir(df_dir):
-            os.makedirs(df_dir)
+        if not os.path.isdir(DF_DIR):
+            os.makedirs(DF_DIR)
         # save the results to a file.
         if type(save) is str:
-            results.to_pickle(os.path.join(df_dir, save + ".pkl"))
-            print("Saved to", os.path.join(df_dir, save + ".pkl"))
+            results.to_pickle(os.path.join(DF_DIR, save + ".pkl"))
+            print("Saved to", os.path.join(DF_DIR, save + ".pkl"))
         else:
             results.to_pickle(
                 os.path.join(
-                    df_dir, "Experiment " + str(datetime.datetime.today()) + ".pkl"
+                    DF_DIR, "Experiment " + str(datetime.datetime.today()) + ".pkl"
                 )
             )
             print(
                 "Saved to",
-                df_dir,
+                DF_DIR,
                 "Experiment " + str(datetime.datetime.today()) + ".pkl",
             )
 
@@ -148,17 +146,17 @@ def run_experiment(
         results_wo_objects = results[columns]
         # save the results to a file.
         if type(save) is str:
-            results_wo_objects.to_csv(os.path.join(df_dir, save + ".csv"))
-            print("Saved to", os.path.join(df_dir, save + ".csv"))
+            results_wo_objects.to_csv(os.path.join(DF_DIR, save + ".csv"))
+            print("Saved to", os.path.join(DF_DIR, save + ".csv"))
         else:
             results_wo_objects.to_csv(
                 os.path.join(
-                    df_dir, "Experiment " + str(datetime.datetime.today()) + ".csv"
+                    DF_DIR, "Experiment " + str(datetime.datetime.today()) + ".csv"
                 )
             )
             print(
                 "Saved to",
-                df_dir,
+                DF_DIR,
                 "Experiment " + str(datetime.datetime.today()) + ".csv",
             )
 

@@ -1,22 +1,9 @@
 """This file holds helper functions designed for the human experiments."""
 
 # set up imports
-import os
-import sys
-from typing import List, Set, Tuple
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(proj_dir)
-utils_dir = os.path.join(proj_dir, "utils")
-sys.path.append(utils_dir)
-analysis_dir = os.path.join(proj_dir, "analysis")
-analysis_utils_dir = os.path.join(analysis_dir, "utils")
-sys.path.append(analysis_utils_dir)
-experiments_dir = os.path.join(proj_dir, "experiments")
-sys.path.append(experiments_dir)
-
 from collections import OrderedDict
 from itertools import permutations as permutate
+from typing import List, Set, Tuple
 
 from scoping_simulations.model.utils.decomposition_functions import *
 

@@ -1,12 +1,7 @@
-import os
-import sys
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
-
 import copy
 import math
 import random
+import sys
 
 import scoping_simulations.utils.blockworld as blockworld
 from scoping_simulations.model.BFS_Lookahead_Agent import (

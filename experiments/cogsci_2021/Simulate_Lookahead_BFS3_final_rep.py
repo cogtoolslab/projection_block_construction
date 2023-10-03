@@ -1,24 +1,17 @@
 if __name__ == "__main__":  # required for multiprocessing
     import os
-    import sys
 
     print(os.path.dirname(os.path.realpath(__file__)))
     if (
         os.path.basename(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
         == "tools_block_construction"
     ):
-        proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        from scoping_simulations.utils.directories import PROJ_DIR
     else:
         # calling from base folder
-        proj_dir = os.path.dirname(os.path.realpath(__file__))
-    sys.path.append(proj_dir)
-    utils_dir = os.path.join(proj_dir, "utils")
-    sys.path.append(utils_dir)
-    agent_dir = os.path.join(proj_dir, "model")
-    sys.path.append(agent_dir)
-    agent_util_dir = os.path.join(agent_dir, "utils")
-    sys.path.append(agent_util_dir)
-    df_dir = os.path.join(proj_dir, "results/dataframes")
+        from scoping_simulations.utils.directories import PROJ_DIR
+
+    DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
 
     import time
 
@@ -63,7 +56,7 @@ if __name__ == "__main__":  # required for multiprocessing
 
     df_paths = ["subgoal planning full BFS3_rep.pkl"]
     # load all experiments as one dataframe
-    df = pd.concat([pd.read_pickle(os.path.join(df_dir, l)) for l in df_paths])
+    df = pd.concat([pd.read_pickle(os.path.join(DF_DIR, l)) for l in df_paths])
     print("Dataframes loaded:", df_paths)
 
     results = experiment_runner.run_experiment(

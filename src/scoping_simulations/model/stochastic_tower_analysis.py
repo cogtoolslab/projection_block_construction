@@ -11,24 +11,10 @@ Meant to be used with the random agent.
 
 # set up imports
 import os
-import sys
 
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(proj_dir)
-utils_dir = os.path.join(proj_dir, "utils")
-sys.path.append(utils_dir)
-analysis_dir = os.path.join(proj_dir, "analysis")
-analysis_utils_dir = os.path.join(analysis_dir, "utils")
-sys.path.append(analysis_utils_dir)
-agent_dir = os.path.join(proj_dir, "model")
-sys.path.append(agent_dir)
-agent_util_dir = os.path.join(agent_dir, "utils")
-sys.path.append(agent_util_dir)
-experiments_dir = os.path.join(proj_dir, "experiments")
-sys.path.append(experiments_dir)
-df_dir = os.path.join(proj_dir, "results/dataframes")
-stim_dir = os.path.join(proj_dir, "stimuli")
+from scoping_simulations.utils.directories import PROJ_DIR
 
+DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
 import pickle
 
 import numpy as np
@@ -156,8 +142,8 @@ def run_and_save_analysis(set, agent, n=100, filename=None):
             + agent.__class__.__name__
             + "_stochastic_tower_analysis.csv"
         )
-    df.to_pickle(os.path.join(df_dir, filename))
-    print("Saved to {}".format(os.path.join(df_dir, filename)))
+    df.to_pickle(os.path.join(DF_DIR, filename))
+    print("Saved to {}".format(os.path.join(DF_DIR, filename)))
 
 
 def prep_for_offline_running(set, agent, n=100, filename=None):
@@ -170,9 +156,9 @@ def prep_for_offline_running(set, agent, n=100, filename=None):
             + agent.__class__.__name__
             + "_stochastic_tower_analysis.pkl"
         )
-    pickle.dump((set, agent, n), open(os.path.join(df_dir, "input_" + filename), "wb"))
-    print("Saved to {}".format(os.path.join(df_dir, filename)))
-    return os.path.join(df_dir, filename)
+    pickle.dump((set, agent, n), open(os.path.join(DF_DIR, "input_" + filename), "wb"))
+    print("Saved to {}".format(os.path.join(DF_DIR, filename)))
+    return os.path.join(DF_DIR, filename)
 
 
 def run_offline(filename, input_filename=None):
@@ -182,10 +168,10 @@ def run_offline(filename, input_filename=None):
     """ "Simply pass the filename of the pickle file. When using `prep_for_offline_running`, you can omit the leading `input_`. Do not pass a path, only the filename for the file in the results/dataframes directory." ""
     if input_filename is None:
         input_filename = "input_" + filename
-    set, agent, n = pickle.load(open(os.path.join(df_dir, input_filename), "rb"))
+    set, agent, n = pickle.load(open(os.path.join(DF_DIR, input_filename), "rb"))
     print(
         "Loaded {} and got {} sets".format(
-            os.path.join(df_dir, input_filename), len(set)
+            os.path.join(DF_DIR, input_filename), len(set)
         )
     )
     df = run_and_save_analysis(set, agent, n=n, filename=filename)

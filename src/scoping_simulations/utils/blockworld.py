@@ -1,5 +1,4 @@
 import copy
-import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -11,10 +10,6 @@ from scoping_simulations.utils import matter_server
 from scoping_simulations.utils.world import World
 
 # import scoping_simulations.utils.matter_server as matter_server
-
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class Blockworld(World):

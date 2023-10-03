@@ -64,3 +64,9 @@ If `Box2D` will not install in a virtual environment, try the following:
 conda install swig # needed to build Box2D in the pip install
 pip install box2d-py # a repackaged version of pybox2d
 ```
+
+## Running the experiments
+
+To run the experiments, run `python experiment_runner.py` in the root directory of the repository. This will run the experiments and save the results in a data frame either `~/scoping_simulations/results`.
+
+If you want to specify a custom folder, set the environment variable `SCOPING_SIMULATIONS_DIR` to the desired path.`

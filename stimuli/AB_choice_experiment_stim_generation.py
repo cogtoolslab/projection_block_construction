@@ -22,25 +22,11 @@
 # %%
 # set up imports
 import os
-import sys
 
 __file__ = os.getcwd()
-proj_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(proj_dir)
-utils_dir = os.path.join(proj_dir, "utils")
-sys.path.append(utils_dir)
-analysis_dir = os.path.join(proj_dir, "analysis")
-analysis_utils_dir = os.path.join(analysis_dir, "utils")
-sys.path.append(analysis_utils_dir)
-agent_dir = os.path.join(proj_dir, "model")
-sys.path.append(agent_dir)
-agent_util_dir = os.path.join(agent_dir, "utils")
-sys.path.append(agent_util_dir)
-experiments_dir = os.path.join(proj_dir, "experiments")
-sys.path.append(experiments_dir)
-df_dir = os.path.join(proj_dir, "results/dataframes")
-stim_dir = os.path.join(proj_dir, "stimuli")
+from scoping_simulations.utils.directories import PROJ_DIR
 
+DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
 import datetime
 import math
 

@@ -1,12 +1,7 @@
-import os
-import sys
 from random import randint, seed
 
 import scoping_simulations.utils.blockworld as blockworld
 from scoping_simulations.model.Agent import Agent
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, proj_dir)
 
 
 class BFS_Lookahead_Agent(Agent):

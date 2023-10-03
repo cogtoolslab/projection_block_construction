@@ -1,4 +1,3 @@
-# set up directories
 import copy
 import datetime
 import os
@@ -11,9 +10,10 @@ import pandas as pd
 import psutil
 import tqdm
 
-proj_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-results_dir = os.path.join(proj_dir, "results")
-df_dir = os.path.join(results_dir, "dataframes")
+from scoping_simulations.utils.directories import PROJ_DIR
+
+RESULTS_DIR = os.path.join(PROJ_DIR, "results")
+DF_DIR = os.path.join(RESULTS_DIR, "dataframes")
 
 
 """
@@ -48,25 +48,25 @@ def run_experiment(
         save = "subgoal_generator_" + save
         if SAVE_INTERMEDIATE_RESULTS or not collate_results:
             # if necessary, make folder
-            if not os.path.exists(os.path.join(df_dir, save)):
-                os.makedirs(os.path.join(df_dir, save))
+            if not os.path.exists(os.path.join(DF_DIR, save)):
+                os.makedirs(os.path.join(DF_DIR, save))
             # does the folder have dataframes in it already?
-            if len(os.listdir(os.path.join(df_dir, save))) > 0:
+            if len(os.listdir(os.path.join(DF_DIR, save))) > 0:
                 # increment the name until we find a folder or .pkl that doesn't exist
                 i = 1
                 while os.path.exists(
-                    os.path.join(df_dir, save + f"_{i}")
-                ) or os.path.exists(os.path.join(df_dir, save + f"_{i}.pkl")):
+                    os.path.join(DF_DIR, save + f"_{i}")
+                ) or os.path.exists(os.path.join(DF_DIR, save + f"_{i}.pkl")):
                     i += 1
                 save = save + f"_{i}"
             print(
                 "For each run, a dataframe will be saved to the folder",
-                os.path.join(df_dir, save),
+                os.path.join(DF_DIR, save),
             )
         if collate_results:
             print(
                 "A single complete dataframe will be saved to",
-                os.path.join(df_dir, save) + ".pkl",
+                os.path.join(DF_DIR, save) + ".pkl",
             )
 
     # we want human readable labels for the dataframe
@@ -107,11 +107,11 @@ def run_experiment(
     if save is not False:
         results = pd.concat(results_mapped).reset_index(drop=True)
         # check if results directory exists
-        if not os.path.isdir(df_dir):
-            os.makedirs(df_dir)
+        if not os.path.isdir(DF_DIR):
+            os.makedirs(DF_DIR)
         # save the results to a file.
-        results.to_pickle(os.path.join(df_dir, save + ".pkl"))
-        print("Saved to", os.path.join(df_dir, save + ".pkl"))
+        results.to_pickle(os.path.join(DF_DIR, save + ".pkl"))
+        print("Saved to", os.path.join(DF_DIR, save + ".pkl"))
 
     if collate_results:
         return results
@@ -190,7 +190,7 @@ def _run_single_experiment(experiment):
 
     if save and (SAVE_INTERMEDIATE_RESULTS or not return_result):
         # get folder for experiment
-        exp_dir = os.path.join(df_dir, save)
+        exp_dir = os.path.join(DF_DIR, save)
         # make sure that the filename is not too long by truncating from the end
         filename = run_ID
         filename = filename[-125:] + ".pkl"
