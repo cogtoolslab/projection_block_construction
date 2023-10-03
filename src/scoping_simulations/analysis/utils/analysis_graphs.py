@@ -1,8 +1,8 @@
 """This file contains code for graphs. These expect to be passed a dataframe output of experiment_runner (not the run dataframe, but the dataframe containing rows with agents and so) with a preselection already made."""
 import textwrap
 
-import analysis.utils.trajectory as trajectory
-from analysis.utils.analysis_helper import *
+import scoping_simulations.analysis.utils.trajectory as trajectory
+from scoping_simulations.analysis.utils.analysis_helper import *
 
 # Color constants for easy theming
 TOOL_COLOR = "coral"

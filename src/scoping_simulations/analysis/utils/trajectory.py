@@ -5,21 +5,6 @@ Adapted from [Will McCarthy's work on blockconstruction](https://github.com/cogt
 This has A LOT of hardcoded variables and most likely isn't going to work well with worlds that are not 8x8 or in the standard set."""
 
 import os
-import sys
-
-proj_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-utils_dir = os.path.join(proj_dir, "utils")
-sys.path.append(utils_dir)
-
-analysis_dir = os.path.join(proj_dir, "analysis")
-analysis_utils_dir = os.path.join(analysis_dir, "utils")
-sys.path.append(analysis_utils_dir)
-
-import analysis_helper
-
-if os.path.join(proj_dir, "stimuli") not in sys.path:
-    sys.path.append(os.path.join(proj_dir, "stimuli"))
-
 
 import numpy as np
 import pandas as pd
@@ -27,6 +12,8 @@ import scipy.stats as stats
 import sklearn.metrics as metrics
 from matplotlib import pyplot
 from scipy import ndimage
+
+from scoping_simulations.analysis import analysis_helper
 
 # import cv2
 

@@ -2,10 +2,10 @@
 
 import imageio
 
-from analysis.utils.analysis_graphs import *
+from scoping_simulations.analysis.utils.analysis_graphs import *
+from scoping_simulations.utils.directories import PROJ_DIR
 
-proj_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-plots_dir = os.path.join(proj_dir, "results/plots")
+plots_dir = os.path.join(PROJ_DIR, "results/plots")
 
 
 def build_animation(slice, title=None):
