@@ -10,12 +10,9 @@ FRACTION_OF_CPUS = 1
 MAX_LENGTH = 3  # maximum length of sequences to consider
 
 if __name__ == "__main__":  # required for multiprocessing
-    try:
-        import scoping_simulations.stimuli.tower_generator as tower_generator
-    except:
-        import tower_generator
-
     import time
+
+    import scoping_simulations.stimuli.tower_generator as tower_generator
 
     start_time = time.time()
 

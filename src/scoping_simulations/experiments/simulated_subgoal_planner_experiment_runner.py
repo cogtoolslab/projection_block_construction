@@ -368,7 +368,7 @@ def _run_single_experiment(experiment):
                 r[key] = r[key].astype(object)
             # insert value
             r.at[i - 1, key] = value
-            
+
         # if we've observed no action being taken, we stop execution. We're not changing the world, so we might as well save the CPU cycles.
         # Take this out if we have a non-deterministic agent that sometimes chooses no actions.
         if chosen_actions == [] or chosen_actions == [None]:
@@ -388,6 +388,6 @@ def _run_single_experiment(experiment):
         ):
             # if so, convert to float
             r[column] = r[column].astype(float)
-        
+
     # truncate df and return
     return r[r["run_ID"].notnull()]

@@ -30,9 +30,7 @@ CHUNK_SIZE = 64
 if __name__ == "__main__":  # required for multiprocessing
     import os
 
-    PROJ_DIR = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    )
+    from scoping_simulations.utils.directories import PROJ_DIR
 
     DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
 
