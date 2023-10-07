@@ -2,6 +2,7 @@ import copy
 import random
 from random import choice, randint
 
+import scoping_simulations.model.utils.decomposition_functions as decomposition_functions
 from scoping_simulations.model.BFS_Lookahead_Agent import *
 from scoping_simulations.stimuli.subgoal_tree import *
 
@@ -47,18 +48,18 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         if self.random_seed is None:
             self.random_seed = self.random_seed = randint(0, 99999)
         if decomposer is None:
-            decomposer = model.utils.decomposition_functions.Rectangular_Keyholes(
+            decomposer = decomposition_functions.Rectangular_Keyholes(
                 sequence_length=3,
                 necessary_conditions=[
-                    model.utils.decomposition_functions.Area_larger_than(area=1),
+                    decomposition_functions.Area_larger_than(area=1),
                     # Area_smaller_than(area=30), # used to be 21
-                    model.utils.decomposition_functions.Mass_smaller_than(area=16),
-                    model.utils.decomposition_functions.No_edge_rows_or_columns(),
+                    decomposition_functions.Mass_smaller_than(area=16),
+                    decomposition_functions.No_edge_rows_or_columns(),
                 ],
                 necessary_sequence_conditions=[
-                    model.utils.decomposition_functions.Complete(),
-                    model.utils.decomposition_functions.No_overlap(),
-                    model.utils.decomposition_functions.Supported(),
+                    decomposition_functions.Complete(),
+                    decomposition_functions.No_overlap(),
+                    decomposition_functions.Supported(),
                 ],
             )
         self.decomposer = decomposer
@@ -187,7 +188,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         if len(sequences) == 0:
             if verbose:
                 print("No sequences to choose from")
-            return model.utils.decomposition_functions.Subgoal_sequence([])
+            return decomposition_functions.Subgoal_sequence([])
         scores = [None] * len(sequences)
         for i in range(len(sequences)):
             scores[i] = sequences[i].V(self.c_weight)
@@ -208,7 +209,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             # looks like no sequences worked out (this happens when none of the sequences can be solved)
             if verbose:
                 print("No sequences have a found solution, choosing empty sequence")
-            return model.utils.decomposition_functions.Subgoal_sequence([])
+            return decomposition_functions.Subgoal_sequence([])
         top_indices = [i for i in range(len(scores)) if scores[i] == max_scores]
         top_sequences = [sequences[i] for i in top_indices]
         seed(self.random_seed)  # fix random seed
