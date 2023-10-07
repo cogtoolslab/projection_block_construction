@@ -366,14 +366,9 @@ def _run_single_experiment(experiment):
                 # Initialize column with NaNs and set dtype to 'object' to accommodate mixed types
                 r[key] = np.nan
                 r[key] = r[key].astype(object)
-                
-            current_dtype = r[key].dtype
+            # insert value
+            r.at[i - 1, key] = value
             
-            if pd.api.types.is_numeric_dtype(current_dtype) and not pd.api.types.is_numeric_dtype(type(value)):
-                # If the column is numeric but the value is not, convert the entire column to 'object'
-                r[key] = r[key].astype(object)
-            
-        r.at[i - 1, key] = value
         # if we've observed no action being taken, we stop execution. We're not changing the world, so we might as well save the CPU cycles.
         # Take this out if we have a non-deterministic agent that sometimes chooses no actions.
         if chosen_actions == [] or chosen_actions == [None]:
@@ -381,5 +376,18 @@ def _run_single_experiment(experiment):
 
     # after we stop acting
     # print("Done with",agent.__str__(),'******',world_label,"in %s seconds with outcome "% round((time.perf_counter() - run_start_time)),str(world_status))
+
+    # sort out the types that we have inserted from agent_step_info
+    for column in agent_step_info.keys():
+        # do all contents of the column have a numeric type?
+        if all(
+            [
+                type(value) in [int, float, np.int64, np.float64]
+                for value in r[column].values
+            ]
+        ):
+            # if so, convert to float
+            r[column] = r[column].astype(float)
+        
     # truncate df and return
     return r[r["run_ID"].notnull()]
