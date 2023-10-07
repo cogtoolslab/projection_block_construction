@@ -1,16 +1,23 @@
 import argparse
+from pathlib import Path
 
 import pandas as pd
 
+from scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner import (
+    run_experiment as run_experiment_simulated_subgoal_planner,
+)
+from scoping_simulations.experiments.subgoal_generator_runner import (
+    run_experiment as run_experiment_subgoal_generator,
+)
 from scoping_simulations.model.BFS_Agent import BFS_Agent
 from scoping_simulations.model.Simulated_Subgoal_Agent import Simulated_Subgoal_Agent
 from scoping_simulations.model.Subgoal_Planning_Agent import *
 from scoping_simulations.model.utils.decomposition_functions import *
 
-FRACTION_OF_CPUS = 0.5
+FRACTION_OF_CPUS = False  # 0.5
 
 
-def get_BFS_dfs(worlds, save="simulated_subgoal_agent_BFS"):
+def get_BFS_dfs(worlds, save="analysis/simulated_subgoal_agent_BFS"):
     decomposer = No_Subgoals()
     sga = Subgoal_Planning_Agent(lower_agent=BFS_Agent(), decomposer=decomposer)
     ns_agent = Simulated_Subgoal_Agent(
@@ -18,7 +25,7 @@ def get_BFS_dfs(worlds, save="simulated_subgoal_agent_BFS"):
     )
 
     print("Running the subgoal generator")
-    results = experiments.subgoal_generator_runner.run_experiment(
+    results = run_experiment_subgoal_generator(
         worlds,
         [
             sga,
@@ -31,7 +38,7 @@ def get_BFS_dfs(worlds, save="simulated_subgoal_agent_BFS"):
     )
 
     print("Done. Generating No Subgoal runs...")
-    experiments.simulated_subgoal_planner_experiment_runner.run_experiment(
+    run_experiment_simulated_subgoal_planner(
         results, [ns_agent], 1, 16, parallelized=FRACTION_OF_CPUS, save=save
     )
 
@@ -50,7 +57,20 @@ def load_df_from_other_agent(file_path):
 if __name__ == "__main__":
     # get path from command line input
     parser = argparse.ArgumentParser()
-    parser.add_argument("--df_path", help="path to dataframe to load")
+    parser.add_argument(
+        "--df_path",
+        help="path to dataframe to load",
+        default="analysis/Simulation_Analysis_Worlds.pkl",
+    )
     args = parser.parse_args()
-    df_path = args.df_path
-    load_df_from_other_agent(df_path)
+    df_path = Path(args.df_path).absolute()
+    print("Using dataframe from {}".format(df_path))
+    try:
+        print("Trying to treat as just worlds")
+        worlds = pd.read_pickle(df_path)
+        worlds = {l: w for l, w in zip(worlds.world, worlds._world)}
+        get_BFS_dfs(worlds)
+    except Exception as e:
+        print("Failed to load as world from {}".format(df_path), "with", e)
+        print("Trying to load as dataframe from simulated agents")
+        load_df_from_other_agent(df_path)

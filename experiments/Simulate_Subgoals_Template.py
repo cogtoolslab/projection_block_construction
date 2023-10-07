@@ -1,15 +1,4 @@
-# Various imports
-
 import os
-
-# go up one folder until we find the project folder
-while os.path.basename(os.getcwd()) != "tools_block_construction":
-    os.chdir("..")
-# add the project folder to the path
-PROJ_DIR = os.getcwd()
-
-# get relevant other directories
-
 
 import scoping_simulations.experiments.simulated_subgoal_planner_experiment_runner as simulated_subgoal_planner_experiment_runner
 import scoping_simulations.experiments.subgoal_generator_runner as subgoal_generator_runner
@@ -19,9 +8,8 @@ import scoping_simulations.utils.blockworld_library as bl
 from scoping_simulations.model.Best_First_Search_Agent import Best_First_Search_Agent
 from scoping_simulations.model.Simulated_Subgoal_Agent import Simulated_Subgoal_Agent
 from scoping_simulations.model.Subgoal_Planning_Agent import Subgoal_Planning_Agent
-
-# import the relevant modules
 from scoping_simulations.model.utils.decomposition_functions import *
+from scoping_simulations.utils.directories import PROJ_DIR
 
 # set up the experiment
 EXP_NAME = "Simulated Subgoals on Best First Search Template"
