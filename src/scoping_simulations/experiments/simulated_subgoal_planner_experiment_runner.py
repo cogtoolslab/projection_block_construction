@@ -362,18 +362,18 @@ def _run_single_experiment(experiment):
         # if we have it, unroll the miscellaneous output from agent
         # should include `states_evaluated`
         for key, value in agent_step_info.items():
-            try:
-                r[key]
-            except KeyError:
-                # we need to create column
-                r[key] = np.NaN
-            try:
-                r.at[i - 1, key] = value
-            except (
-                ValueError
-            ):  # happens when the datatype of the columns is inferred as numeric
+            if key not in r.columns:
+                # Initialize column with NaNs and set dtype to 'object' to accommodate mixed types
+                r[key] = np.nan
                 r[key] = r[key].astype(object)
-                r.at[i - 1, key] = [value]
+                
+            current_dtype = r[key].dtype
+            
+            if pd.api.types.is_numeric_dtype(current_dtype) and not pd.api.types.is_numeric_dtype(type(value)):
+                # If the column is numeric but the value is not, convert the entire column to 'object'
+                r[key] = r[key].astype(object)
+            
+        r.at[i - 1, key] = value
         # if we've observed no action being taken, we stop execution. We're not changing the world, so we might as well save the CPU cycles.
         # Take this out if we have a non-deterministic agent that sometimes chooses no actions.
         if chosen_actions == [] or chosen_actions == [None]:
