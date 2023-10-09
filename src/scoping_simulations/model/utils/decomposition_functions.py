@@ -75,6 +75,11 @@ class Subgoal:
             # if we can't solve it (or haven't yet), we return a reward of 0
             return 0
 
+    def get_current_target(self):
+        """Returns the current target of the subgoal, ie. the target minus the previous target.
+        This is useful if the subgoal includes the previous subgoals within it."""
+        return (self.target > 0.5) & ~(self.prior_world.current_state.blockmap > 0.5)
+
     def visualize(self, title=None, ax=None, show_blocks=True, block_color="orange"):
         """Make a pretty visualization of the subgoal state.
         Set up in a flexible way to ensure that I can reuse the code for various purposes (ie. analysis step by step). Pass it a figure to have this function add a subplot to it.
