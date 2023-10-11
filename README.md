@@ -71,3 +71,8 @@ Note that installiing `Box2D` is optional.
 To run the experiments, run `python experiment_runner.py` in the root directory of the repository. This will run the experiments and save the results in a data frame either `~/scoping_simulations/results`.
 
 If you want to specify a custom folder, set the environment variable `SCOPING_SIMULATIONS_DIR` to the desired path.`
+
+## Contributing
+
+The project uses black, isort and ruff for formatting and code sorting. 
+Please run `sh lint.sh` before committing. 

@@ -1,0 +1,3 @@
+isort .
+ruff . --fix
+black .
