@@ -71,8 +71,8 @@ def run_multiple_heuristics_on_list_of_subgoals(
     # run the function
     results = p_tqdm.p_map(_run_multiple_heuristics_wrapper, args, num_cpus=cpu_ratio)
     # results = map(
-        _run_multiple_heuristics_wrapper, args
-    )  # debug without parallelization
+    # _run_multiple_heuristics_wrapper, args
+    # )  # debug without parallelization
     # convert the results to a list
     results = list(results)
     return results
