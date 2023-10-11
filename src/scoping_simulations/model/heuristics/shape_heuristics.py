@@ -13,10 +13,7 @@ class AreaSizeHeuristic(ActionCostHeuristic):
     def __call__(self, subgoal: Subgoal) -> float:
         """Returns the area of the subgoal."""
         bitmap = subgoal.bitmap
-        minx = bitmap.min(axis=0)[0]
-        maxx = bitmap.max(axis=0)[0]
-        miny = bitmap.min(axis=0)[1]
-        maxy = bitmap.max(axis=0)[1]
+        minx, maxx, miny, maxy = get_bitmap_bounds(bitmap)
         return (maxx - minx) * (maxy - miny)
 
 
@@ -33,7 +30,7 @@ class MassHeuristic(ActionCostHeuristic):
         return subgoal_target.sum()
 
 
-class NumberOfHolesHeuristics(ActionCostHeuristic):
+class NumberOfHolesHeuristic(ActionCostHeuristic):
     """How many holes (of whatever size) are in the bitmap?"""
 
     def __init__(self):
@@ -41,28 +38,44 @@ class NumberOfHolesHeuristics(ActionCostHeuristic):
 
     def __call__(self, subgoal: Subgoal) -> float:
         """Returns the number of holes in the subgoal."""
+        # subset and pad with one
+        target = pad_by_one(subset_target(subgoal.bitmap, subgoal.target))
         # iterate through all cells and check if they are holes
-        bitmap = subgoal.bitmap
-        bitmap = subset_bitmap(bitmap)
         holes = 0
-        for x in range(bitmap.shape[0]):
-            for y in range(bitmap.shape[1]):
-                if bitmap[x, y] == 0:
-                    # is this a new hole?
-                    if (
-                        x == 0
-                        or bitmap[x - 1, y] == 1
-                        or y == 0
-                        or bitmap[x, y - 1] == 1
-                    ):
-                        holes += 1
+        # we are going down and left
+        for x in range(1, target.shape[0]):
+            for y in range(1, target.shape[1]):
+                if (
+                    target[x, y] == 0  # it's a hole
+                    # continuation from the left
+                    and not target[x - 1, y] == 0
+                    # continuation from the top
+                    and not target[x, y - 1] == 0
+                ):
+                    holes += 1
         return holes
+
+
+class HolesHeuristic(ActionCostHeuristic):
+    """What is the total area of holes in the bitmap?"""
+
+    def __init__(self):
+        pass
+
+    def __call__(self, subgoal: Subgoal) -> float:
+        """Returns the total area of holes in the subgoal."""
+        # iterate through all cells and check if they are holes
+        target = subset_target(subgoal.bitmap, subgoal.target)
+        holes = target == 0
+        return holes.sum()
 
 
 class AspectRatioHeuristic(ActionCostHeuristic):
     """How tall vs wide is the subgoal?
 
     This returns the aspect ratio of the subgoal.
+    Calculated as height / width,
+        so a tall subgoal will have a value > 1.
     """
 
     def __init__(self):
@@ -71,7 +84,10 @@ class AspectRatioHeuristic(ActionCostHeuristic):
     def __call__(self, subgoal: Subgoal) -> float:
         """Returns the aspect ratio of the subgoal."""
         bitmap = subgoal.bitmap
-        minx, maxx, miny, maxy = get_bitmap_bounds(bitmap)
+        bounds = get_bitmap_bounds(bitmap)
+        if bounds is None:
+            return None
+        minx, maxx, miny, maxy = bounds
         return (maxy - miny) / (maxx - minx)
 
 
@@ -82,20 +98,19 @@ class OuterHolesHeuristic(ActionCostHeuristic):
         pass
 
     def __call__(self, subgoal: Subgoal) -> float:
-        bitmap = subgoal.bitmap
-        bitmap = subset_bitmap(bitmap)
+        target = subset_target(subgoal.bitmap, subgoal.target)
         holes = 0
         # how many holes on the vertical edges?
-        for x in range(bitmap.shape[0]):
-            if bitmap[x, 0] == 0:
+        for x in range(target.shape[0]):
+            if target[x, 0] == 0:
                 holes += 1
-            if bitmap[x, -1] == 0:
+            if target[x, -1] == 0:
                 holes += 1
         # how many holes on the horizontal edges?
-        for y in range(bitmap.shape[1]):
-            if bitmap[0, y] == 0:
+        for y in range(target.shape[1]):
+            if target[0, y] == 0:
                 holes += 1
-            if bitmap[-1, y] == 0:
+            if target[-1, y] == 0:
                 holes += 1
         return holes
 
@@ -110,24 +125,23 @@ class NumberOfOuterHolesHeuristic(ActionCostHeuristic):
         pass
 
     def __call__(self, subgoal: Subgoal) -> float:
-        bitmap = subgoal.bitmap
-        bitmap = subset_bitmap(bitmap)
+        target = subset_target(subgoal.bitmap, subgoal.target)
         holes = 0
         # how many unique holes on the vertical edges?
-        for x in range(bitmap.shape[0]):
-            if bitmap[x, 0] == 0:
-                if x == 0 or bitmap[x - 1, 0] == 1:
+        for x in range(target.shape[0]):
+            if target[x, 0] == 0:
+                if x == 0 or target[x - 1, 0] > 0.5:
                     holes += 1
-            if bitmap[x, -1] == 0:
-                if x == 0 or bitmap[x - 1, -1] == 1:
+            if target[x, -1] == 0:
+                if x == 0 or target[x - 1, -1] > 0.5:
                     holes += 1
         # how many unique holes on the horizontal edges?
-        for y in range(bitmap.shape[1]):
-            if bitmap[0, y] == 0:
-                if y == 0 or bitmap[0, y - 1] == 1:
+        for y in range(target.shape[1]):
+            if target[0, y] == 0:
+                if y == 0 or target[0, y - 1] > 0.5:
                     holes += 1
-            if bitmap[-1, y] == 0:
-                if y == 0 or bitmap[-1, y - 1] == 1:
+            if target[-1, y] == 0:
+                if y == 0 or target[-1, y - 1] > 0.5:
                     holes += 1
         return holes
 
@@ -138,14 +152,30 @@ def subset_bitmap(bitmap):
     if bounds is None:
         return None
     minx, maxx, miny, maxy = bounds
-    return bitmap[minx : maxx + 1, miny : maxy + 1]
+    return bitmap[minx:maxx, miny:maxy]
+
+
+def subset_target(bitmap, target):
+    """Subset to only the target contained in the bitmap"""
+    bounds = get_bitmap_bounds(bitmap)
+    if bounds is None:
+        return None
+    minx, maxx, miny, maxy = bounds
+    return target[minx:maxx, miny:maxy]
+
+
+def pad_by_one(array):
+    """Adds a row and column of zeros around the left and top  of the array"""
+    # pad the array by one on the left and top
+    array = np.pad(array, ((1, 0), (1, 0)), mode="constant", constant_values=1.0)
+    return array
 
 
 def get_bitmap_bounds(bitmap):
     """Get the bounds of the bitmap.
 
     Ie get the bounds of the parts of the bitmap that are not zero."""
-    y_indices, x_indices = np.where(bitmap != 0)
+    x_indices, y_indices = np.where(bitmap != 0)
 
     # If there are no non-zero values in the array, return None
     if len(y_indices) == 0 or len(x_indices) == 0:
@@ -156,13 +186,14 @@ def get_bitmap_bounds(bitmap):
     y_min = np.min(y_indices)
     y_max = np.max(y_indices)
 
-    return x_min, x_max, y_min, y_max
+    return x_min, x_max + 1, y_min, y_max + 1
 
 
 SHAPE_HEURISTICS = [
     AreaSizeHeuristic,
     MassHeuristic,
-    NumberOfHolesHeuristics,
+    HolesHeuristic,
+    NumberOfHolesHeuristic,
     AspectRatioHeuristic,
     OuterHolesHeuristic,
     NumberOfOuterHolesHeuristic,
