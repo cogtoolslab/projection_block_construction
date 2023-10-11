@@ -33,6 +33,19 @@ class BestFirstHeuristic(AgentCostHeuristic):
         self.agent.label = "Best First Heuristic"
 
 
+class BestFirstRepetitionsHeuristic(ActionCostHeuristic):
+    """Runs the Best First Heuristic multiple times and returns the average."""
+
+    def __init__(self, n: int = 10):
+        super().__init__()
+        self.n = n
+        self.heuristic = BestFirstHeuristic()
+        self.heuristic.agent.label = "Best First Heuristic ({} repetitions)".format(n)
+
+    def __call__(self, subgoal: Subgoal) -> float:
+        return self.heuristic.repeat(subgoal, self.n)
+
+
 class BFSHeuristic(AgentCostHeuristic):
     "Uses the BFS Agent to solve the subgoal"
 
