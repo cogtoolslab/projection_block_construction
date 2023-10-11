@@ -132,13 +132,22 @@ class NumberOfOuterHolesHeuristic(ActionCostHeuristic):
         return holes
 
 
+def subset_bitmap(bitmap):
+    """Subset bitmap to only return the subgoal and not the rest of the problem"""
+    bounds = get_bitmap_bounds(bitmap)
+    if bounds is None:
+        return None
+    minx, maxx, miny, maxy = bounds
+    return bitmap[minx : maxx + 1, miny : maxy + 1]
+
+
 def get_bitmap_bounds(bitmap):
     """Get the bounds of the bitmap.
 
     Ie get the bounds of the parts of the bitmap that are not zero."""
-    y_indices, x_indices = np.where(bitmap == 1)
+    y_indices, x_indices = np.where(bitmap != 0)
 
-    # If there are no 1s in the array, return None
+    # If there are no non-zero values in the array, return None
     if len(y_indices) == 0 or len(x_indices) == 0:
         return None
 
@@ -147,13 +156,7 @@ def get_bitmap_bounds(bitmap):
     y_min = np.min(y_indices)
     y_max = np.max(y_indices)
 
-    return x_min, y_min, x_max, y_max
-
-
-def subset_bitmap(bitmap):
-    """Subset bitmap to only return the subgoal and not the rest of the problem"""
-    minx, maxx, miny, maxy = get_bitmap_bounds(bitmap)
-    return bitmap[minx:maxx, miny:maxy]
+    return x_min, x_max, y_min, y_max
 
 
 SHAPE_HEURISTICS = [
