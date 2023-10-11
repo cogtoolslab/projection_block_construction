@@ -216,3 +216,11 @@ class SubgoalTreeNode:
                 title="Child {}".format(i), fig=fig, block_color=block_color
             )
         plt.show()
+
+
+def ensure_subgoal(subgoal_maybe_node):
+    """Always returns a subgoal, whether the input is a subgoal tree node or a subgoal."""
+    if isinstance(subgoal_maybe_node, SubgoalTreeNode):
+        return subgoal_maybe_node.subgoal
+    else:
+        return subgoal_maybe_node
