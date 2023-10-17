@@ -112,6 +112,15 @@ class OuterHolesHeuristic(ActionCostHeuristic):
                 holes += 1
             if target[-1, y] == 0:
                 holes += 1
+        # are we double counting the outer corners?
+        if target[0, 0] == 0:
+            holes -= 1
+        if target[-1, 0] == 0:
+            holes -= 1
+        if target[-1, -1] == 0:
+            holes -= 1
+        if target[0, -1] == 0:
+            holes -= 1
         return holes
 
 
@@ -143,6 +152,15 @@ class NumberOfOuterHolesHeuristic(ActionCostHeuristic):
             if target[-1, y] == 0:
                 if y == 0 or target[-1, y - 1] > 0.5:
                     holes += 1
+                # are we double counting the outer corners?
+        if target[0, 0] == 0:
+            holes -= 1
+        if target[-1, 0] == 0:
+            holes -= 1
+        if target[-1, -1] == 0:
+            holes -= 1
+        if target[0, -1] == 0:
+            holes -= 1
         return holes
 
 
