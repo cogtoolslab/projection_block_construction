@@ -11,7 +11,7 @@ if "SCOPING_SIMULATIONS_DIR" in os.environ:
     # yes, use that
     PROJ_DIR = Path(os.environ["SCOPING_SIMULATIONS_DIR"])
 else:
-    PROJ_DIR = Path.home() / "scoping_simulations"
+    PROJ_DIR = Path.home() / "tools_block_construction"
 
 STIM_DIR = PROJ_DIR / "stimuli"
 
