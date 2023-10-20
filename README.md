@@ -72,6 +72,12 @@ To run the experiments, run `python experiment_runner.py` in the root directory 
 
 If you want to specify a custom folder, set the environment variable `SCOPING_SIMULATIONS_DIR` to the desired path.`
 
+### Troubleshooting
+
+If you're getting an error like `ModuleNotFoundError: No module named 'scoping_simulations'`, try running `pip install -e .` in the root directory of the repository.
+
+If you're getting an error like `OSError: [Errno 24] Too many open files`, the OS doesn't have enough file handles for spawning the physics server. Run `ulimit -n 8192` (or some other number) to increase the number of file handles.
+
 ## Contributing
 
 The project uses black, isort and ruff for formatting and code sorting. 
