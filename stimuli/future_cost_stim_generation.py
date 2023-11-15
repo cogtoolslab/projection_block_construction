@@ -232,6 +232,7 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     * 'var': the variance of the costs
     * 'top_kp': mean of the top k% of the sequences
     * 'top_kc': mean of the top k sequences
+    * softmax_weighted(_k): the value of each sequence is weigthed according to their softmax, meaning that the better the sequence the more it counts. By default, k is 1.
     """
     # print("Computing subgoal preferences over all sequences using", how)
     # generate subsequences
@@ -309,6 +310,31 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
             elif how == "var":
                 other_Vs = [np.var(vs) for vs in subgoal_depth_Vs[depth].values()]
                 sg_V = np.var(subgoal_depth_Vs[depth][subgoal_name])
+            elif how == "softmax_weighted":
+                other_Vs = [
+                    np.sum(softmax(vs) * np.array(vs))
+                    for vs in subgoal_depth_Vs[depth].values()
+                ]
+                sg_V = np.sum(softmax(subgoal_depth_Vs[depth][subgoal_name]) * np.array(
+                    subgoal_depth_Vs[depth][subgoal_name]
+                )
+                )
+            elif how.startswith("softmax_weighted_"):
+                # we want to change the softmax k
+                try:
+                    k = float(how.removeprefix("softmax_weighted_"))
+                except:
+                    raise Exception(
+                        f"The how method must contain a float, but instead was {how}"
+                    )
+                other_Vs = [
+                    np.sum(softmax(vs, k) * np.array(vs))
+                    for vs in subgoal_depth_Vs[depth].values()
+                ]
+                sg_V = np.sum(softmax(subgoal_depth_Vs[depth][subgoal_name], k) * np.array(
+                    subgoal_depth_Vs[depth][subgoal_name]
+                )
+                )
             elif how.startswith("top_") and how.endswith("p"):
                 # we want the top p percent of elements
                 try:
@@ -407,6 +433,12 @@ def entropy(p):
         return -sum([p_i * math.log(p_i) for p_i in p])
     except ValueError:
         return 0
+    
+def softmax(x, k=1):
+    """Compute softmax values for each set of scores in x."""
+    x = np.array(x)
+    e_x = np.exp(k * x - np.max(k * x, axis=0))
+    return e_x / e_x.sum(axis=0)
 
 
 def get_relative_subgoal_informativity(subgoal_preferences):
