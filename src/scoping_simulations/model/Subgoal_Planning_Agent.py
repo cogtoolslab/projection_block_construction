@@ -19,6 +19,18 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
     * solution cost: how expensive was it to find the path of winning actions in the case that it actually found a solution across the sequence of subgoals
     * planning cost: how expensive was it to plan the sequence of subgoals including the failed attempts
     * all sequences planning cost: how expensive was planning over all sequences that were considered, not just the winning one?
+
+    Args:
+        world (blockworld.Blockworld): The world that the agent will act in.
+        decomposer (decomposition_functions.Decomposition_function): The decomposition function that will be used to generate subgoals.
+        step_size (int, optional): how many subgoals to act. Negative or zero to act from end of plan. Defaults to 1.
+        max_number_of_sequences (int, optional): randomly sample n sequences. Use `None` to use all possible sequences. Defaults to None.
+        c_weight (int, optional): Will keep retrying to solve subgoals until this cost is reached. Set to 1 for a single try (ie. deterministic algorithms). Defaults to 1.
+        max_cost (int, optional): Will keep retrying to solve subgoals until this cost is reached. Set to 1 for a single try (ie. deterministic algorithms). Defaults to 1.
+        n_samples (int, optional): how many times do we sample the lower agent for each subgoal?. Defaults to 1.
+        lower_agent (BFS_Lookahead_Agent, optional): The agent that will be used to solve subgoals. Defaults to BFS_Lookahead_Agent(only_improving_actions=True).
+        random_seed (int, optional): The random seed that will be used for the agent. Defaults to None.
+        label (str, optional): The label that will be used for the agent. Defaults to "Subgoal Planner".
     """
 
     def __init__(
@@ -31,6 +43,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         c_weight=1,
         # Will keep retrying to solve subgoals until this cost is reached. Set to 1 for a single try (ie. deterministic algorithms)
         max_cost=1,
+        n_samples=1,  # how many times do we sample the lower agent for each subgoal?
         lower_agent=BFS_Lookahead_Agent(only_improving_actions=True),
         random_seed=None,
         label="Subgoal Planner",
@@ -42,6 +55,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         self.step_size = step_size
         self.c_weight = c_weight
         self.max_cost = max_cost
+        self.n_samples = n_samples
         self.lower_agent = lower_agent
         self.random_seed = random_seed
         self.label = label
@@ -278,6 +292,28 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 current_world = subgoal.past_world
 
     def solve_subgoal(self, subgoal, verbose=False):
+        if self.n_samples == 1:
+            return self.solve_subgoal_one_runs(subgoal, verbose=verbose)
+        else:
+            # we run the lower agent n times and take the best solution, then store the mean cost in the subgoal
+            subgoals = []
+            for i in range(self.n_samples):
+                subgoals.append(
+                    self.solve_subgoal_one_run(copy.deepcopy(subgoal), verbose=verbose)
+                )
+            # now we need to find the best solution
+            costs = [s.C for s in subgoals]
+            try:
+                best_index = costs.index(min(costs))
+                best_subgoal = subgoals[best_index]
+                # store the mean cost in the subgoal
+                best_subgoal.C = np.mean(costs)
+                return best_subgoal
+            except TypeError:
+                # this happens when we can't solve the subgoal
+                return subgoals[0]
+
+    def solve_subgoal_one_run(self, subgoal, verbose=False):
         """Tries as long as needed to find a single solution to the current subgoal"""
         if subgoal.prior_world is None:
             subgoal.prior_world = self.world
