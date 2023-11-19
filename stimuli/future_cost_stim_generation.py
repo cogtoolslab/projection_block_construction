@@ -42,9 +42,13 @@ from scoping_simulations.model.utils.decomposition_functions import *
 from scoping_simulations.utils.blockworld import *
 from scoping_simulations.utils.blockworld_library import *
 
+### Parameters ###
 SOFTMAX_K = 1
-MAX_LENGTH = 3  # maximum length of sequences to consider
+MAX_LENGTH = 4  # maximum length of sequences to consider
 LAMBDAS = np.linspace(0.1, 6.0, 100)  # lambdas to marginalize over
+MIN_SUBGOAL_SIZE = 3  # minimum size of subgoal to consider
+MAX_SUBGOAL_MASS = 16  # maximum mass of subgoal to consider
+N_COST_SAMPLES = 10  # number of samples for lower agent cost
 # the generation parameters are in the executable section of the file below
 # TODO make these parameters rather than hard coded
 
@@ -55,9 +59,9 @@ def get_initial_preferences(world_in):
     decomposer = Rectangular_Keyholes(
         sequence_length=MAX_LENGTH,
         necessary_conditions=[
-            Area_larger_than(area=1),
+            Area_larger_than(MIN_SUBGOAL_SIZE),
             # Area_smaller_than(area=30), # used to be 21
-            Mass_smaller_than(area=18),
+            Mass_smaller_than(MAX_SUBGOAL_MASS),
             No_edge_rows_or_columns(),
         ],
         necessary_sequence_conditions=[
@@ -68,7 +72,9 @@ def get_initial_preferences(world_in):
     )
 
     sga = Subgoal_Planning_Agent(
-        lower_agent=Best_First_Search_Agent(), decomposer=decomposer
+        lower_agent=Best_First_Search_Agent(),
+        decomposer=decomposer,
+        n_samples=N_COST_SAMPLES,
     )
 
     sga.set_world(w)
@@ -159,61 +165,25 @@ def get_initial_preferences(world_in):
         subgoal_depth_sequences,
     )
 
+def get_initial_preferences_w_timeout(world_in, timeout=60*60*12):
+    """Same as get_initial_preferences but with a timeout so it can be called by p_tqdm pathos multiprocessing"""
+    import multiprocessing
+    from multiprocessing import Process, Queue
+    import time
+    import signal
 
-# def get_subgoal_choice_preferences(solved_sequences,c_weight=None): # this is the original old version fixed to best
-#     """Get a dict with choice prefernece for each initial subgoal of the form:
-#     {subgoal: [preference for the ith depth agent]}
-#     Set lambda in the agent itself"""
-#     # generate subsequences
-#     length_sequences = {}
-#     for length in list(range(1, MAX_LENGTH+1)):
-#         length_sequences[length] = []
-#         for seq in solved_sequences: # needs to be solved sequences to ensure that they're all solvable and result in the full decompositon (make sure the proper flag is set above)
-#             if len(seq) <= length:
-#                 length_sequences[length].append(seq)
-#             elif len(seq) > length:
-#                 # generate a truncated sequence
-#                 shortenend_seq = Subgoal_sequence(seq.subgoals[0:length])
-#                 length_sequences[length].append(shortenend_seq)
-#         # clear out duplicates according to subgoals
-#         seen = set()
-#         length_sequences[length] = [x for x in length_sequences[length] if not (x.names() in seen or seen.add(x.names()))] # I assume that a tuple of the same objects is the same even when recreated
+    def handler(signum, frame):
+        print("Timeout in get_initial_preferences occured")
+        raise Exception("Timeout!")
 
-#     subgoals = {}
-#     # get first subgoal V's (as well as other measures for later analysis)
-#     subgoal_depth_Vs = {}
-#     subgoal_depth_sequences = {} # dict with {initial subgoal: {depth: [sequence objects]}}
-#     for depth in length_sequences:
-#         subgoal_depth_Vs[depth] = {}
-#         for seq in length_sequences[depth]:
-#             V = seq.V(c_weight) if c_weight is not None else seq.V()
-#             if seq.subgoals[0].name not in subgoal_depth_sequences:
-#                 subgoal_depth_sequences[seq.subgoals[0].name] = {}
-#             if seq.subgoals[0].name in subgoal_depth_Vs[depth]:
-#                 subgoal_depth_Vs[depth][seq.subgoals[0].name] += [V]
-#                 subgoal_depth_sequences[seq.subgoals[0].name][depth] += [seq]
-#             else:
-#                 subgoal_depth_Vs[depth][seq.subgoals[0].name] = [V]
-#                 subgoal_depth_sequences[seq.subgoals[0].name][depth] = [seq]
-#             if seq.subgoals[0].name not in subgoals:
-#                 subgoals[seq.subgoals[0].name] = seq.subgoals[0]
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(timeout)
 
-#     # get list of preferences for depth per subgoal
-#     subgoal_preferences = {}
-#     for subgoal_name in subgoals.keys():
-#         subgoal_preferences[subgoal_name] = {}
-#         for depth in length_sequences:
-#             # get subgoal preference for depth
-#             # using softmax with K defined above
-#             total_best_Vs = [max(vs) for vs in subgoal_depth_Vs[depth].values()]
-#             sg_V = max(subgoal_depth_Vs[depth][subgoal_name])
-#             try:
-#                 softmax_val = math.exp(SOFTMAX_K * sg_V) / sum([math.exp(SOFTMAX_K * v) for v in total_best_Vs])
-#             except ZeroDivisionError:
-#                 softmax_val = 1 if sg_V == max(total_best_Vs) else 0
-#             subgoal_preferences[subgoal_name][depth] = softmax_val
-#     return subgoal_preferences, subgoal_depth_sequences
-
+    try:
+        return get_initial_preferences(world_in)
+    except Exception as e:
+        print("Exception:", e)
+        return None
 
 def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     """Get a dict with choice prefernece for each initial subgoal of the form:
@@ -315,9 +285,9 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
                     np.sum(softmax(vs) * np.array(vs))
                     for vs in subgoal_depth_Vs[depth].values()
                 ]
-                sg_V = np.sum(softmax(subgoal_depth_Vs[depth][subgoal_name]) * np.array(
-                    subgoal_depth_Vs[depth][subgoal_name]
-                )
+                sg_V = np.sum(
+                    softmax(subgoal_depth_Vs[depth][subgoal_name])
+                    * np.array(subgoal_depth_Vs[depth][subgoal_name])
                 )
             elif how.startswith("softmax_weighted_"):
                 # we want to change the softmax k
@@ -331,9 +301,9 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
                     np.sum(softmax(vs, k) * np.array(vs))
                     for vs in subgoal_depth_Vs[depth].values()
                 ]
-                sg_V = np.sum(softmax(subgoal_depth_Vs[depth][subgoal_name], k) * np.array(
-                    subgoal_depth_Vs[depth][subgoal_name]
-                )
+                sg_V = np.sum(
+                    softmax(subgoal_depth_Vs[depth][subgoal_name], k)
+                    * np.array(subgoal_depth_Vs[depth][subgoal_name])
                 )
             elif how.startswith("top_") and how.endswith("p"):
                 # we want the top p percent of elements
@@ -390,9 +360,9 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
 
 
 def get_subgoal_choice_preferences_over_lambda(solved_sequences, lambdas):
-    """Generates dict with {$\lambda$: {subgoal: [preference for the ith depth agent]}}
+    """Generates dict with {lambda: {subgoal: [preference for the ith depth agent]}}
 
-    Also returns dict with all sequences of a certain length. Note that this is only returned for a single value of $\lambda$, so be careful with running V() on it.
+    Also returns dict with all sequences of a certain length. Note that this is only returned for a single value of lambda, so be careful with running V() on it.
     """
     subgoal_preferences_over_lambda = {}
     for l in lambdas:
@@ -433,7 +403,8 @@ def entropy(p):
         return -sum([p_i * math.log(p_i) for p_i in p])
     except ValueError:
         return 0
-    
+
+
 def softmax(x, k=1):
     """Compute softmax values for each set of scores in x."""
     x = np.array(x)
@@ -505,9 +476,9 @@ if __name__ == "__main__":
     print("Generated {} towers".format(len(worlds)))
 
     # for generating additional towers beyond the original ones while keeping the same random seed
-    CUTOFF = 128
-    print("Ignoring first {CUTOFF} towers")
-    towers = towers[CUTOFF:]
+    # CUTOFF = 0
+    # print("Ignoring first {CUTOFF} towers")
+    # towers = towers[CUTOFF:]
 
     initial_subgoals_dfs = []  # store the results
 
@@ -515,7 +486,7 @@ if __name__ == "__main__":
 
     # actually run it
     # outs = map(get_initial_preferences, list(worlds)) # for debugging purposes
-    outs = p_tqdm.p_umap(get_initial_preferences, list(worlds))
+    outs = p_tqdm.p_umap(get_initial_preferences_w_timeout, list(worlds))
     initial_subgoals_dfs = [out[0] for out in outs]
     solved_sequences = {out[3]: out[1] for out in outs}
     worlds = {out[3]: out[2] for out in outs}
