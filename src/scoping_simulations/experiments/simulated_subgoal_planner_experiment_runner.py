@@ -7,6 +7,8 @@ PROJ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 RESULTS_DIR = os.path.join(PROJ_DIR, "results")
 DF_DIR = os.path.join(RESULTS_DIR, "dataframes")
 
+TIMEOUT = 60 * 60 * 12  # 12 hours
+
 import copy
 import datetime
 import multiprocessing
@@ -64,7 +66,7 @@ def run_experiment(
     maxtasksperprocess=1,
     chunk_experiments_size=2048,
 ):
-    """Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found."""
+    """Takes in a dataframe from `subgoal_generator_runner` and outputs a dataframe with simulated lookahead agents based on the subgoals found. If save is False, nothing is returned."""
     # we want human readable labels for the dataframe
     if type(agents) is dict:
         # if agents is dict flatten it and rely on informative agent __str__
@@ -98,13 +100,22 @@ def run_experiment(
                 int(multiprocessing.cpu_count() * parallelized),
                 maxtasksperchild=maxtasksperprocess,
             )
+            results_mapped = []
             try:
-                results_mapped = list(
-                    tqdm.tqdm(
-                        P.imap_unordered(_run_single_experiment, experiments),
-                        total=len(experiments),
+                async_results = [
+                    P.apply_async(
+                        _run_single_experiment,
+                        (experiment,),
+                        callback=results_mapped.append,
                     )
-                )
+                    for experiment in experiments
+                ]
+
+                for async_result in tqdm.tqdm(async_results, total=len(experiments)):
+                    try:
+                        async_result.get(timeout=TIMEOUT)
+                    except multiprocessing.TimeoutError:
+                        print(f"An experiment timed out after {TIMEOUT} seconds.")
             except KeyboardInterrupt:
                 P.terminate()
                 P.join()
@@ -125,7 +136,8 @@ def run_experiment(
             print("Got empty results")
         else:
             preprocess_df(results)  # automatically fill in code relevant to analysis
-        all_results.append(results)
+        if save is not False:
+            all_results.append(results)
 
         if save is not False:
             # check if results directory exists
@@ -233,7 +245,8 @@ def run_experiment(
                     + str(len(chunked_experiments))
                     + ".csv",
                 )
-    return pd.concat(all_results).reset_index(drop=True)
+    if save is False:
+        return pd.concat(all_results).reset_index(drop=True)
 
 
 def _run_single_experiment(experiment):
