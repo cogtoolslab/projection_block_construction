@@ -197,7 +197,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         )
 
     def choose_sequence(self, sequences, verbose=False):
-        """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\max _{z \in Z}\left\{R(s, z)-C_{\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\right\}$ including weighing by lambda"""
+        """Chooses the sequence that maximizes $V_{Z}^{g}(s)=\\max _{z \\in Z}\\left\\{R(s, z)-C_{\\mathrm{Alg}}(s, z)+V_{Z}^{g}(z)\\right\\}$ including weighing by lambda"""
         # if we get an empty sequence, there is nothing to choose and we return an empty sequence
         if len(sequences) == 0:
             if verbose:
@@ -263,11 +263,14 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 sequence = cumulatize(sequence, world=current_world)
             seq_counter += 1  # for verbose printing
             sg_counter = 0  # for verbose printing
-            for subgoal in sequence:
+            for i in range(len(sequence)):
+                subgoal = sequence.subgoals[i]
                 sg_counter += 1  # for verbose printing
                 # get reward and cost and success of that particular subgoal and store the resulting world
                 subgoal.prior_world = copy.deepcopy(current_world)
-                self.solve_subgoal(subgoal, verbose=verbose)
+                subgoal = self.solve_subgoal(subgoal, verbose=verbose)
+                # replace the subgoal in the sequence with the filled in one
+                sequence.subgoals[i] = subgoal
                 if verbose:
                     print(
                         "For sequence",
@@ -292,35 +295,13 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 current_world = subgoal.past_world
 
     def solve_subgoal(self, subgoal, verbose=False):
-        if self.n_samples == 1:
-            return self.solve_subgoal_one_runs(subgoal, verbose=verbose)
-        else:
-            # we run the lower agent n times and take the best solution, then store the mean cost in the subgoal
-            subgoals = []
-            for i in range(self.n_samples):
-                subgoals.append(
-                    self.solve_subgoal_one_run(copy.deepcopy(subgoal), verbose=verbose)
-                )
-            # now we need to find the best solution
-            costs = [s.C for s in subgoals]
-            try:
-                best_index = costs.index(min(costs))
-                best_subgoal = subgoals[best_index]
-                # store the mean cost in the subgoal
-                best_subgoal.C = np.mean(costs)
-                return best_subgoal
-            except TypeError:
-                # this happens when we can't solve the subgoal
-                return subgoals[0]
-
-    def solve_subgoal_one_run(self, subgoal, verbose=False):
-        """Tries as long as needed to find a single solution to the current subgoal"""
-        if subgoal.prior_world is None:
-            subgoal.prior_world = self.world
-        # generate key for cache
+        """
+        Solves a subgoal and fills the subgoal with the resulting world, actions, cost and reward. Returns the subgoal.
+        """
+        # we can use a cache of previously solved subgoals to reuse computation between sequences
         key = subgoal.key()
+        # generate key for cache
         if key in self._cached_subgoal_evaluations:
-            # print("Cache hit for",key)
             # NOTE this will add the cost taken the first time during planning—ie we don't count the caching for the total cost calculation
             hit = self._cached_subgoal_evaluations[key]
             subgoal.past_world = hit.past_world
@@ -330,6 +311,35 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
             subgoal.planning_cost = hit.planning_cost
             subgoal.iterations = hit.iterations
             return subgoal
+        # otherwise, we need to solve it
+        # we run the lower agent n times and take the best solution, then store the mean cost in the subgoal
+        subgoals = []
+        for i in range(self.n_samples):
+            subgoals.append(
+                self.solve_subgoal_one_run(
+                    copy.deepcopy(subgoal),
+                    random_seed_offset=i,
+                    verbose=verbose,
+                )
+            )
+        # now we need to find the best solution
+        costs = [s.C for s in subgoals]
+        try:
+            best_index = costs.index(min(costs))
+            best_subgoal = subgoals[best_index]
+            # store the mean cost in the subgoal
+            best_subgoal.C = np.mean(costs)
+            self._cached_subgoal_evaluations[key] = best_subgoal
+            return best_subgoal
+        except TypeError:
+            # this happens when we can't solve the subgoal
+            self._cached_subgoal_evaluations[key] = subgoals[0]
+            return subgoals[0]
+
+    def solve_subgoal_one_run(self, subgoal, verbose=False, random_seed_offset=0):
+        """Tries as long as needed to find a single solution to the current subgoal"""
+        if subgoal.prior_world is None:
+            subgoal.prior_world = self.world
         total_costs = 0
         i = 0
         while total_costs < self.max_cost:
@@ -341,7 +351,7 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 break
             self.lower_agent.world = temp_world
             # fix random seed to ensure that we don't needlessly repeat ourselves
-            self.lower_agent.random_seed = self.random_seed + i
+            self.lower_agent.random_seed = self.random_seed + i + random_seed_offset
             steps = 0
             costs = 0
             actions = []
@@ -375,7 +385,6 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
                 subgoal.solution_cost = costs
                 subgoal.planning_cost = total_costs
                 subgoal.iterations = i
-                self._cached_subgoal_evaluations[key] = subgoal
                 return subgoal
         # if we've made it here, we've failed to find a solution
         # store cached evaluation
@@ -383,7 +392,6 @@ class Subgoal_Planning_Agent(BFS_Lookahead_Agent):
         subgoal.C = None
         subgoal.planning_cost = total_costs
         subgoal.iterations = i
-        self._cached_subgoal_evaluations[key] = subgoal
         return subgoal
 
     def get_subgoal_tree(self, only_solved_sequences=False, verbose=False):
