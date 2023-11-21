@@ -66,8 +66,8 @@ class AStarHeuristic(AgentCostHeuristic):
     "Uses A* to solve the subgoal"
 
     def __init__(self):
-        super().__init__(Astar_Agent())
-        self.agent.label = "A* Heuristic"
+        super().__init__(Astar_Agent(heuristic=lambda x: len(x.blocks)))
+        self.agent.label = "A* Heuristic (based on number of blocks)"
 
 
 class AStarRepetitionsHeuristic(AStarHeuristic):

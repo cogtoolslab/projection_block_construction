@@ -8,7 +8,6 @@ class Agent:
         self.world = world
         self.random_seed = random_seed
         self.label = label
-        # TODO: implement creation of node physics server
 
     def __str__(self) -> str:
         """Yields a string representation of the agent"""

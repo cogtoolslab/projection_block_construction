@@ -408,15 +408,7 @@ class Decomposition_Function:
         if verbose:
             print("Filtering sequences...")
             # let's calculate the number of permutations so we don't need to turn the iterator into a list
-            num_permutations = int(
-                sum(
-                    [
-                        math.factorial(len(subgoals))
-                        / math.factorial(len(subgoals) - l)
-                        for l in range(1, length + 1)
-                    ]
-                )
-            )
+            num_permutations = self.get_number_of_permutations(length, subgoals)
             print("Predicted number of sequences:", num_permutations)
             print("Checking necessary conditions...")
             for sequence in tqdm(sequences, total=num_permutations):
@@ -435,6 +427,17 @@ class Decomposition_Function:
         # turn into objects
         sequences = [Subgoal_sequence(s, state.world) for s in sequences]
         return sequences
+
+    def get_number_of_permutations(self, length, subgoals):
+        """Calculate number of permutations of length *length* from *subgoals*. This is not sensitive to the number of"""
+        return int(
+            sum(
+                [
+                    math.factorial(len(subgoals)) / math.factorial(len(subgoals) - l)
+                    for l in range(1, length + 1)
+                ]
+            )
+        )
 
     def get_name(self):
         return type(self).__name__
