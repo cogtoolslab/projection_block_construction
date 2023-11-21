@@ -347,11 +347,10 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
                 )
             else:
                 raise Exception(f"How method '{how}' is not implemented.")
+            # we calculate the softmax of the initial subgoal over all the other values to get at its relative preference
             try:
-                # Modified part for log-sum-exp trick
-                max_other_V = max(other_Vs)
-                softmax_val = math.exp(SOFTMAX_K * sg_V - max_other_V) / sum(
-                    [math.exp(SOFTMAX_K * v - max_other_V) for v in other_Vs]
+                softmax_val = math.exp(SOFTMAX_K * sg_V) / sum(
+                    [math.exp(SOFTMAX_K * v) for v in other_Vs]
                 )
             except ZeroDivisionError:
                 softmax_val = 1 if sg_V == max(other_Vs) else 0
