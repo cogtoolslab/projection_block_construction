@@ -15,7 +15,6 @@
 # set up imports
 import os
 
-
 __file__ = os.getcwd()
 from scoping_simulations.utils.directories import PROJ_DIR
 
@@ -47,11 +46,11 @@ from scoping_simulations.utils.blockworld_library import *
 # TODO make these parameters rather than hard coded
 SOFTMAX_K = 1
 MAX_LENGTH = 3  # maximum length of sequences to consider
-LAMBDAS = np.linspace(0.1, 6.0, 100)  # lambdas to marginalize over
+LAMBDAS = np.linspace(0.1, 10.0, 100)  # lambdas to marginalize over
 MIN_SUBGOAL_SIZE = 3  # minimum size of subgoal to consider
 MAX_SUBGOAL_MASS = 20  # maximum mass of subgoal to consider
 N_COST_SAMPLES = 10  # number of samples for lower agent cost
-NUM_TOWERS = 128 * 2  # number of towers to generate # OG 128 * 2
+NUM_TOWERS = 128  # number of towers to generate # OG 128 * 2
 MIN_WORLD_SIZE = 8  # minimum number of blocks in a tower OG: 8
 MAX_WORLD_SIZE = 14  # maximum number of blocks in a tower OG: 16
 TIMEOUT_WORLD = 60 * 60 * 24  # timeout for each world in seconds
@@ -95,31 +94,40 @@ def get_initial_preferences(world_in):
         )
     )
 
-    # ## Generate sequences of different length
+    subgoal_depth_sequences, initial_subgoals_df = parse_solved_sequences(
+        world_index, solved_sequences
+    )
 
-    # 1. Use the tree to generate sequences of subgoals up to a certain length
-    # 2. Calculate V for each sequence from C, reward\
-    #     What do we do about `c_weight`?
-    # 3. Over all sequences of a length, get list of V's for the first subgoal
-    # 4. Use the list of V's to calculate preferences over the first subgoals
+    print("Created dataframes & done for world {}".format(world_index))
 
+    return (
+        initial_subgoals_df,
+        solved_sequences,
+        w,
+        world_index,
+        subgoal_depth_sequences,
+    )
+
+
+def parse_solved_sequences(world_index, solved_sequences, lambdas=LAMBDAS):
+    """Generate sequences of different length
+
+    1. Use the tree to generate sequences of subgoals up to a certain length
+    2. Calculate V for each sequence from C, reward\
+        What do we do about `c_weight`?
+    3. Over all sequences of a length, get list of V's for the first subgoal
+    4. Use the list of V's to calculate preferences over the first subgoals"""
     (
         subgoal_preferences,
         subgoal_depth_sequences,
     ) = get_marginalized_subgoal_choice_preferences_over_lambda(
-        solved_sequences, LAMBDAS
+        solved_sequences, lambdas
     )
 
-    print("Got subgoal preferences over lambda for world {}".format(world_index))
     relative_subgoal_preferences = get_relative_subgoal_informativity(
         subgoal_preferences
     )
 
-    print(
-        "Got relative subgoal preferences over lambda for world {}".format(world_index)
-    )
-
-    # lets put everything into a big dataframe
     initial_subgoals_df = pd.DataFrame.from_dict(subgoal_preferences, orient="index")
     # add in absolute in col names
     initial_subgoals_df.columns = [
@@ -158,16 +166,7 @@ def get_initial_preferences(world_in):
     # add in additional subgoal info
     initial_subgoals_df["C"] = initial_subgoals_df["subgoal"].apply(lambda x: x.C)
     initial_subgoals_df["R"] = initial_subgoals_df["subgoal"].apply(lambda x: x.R())
-
-    print("Created dataframes & done for world {}".format(world_index))
-
-    return (
-        initial_subgoals_df,
-        solved_sequences,
-        w,
-        world_index,
-        subgoal_depth_sequences,
-    )
+    return subgoal_depth_sequences, initial_subgoals_df
 
 
 def get_initial_preferences_w_timeout(world_in, timeout=TIMEOUT_WORLD):
@@ -188,10 +187,14 @@ def get_initial_preferences_w_timeout(world_in, timeout=TIMEOUT_WORLD):
         return None
 
 
-def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
+def get_subgoal_choice_preferences(
+    solved_sequences, c_weight=None, how="softmax_weighted"
+):
     """Get a dict with choice prefernece for each initial subgoal of the form:
     {subgoal: [preference for the ith depth agent]}
     Set lambda in the agent itself
+
+    The choice proportion is the softmax (k=1) of choosing this initial subgoal over all the other initial subgoals. The higher the value, the more preferred the subgoal is.
 
     Unlike the previous function which only uses the best sequence of subgoals following the past one, this one uses different methods to aggregate over the other sequences that could follow the first one.
 
@@ -263,8 +266,10 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     # get list of preferences for depth per subgoal
     # this is the only part that changes from the previous function
     subgoal_preferences = {}
+    subgoal_Vs = {}
     for subgoal_name in subgoals.keys():
         subgoal_preferences[subgoal_name] = {}
+        subgoal_Vs[subgoal_name] = {}
         for depth in length_sequences:
             if callable(how):
                 other_Vs = [how(vs) for vs in subgoal_depth_Vs[depth].values()]
@@ -310,7 +315,7 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
                 ]
                 sg_V = np.sum(
                     softmax(subgoal_depth_Vs[depth][subgoal_name], k)
-                    * np.array(subgoal_depth_Vs[depth][subgoal_name])
+                    * np.array(object=subgoal_depth_Vs[depth][subgoal_name])
                 )
             elif how.startswith("top_") and how.endswith("p"):
                 # we want the top p percent of elements
@@ -362,6 +367,7 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
                 else:
                     softmax_val = 0.0
             subgoal_preferences[subgoal_name][depth] = softmax_val
+            subgoal_Vs[subgoal_name][depth] = sg_V
     return subgoal_preferences, subgoal_depth_sequences
 
 
@@ -401,9 +407,6 @@ def get_marginalized_subgoal_choice_preferences_over_lambda(solved_sequences, la
     return subgoal_preferences, subgoal_depth_sequences
 
 
-# That gives us the absolute choice preference of the planner. We also want the relative choice preference, which is the ratio in entropy of the distribution over the first subgoals with and without the planner included. The higher the difference, the more the planner is preferred. This indicates the relative to the entropy of the other planners introducing the new one reduces entropy by a certain amount.
-
-
 def entropy(p):
     try:
         return -sum([p_i * math.log(p_i) for p_i in p])
@@ -419,6 +422,7 @@ def softmax(x, k=1):
 
 
 def get_relative_subgoal_informativity(subgoal_preferences):
+    # That gives us the absolute choice preference of the planner. We also want the relative choice preference, which is the ratio in entropy of the distribution over the first subgoals with and without the planner included. The higher the difference, the more the planner is preferred. This indicates the relative to the entropy of the other planners introducing the new one reduces entropy by a certain amount.
     """Returns dict with {subgoal: informativeness of subgoal}"""
     subgoal_relative_preferences = {}
     for subgoal_name in subgoal_preferences.keys():
@@ -452,7 +456,6 @@ if __name__ == "__main__":
     pd.set_option("display.max_columns", None)
 
     # ## Generating towers
-    #
 
     block_library = bl_nonoverlapping_simple
 
