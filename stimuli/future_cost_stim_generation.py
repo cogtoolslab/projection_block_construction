@@ -241,7 +241,11 @@ def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     for depth in length_sequences:
         subgoal_depth_Vs[depth] = {}
         for seq in length_sequences[depth]:
-            V = seq.V(c_weight) if c_weight is not None else seq.V()
+            V = (
+                seq.V(c_weight, log_C=True)
+                if c_weight is not None
+                else seq.V(log_C=True)
+            )
             if seq.subgoals[0].name not in subgoal_depth_sequences:
                 subgoal_depth_sequences[seq.subgoals[0].name] = {}
             if seq.subgoals[0].name in subgoal_depth_Vs[depth]:
