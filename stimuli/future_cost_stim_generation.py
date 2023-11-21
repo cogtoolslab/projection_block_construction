@@ -15,6 +15,7 @@
 # set up imports
 import os
 
+
 __file__ = os.getcwd()
 from scoping_simulations.utils.directories import PROJ_DIR
 
@@ -43,14 +44,17 @@ from scoping_simulations.utils.blockworld import *
 from scoping_simulations.utils.blockworld_library import *
 
 ### Parameters ###
+# TODO make these parameters rather than hard coded
 SOFTMAX_K = 1
-MAX_LENGTH = 4  # maximum length of sequences to consider
+MAX_LENGTH = 3  # maximum length of sequences to consider
 LAMBDAS = np.linspace(0.1, 6.0, 100)  # lambdas to marginalize over
 MIN_SUBGOAL_SIZE = 3  # minimum size of subgoal to consider
-MAX_SUBGOAL_MASS = 16  # maximum mass of subgoal to consider
+MAX_SUBGOAL_MASS = 20  # maximum mass of subgoal to consider
 N_COST_SAMPLES = 10  # number of samples for lower agent cost
-# the generation parameters are in the executable section of the file below
-# TODO make these parameters rather than hard coded
+NUM_TOWERS = 128 * 2  # number of towers to generate # OG 128 * 2
+MIN_WORLD_SIZE = 8  # minimum number of blocks in a tower OG: 8
+MAX_WORLD_SIZE = 14  # maximum number of blocks in a tower OG: 16
+TIMEOUT_WORLD = 60 * 60 * 24  # timeout for each world in seconds
 
 
 def get_initial_preferences(world_in):
@@ -165,11 +169,9 @@ def get_initial_preferences(world_in):
         subgoal_depth_sequences,
     )
 
-def get_initial_preferences_w_timeout(world_in, timeout=60*60*12):
+
+def get_initial_preferences_w_timeout(world_in, timeout=TIMEOUT_WORLD):
     """Same as get_initial_preferences but with a timeout so it can be called by p_tqdm pathos multiprocessing"""
-    import multiprocessing
-    from multiprocessing import Process, Queue
-    import time
     import signal
 
     def handler(signum, frame):
@@ -184,6 +186,7 @@ def get_initial_preferences_w_timeout(world_in, timeout=60*60*12):
     except Exception as e:
         print("Exception:", e)
         return None
+
 
 def get_subgoal_choice_preferences(solved_sequences, c_weight=None, how="mean"):
     """Get a dict with choice prefernece for each initial subgoal of the form:
@@ -461,12 +464,11 @@ if __name__ == "__main__":
         seed=3,
         padding=(1, 0),
         num_blocks=lambda: random.randint(
-            6, 18
+            MIN_WORLD_SIZE, MAX_WORLD_SIZE
         ),  #  flat random interval of tower sizes (inclusive)
     )
 
     print("Generating towers")
-    NUM_TOWERS = 128 * 2
     towers = []
     for i in tqdm(range(NUM_TOWERS)):
         tower = generator.generate()
@@ -489,12 +491,12 @@ if __name__ == "__main__":
     worlds = zip(range(len(worlds)), worlds)
 
     # actually run it
-    # outs = map(get_initial_preferences, list(worlds)) # for debugging purposes
+    # outs = list(map(get_initial_preferences_w_timeout, list(worlds))) # for debugging purposes
     outs = p_tqdm.p_umap(get_initial_preferences_w_timeout, list(worlds))
-    initial_subgoals_dfs = [out[0] for out in outs]
-    solved_sequences = {out[3]: out[1] for out in outs}
-    worlds = {out[3]: out[2] for out in outs}
-    subgoal_depth_sequencess = {out[3]: out[4] for out in outs}
+    initial_subgoals_dfs = [out[0] for out in outs if out is not None]
+    solved_sequences = {out[3]: out[1] for out in outs if out is not None}
+    worlds = {out[3]: out[2] for out in outs if out is not None}
+    subgoal_depth_sequencess = {out[3]: out[4] for out in outs if out is not None}
 
     print("Done generating initial subgoals, collating dfs...")
 
