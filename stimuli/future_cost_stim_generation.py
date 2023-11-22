@@ -16,9 +16,7 @@
 import os
 
 __file__ = os.getcwd()
-from scoping_simulations.utils.directories import PROJ_DIR
-
-DF_DIR = os.path.join(PROJ_DIR, "results/dataframes")
+from scoping_simulations.utils.directories import DF_DIR
 
 try:
     import scoping_simulations.stimuli.tower_generator as tower_generator
@@ -47,13 +45,13 @@ from scoping_simulations.utils.blockworld_library import *
 SOFTMAX_K = 1
 MAX_LENGTH = 3  # maximum length of sequences to consider
 LAMBDAS = np.linspace(0.1, 10.0, 100)  # lambdas to marginalize over
-MIN_SUBGOAL_SIZE = 3  # minimum size of subgoal to consider
+MIN_SUBGOAL_SIZE = 4  # minimum size of subgoal to consider
 MAX_SUBGOAL_MASS = 20  # maximum mass of subgoal to consider
-N_COST_SAMPLES = 10  # number of samples for lower agent cost
-NUM_TOWERS = 128  # number of towers to generate # OG 128 * 2
+N_COST_SAMPLES = 5  # number of samples for lower agent cost
+NUM_TOWERS = 128*4  # number of towers to generate # OG 128 * 2
 MIN_WORLD_SIZE = 8  # minimum number of blocks in a tower OG: 8
-MAX_WORLD_SIZE = 14  # maximum number of blocks in a tower OG: 16
-TIMEOUT_WORLD = 60 * 60 * 24  # timeout for each world in seconds
+MAX_WORLD_SIZE = 16  # maximum number of blocks in a tower OG: 16
+TIMEOUT_WORLD = 60 * 60 * 12  # timeout for each world in seconds
 
 
 def get_initial_preferences(world_in):
@@ -97,9 +95,7 @@ def get_initial_preferences(world_in):
     subgoal_depth_sequences, initial_subgoals_df = parse_solved_sequences(
         world_index, solved_sequences
     )
-
-    print("Created dataframes & done for world {}".format(world_index))
-
+    
     return (
         initial_subgoals_df,
         solved_sequences,
@@ -502,25 +498,40 @@ if __name__ == "__main__":
 
     print("Done generating initial subgoals, collating dfs...")
 
+    path = DF_DIR / "future_cost_stimuli" / date
+
     combined_df = pd.concat(initial_subgoals_dfs)
 
     # save out initial_subgoals_df
-    combined_df.to_csv("initial_subgoals_df_" + date + ".csv")
+    combined_df.to_csv(path / "initial_subgoals_df_" + date + ".csv")
     # also to pickle
     with open("initial_subgoals_df_" + date + ".pkl", "wb") as f:
         pickle.dump(combined_df, f)
     # save the sequences organized by subgoal and depth
-    with open("subgoal_depth_sequences_" + date + ".pkl", "wb") as f:
+    with open(path / "subgoal_depth_sequences_" + date + ".pkl", "wb") as f:
         pickle.dump(subgoal_depth_sequencess, f)
     # save the solved sequences
-    with open("solved_sequences_" + date + ".pkl", "wb") as f:
+    with open(path / "solved_sequences_" + date + ".pkl", "wb") as f:
         pickle.dump(solved_sequences, f)
     # save the worlds
-    with open("worlds_" + date + ".pkl", "wb") as f:
+    with open(path / "worlds_" + date + ".pkl", "wb") as f:
         pickle.dump(worlds, f)
 
+    # save out the parameters
+    with open(path / "parameters_" + date + ".txt", "w") as f:
+        f.write("SOFTMAX_K = {}\n".format(SOFTMAX_K))
+        f.write("MAX_LENGTH = {}\n".format(MAX_LENGTH))
+        f.write("LAMBDAS = {}\n".format(LAMBDAS))
+        f.write("MIN_SUBGOAL_SIZE = {}\n".format(MIN_SUBGOAL_SIZE))
+        f.write("MAX_SUBGOAL_MASS = {}\n".format(MAX_SUBGOAL_MASS))
+        f.write("N_COST_SAMPLES = {}\n".format(N_COST_SAMPLES))
+        f.write("NUM_TOWERS = {}\n".format(NUM_TOWERS))
+        f.write("MIN_WORLD_SIZE = {}\n".format(MIN_WORLD_SIZE))
+        f.write("MAX_WORLD_SIZE = {}\n".format(MAX_WORLD_SIZE))
+        f.write("TIMEOUT_WORLD = {}\n".format(TIMEOUT_WORLD))
+
     print(
-        "Saved to {} and corresponding files".format(
-            "initial_subgoals_df_" + date + ".csv"
+        "Saved to {}".format(
+            path.absolute()
         )
     )
