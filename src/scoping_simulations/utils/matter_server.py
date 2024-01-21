@@ -4,6 +4,7 @@ import atexit
 import copyreg
 import os
 import subprocess
+import re
 
 js_location = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "matter_server.js"
@@ -85,6 +86,8 @@ class Physics_Server:
             self._process.stdin.flush()
             # read the result from the process
             result = self._process.stdout.readline().decode("utf-8")
+            # when launched from Jupyter Notebook we sometimes get ANSI codes back
+            result = remove_ansi_codes(result)
         except BrokenPipeError:
             # if the process is dead, restart it
             self.kill_server()
@@ -101,7 +104,7 @@ class Physics_Server:
             )
         else:
             raise ValueError(
-                f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}\nFull output: {self._process.stdout.read().decode('utf-8')}."
+                f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}\nFull output: {result}."
             )
             # print(f"Unexpected output from physics server: {result}\nInput was: {serialized_blocks}Full output: {self._process.stdout.read().decode('utf-8')}.")
             # print("Restarting physics server...")
@@ -110,6 +113,11 @@ class Physics_Server:
             # # wait a little while
             # time.sleep(1)
             return self.get_stability(blocks)
+
+
+def remove_ansi_codes(text):
+    ansi_escape_pattern = re.compile(r"\x1b\[[0-9;]*m")
+    return ansi_escape_pattern.sub("", text)
 
 
 def pickle_physics_server(server):
