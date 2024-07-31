@@ -90,6 +90,9 @@ class Physics_Server:
             result = remove_ansi_codes(result)
         except BrokenPipeError:
             # if the process is dead, restart it
+            print(f"Physics server ({self._process.pid}) died. Restarting...")
+            error_output = self._process.stderr.read().decode('utf-8')
+            print(f"Error from Node.js process: {error_output}")
             self.kill_server()
             self.start_server()
             return self.get_stability(blocks)
